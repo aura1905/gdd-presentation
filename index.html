@@ -701,50 +701,71 @@
       </div>
 
       <div class="card">
-        <h3>🌍 신대륙 18개 영지 — 전역 맵</h3>
-        <p>유저는 퀸즈게이트에서 시작하여 영지를 확장. 각 영지에는 토벌 30스테이지 + 거점이 있으며, NPC 세력과 충돌한다.</p>
+        <h3>🗺️ 필드 탐색 시스템 — 히어로즈 스타일</h3>
+        <p>GE 원작 월드맵을 그대로 활용. 영지와 영지 사이를 <strong>칸(타일)</strong> 단위로 이동하며, 이동 중 적과 랜덤 조우.</p>
+
+        <div class="highlight-box" style="margin-bottom:16px">
+          <p>🎮 <strong>핵심 루프</strong>: 배럭 출발 → 칸 이동(피로↓) → 랜덤 조우(3:3 전투) → 영지 도착 → 보스전/거점 함락 → 점령 → 다음 영지</p>
+        </div>
+
+        <table class="tbl">
+          <tr><th>요소</th><th>설명</th><th>수치</th></tr>
+          <tr><td>🚶 <strong>칸 이동</strong></td><td>영지 간 포인트 이동. 1칸 = 1이동</td><td>초반 2~3칸 / 후반 4~5칸</td></tr>
+          <tr><td>💤 <strong>피로도</strong></td><td>1칸 이동 시 소모. 0이면 이동 불가</td><td>초반 5%/칸 → 후반 10%/칸</td></tr>
+          <tr><td>⚔️ <strong>랜덤 조우</strong></td><td>이동 중 확률적 적 만남. 3:3 턴제!</td><td>초반 30% → 후반 50%</td></tr>
+          <tr><td>🏰 <strong>거점 함락</strong></td><td>NPC 세력 거점. 함락 후 점령/수비</td><td>1~3분대 투입</td></tr>
+          <tr><td>🐉 <strong>토벌전</strong></td><td>영지 보스 처치</td><td>보스 난이도 점진 증가</td></tr>
+        </table>
+
+        <!-- 초반 -->
         <div style="margin:20px 0 12px;padding:12px 20px;border-radius:10px;background:rgba(78,204,163,0.06);border-left:3px solid var(--accent-green)">
           <strong style="color:var(--accent-green)">📗 초반 (R01~R06) — 1분대 (MCC 1팀)</strong>
-          <span style="float:right;font-size:12px;color:var(--text-dim)">튜토리얼 ~ D14</span>
+          <span style="float:right;font-size:12px;color:var(--text-dim)">피로 5%/칸 · 조우 30%</span>
         </div>
         <table class="tbl">
-          <tr><th>#</th><th>영지</th><th>환경 효과</th><th>충돌 세력</th><th>비고</th></tr>
-          <tr><td>01</td><td><strong>퀸즈게이트</strong></td><td>없음</td><td>—</td><td>🏠 시작 지역</td></tr>
-          <tr><td>02</td><td><strong>패루초 삼거리</strong></td><td>🌀 풍 +15%</td><td class="faction-baron">🗡️ 버론</td><td>첫 인간 적 파티</td></tr>
-          <tr><td>03</td><td><strong>AQM</strong></td><td>☠️ 독안개 2%/3s</td><td>산적단</td><td>첫 환경 피해</td></tr>
-          <tr><td>04</td><td><strong>왕들의 정원</strong></td><td>💚 회복 1%/5s</td><td class="faction-noble">🦊 십인 귀족</td><td>지구전 유리</td></tr>
-          <tr><td>05</td><td><strong>테트라 유적</strong></td><td>🔥 화 +15%</td><td class="faction-nocc">⚔️ NOCC</td><td>속성 조합 중요</td></tr>
-          <tr><td>06</td><td><strong>코임브라</strong></td><td>💧 수 +15%</td><td class="faction-nocc">⚔️ NOCC</td><td>교역 중심, 첫 거점전</td></tr>
+          <tr><th>#</th><th>영지</th><th>유형</th><th>거리</th><th>충돌 세력</th><th>비고</th></tr>
+          <tr><td>01</td><td><strong>퀸즈게이트</strong></td><td>🏪 교역 도시</td><td>—</td><td>—</td><td>🏠 시작 거점</td></tr>
+          <tr><td>02</td><td><strong>패루초 삼거리</strong></td><td>🏰 거점 함락</td><td>3칸</td><td class="faction-baron">🗡️ 버론</td><td>첫 거점전</td></tr>
+          <tr><td>03</td><td><strong>AQM</strong></td><td>🐉 토벌전</td><td>2칸</td><td>산적단</td><td>독안개 환경</td></tr>
+          <tr><td>04</td><td><strong>왕들의 정원</strong></td><td>💚 휴식+토벌</td><td>3칸</td><td class="faction-noble">🦊 십인 귀족</td><td>회복 지형</td></tr>
+          <tr><td>05</td><td><strong>테트라 유적</strong></td><td>⚔️ 레이드 입구</td><td>2칸</td><td class="faction-nocc">⚔️ NOCC</td><td>첫 레이드</td></tr>
+          <tr><td>06</td><td><strong>코임브라</strong></td><td>🏰 거점 함락</td><td>3칸</td><td class="faction-nocc">⚔️ NOCC</td><td>첫 주요 거점</td></tr>
         </table>
+
+        <!-- 중반 -->
         <div style="margin:20px 0 12px;padding:12px 20px;border-radius:10px;background:rgba(212,168,67,0.06);border-left:3px solid var(--gold)">
           <strong style="color:var(--gold)">📙 중반 (R07~R12) — 2~3분대 (MCC 2~3팀)</strong>
-          <span style="float:right;font-size:12px;color:var(--text-dim)">D17 ~ D35</span>
+          <span style="float:right;font-size:12px;color:var(--text-dim)">피로 7%/칸 · 조우 40%</span>
         </div>
         <table class="tbl">
-          <tr><th>#</th><th>영지</th><th>환경 효과</th><th>충돌 세력</th><th>비고</th></tr>
-          <tr><td>07</td><td><strong>지저벨 협곡</strong></td><td>🐢 이속 -15%</td><td class="faction-baron">🗡️ 버론</td><td>⚠️ 3분대 해금! (MCC 3팀)</td></tr>
-          <tr><td>08</td><td><strong>포르토벨로</strong></td><td>💀 저주 2.5%/4s</td><td class="faction-baron">🗡️ 버론</td><td>해적 본거지</td></tr>
-          <tr><td>09</td><td><strong>버려진 부두</strong></td><td>🔥 화 -15%</td><td>용병단</td><td>화캐 불리</td></tr>
-          <tr><td>10</td><td><strong>토르쉐 저택</strong></td><td>🏹 원거리 ATK +10%</td><td class="faction-noble">🦊 십인 귀족</td><td>사수 유리</td></tr>
-          <tr><td>11</td><td><strong>보나비스타</strong></td><td>⚡ 이속 +10%</td><td>용병단</td><td>미사일 천국</td></tr>
-          <tr><td>12</td><td><strong>튜링엔 숲</strong></td><td>🛡️ 탱커 DEF +15%</td><td class="faction-auch">📚 오슈 학파</td><td>지구전 유리</td></tr>
+          <tr><th>#</th><th>영지</th><th>유형</th><th>거리</th><th>충돌 세력</th><th>비고</th></tr>
+          <tr><td>07</td><td><strong>지저벨 협곡</strong></td><td>🏰 거점 함락</td><td>4칸</td><td class="faction-baron">🗡️ 버론</td><td>⚠️ 3분대 해금!</td></tr>
+          <tr><td>08</td><td><strong>포르토벨로</strong></td><td>🏰 거점 함락</td><td>3칸</td><td class="faction-baron">🗡️ 버론</td><td>해적 본거지</td></tr>
+          <tr><td>09</td><td><strong>버려진 부두</strong></td><td>🐉 토벌전</td><td>3칸</td><td>용병단</td><td>용병 고용 가능</td></tr>
+          <tr><td>10</td><td><strong>토르쉐 저택</strong></td><td>🐉 토벌전</td><td>4칸</td><td class="faction-noble">🦊 십인 귀족</td><td>귀족 거점</td></tr>
+          <tr><td>11</td><td><strong>보나비스타</strong></td><td>🏪 교역 도시</td><td>3칸</td><td>용병단</td><td>속도전 지형</td></tr>
+          <tr><td>12</td><td><strong>튜링엔 숲</strong></td><td>⚔️ 레이드 입구</td><td>4칸</td><td class="faction-auch">📚 오슈 학파</td><td>오슈 영역 진입</td></tr>
         </table>
+
+        <!-- 후반 -->
         <div style="margin:20px 0 12px;padding:12px 20px;border-radius:10px;background:rgba(217,74,92,0.06);border-left:3px solid var(--accent-red)">
           <strong style="color:var(--accent-red)">📕 후반 (R13~R18) — 3분대 필수 (MCC 3팀)</strong>
-          <span style="float:right;font-size:12px;color:var(--text-dim)">D40 ~ D90+ (엔드게임)</span>
+          <span style="float:right;font-size:12px;color:var(--text-dim)">피로 10%/칸 · 조우 50%</span>
         </div>
         <table class="tbl">
-          <tr><th>#</th><th>영지</th><th>환경 효과</th><th>충돌 세력</th><th>비고</th></tr>
-          <tr><td>13</td><td><strong>자캥 분화구</strong></td><td>🌋 용암 3%/3s</td><td class="faction-auch">📚 오슈 학파</td><td>수속성 필수</td></tr>
-          <tr><td>14</td><td><strong>자캥 수용소</strong></td><td>✨ 광 -15%</td><td>암살자 길드</td><td>암 캐릭터 활약</td></tr>
-          <tr><td>15</td><td><strong>토플로 두르가</strong></td><td>🏹 원거리 CRI +10%</td><td class="faction-bristia">🛡️ 브리스티아</td><td>미사일 최적지</td></tr>
-          <tr><td>16</td><td><strong>캐피바라 농원</strong></td><td>💚 회복 1.5%/5s</td><td class="faction-bristia">🛡️ 브리스티아</td><td>보급기지</td></tr>
-          <tr><td>17</td><td><strong>패루초 방벽</strong></td><td>❄️ 냉기 2%/2s</td><td>원정 정찰대</td><td>힐러 필수</td></tr>
-          <tr><td>18</td><td><strong>빙마탑</strong></td><td>❄️ 이속-20% + 빙결</td><td class="faction-auch">📚 오슈 학파</td><td>⚠️ 최종 영지</td></tr>
+          <tr><th>#</th><th>영지</th><th>유형</th><th>거리</th><th>충돌 세력</th><th>비고</th></tr>
+          <tr><td>13</td><td><strong>자캥 분화구</strong></td><td>⚔️ 레이드 입구</td><td>5칸</td><td class="faction-auch">📚 오슈 학파</td><td>용암 지형</td></tr>
+          <tr><td>14</td><td><strong>자캥 수용소</strong></td><td>🏰 거점 함락</td><td>4칸</td><td>암살자 길드</td><td>암살자 영역</td></tr>
+          <tr><td>15</td><td><strong>토플로 두르가</strong></td><td>🏰 거점 함락</td><td>5칸</td><td class="faction-bristia">🛡️ 브리스티아</td><td>원정군 최전방</td></tr>
+          <tr><td>16</td><td><strong>캐피바라 농원</strong></td><td>💚 휴식+교역</td><td>4칸</td><td class="faction-bristia">🛡️ 브리스티아</td><td>보급기지</td></tr>
+          <tr><td>17</td><td><strong>패루초 방벽</strong></td><td>🐉 토벌전</td><td>5칸</td><td>원정 정찰대</td><td>극한 난이도</td></tr>
+          <tr><td>18</td><td><strong>빙마탑</strong></td><td>⚔️ 최종 레이드</td><td>5칸</td><td class="faction-auch">📚 오슈 학파</td><td>⚠️ 최종 보스</td></tr>
         </table>
+
         <div class="highlight-box" style="margin-top:16px">
-          <p>📊 <strong>총 1,620 스테이지</strong> (18영지 × 30스테이지 × 3난이도)</p>
-          <p>환경 효과가 전략에 영향 → 지역마다 유리한 조합이 다르다 → <strong>다양한 캐릭터 육성 동기</strong></p>
+          <p>🗺️ <strong>GE 원작 월드맵</strong> 구조를 그대로 활용 — 영지 간 분기/갈림길 포함</p>
+          <p>💤 피로도 ↔ 배럭 라이프(군의관/요리사) 연동 — <strong>전투 밖에서도 전략적 판단</strong> 필요</p>
+          <p>🎲 후반부 이동 5칸 × 50% 조우 = 평균 2.5회 전투/이동 — <strong>3분대 없이는 돌파 불가</strong></p>
         </div>
       </div>
 
