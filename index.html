@@ -1,0 +1,1661 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GE: 개척시대 — Game Design Document v0.3</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-card-hover: #1a1a26;
+      --border: #2a2a3a;
+      --gold: #d4a843;
+      --gold-dim: #a07830;
+      --gold-bright: #f0c850;
+      --text: #e0ddd5;
+      --text-dim: #8a8780;
+      --text-bright: #ffffff;
+      --accent-green: #4ecca3;
+      --accent-blue: #4a90d9;
+      --accent-red: #d94a5c;
+      --accent-purple: #9b6fd9;
+      --accent-orange: #d98a4a;
+      --accent-cyan: #4accd9;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1028 40%, #0f1a2a 70%, #0a0a0f 100%);
+      border-bottom: 1px solid var(--gold-dim);
+      padding: 60px 40px 50px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(212, 168, 67, 0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg-dark);
+      padding: 4px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 {
+      font-size: 36px;
+      font-weight: 900;
+      color: var(--text-bright);
+      margin-bottom: 8px;
+      letter-spacing: -0.5px;
+    }
+
+    .hero h1 span {
+      color: var(--gold);
+    }
+
+    .hero .subtitle {
+      font-size: 16px;
+      color: var(--text-dim);
+      font-weight: 300;
+    }
+
+    .hero .date {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 12px;
+    }
+
+    .summary-bar {
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      margin-top: 32px;
+      flex-wrap: wrap;
+    }
+
+    .summary-item {
+      padding: 16px 28px;
+      border-right: 1px solid rgba(212, 168, 67, 0.2);
+      text-align: center;
+    }
+
+    .summary-item:last-child {
+      border-right: none;
+    }
+
+    .summary-item .num {
+      font-size: 28px;
+      font-weight: 900;
+      color: var(--gold-bright);
+      display: block;
+      line-height: 1;
+    }
+
+    .summary-item .label {
+      font-size: 12px;
+      color: var(--text-dim);
+      margin-top: 4px;
+      letter-spacing: 1px;
+    }
+
+    /* ── Nav ── */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10, 10, 15, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      overflow-x: auto;
+    }
+
+    .nav-item {
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: all 0.2s;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      color: var(--gold);
+      border-bottom-color: var(--gold);
+    }
+
+    /* ── Container ── */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    /* ── Section ── */
+    .section {
+      margin-bottom: 64px;
+      scroll-margin-top: 60px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .section-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .section-header h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-bright);
+    }
+
+    .section-header .tag {
+      margin-left: auto;
+      background: rgba(212, 168, 67, 0.12);
+      color: var(--gold);
+      padding: 4px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      transition: all 0.15s ease;
+    }
+
+    .card:hover {
+      border-color: rgba(212, 168, 67, 0.3);
+    }
+
+    .card h3 {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .card p {
+      font-size: 14px;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+
+    .card-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    /* ── Tables ── */
+    .tbl {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    .tbl th {
+      background: rgba(212, 168, 67, 0.08);
+      color: var(--gold);
+      font-weight: 700;
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+
+    .tbl td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: var(--text);
+    }
+
+    .tbl tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* ── Flow ── */
+    .flow-box {
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      font-family: 'Noto Sans KR', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text);
+      white-space: pre-wrap;
+      margin: 16px 0;
+    }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-gold {
+      background: rgba(212, 168, 67, 0.15);
+      color: var(--gold);
+      border: 1px solid rgba(212, 168, 67, 0.3);
+    }
+
+    .badge-green {
+      background: rgba(78, 204, 163, 0.15);
+      color: var(--accent-green);
+      border: 1px solid rgba(78, 204, 163, 0.3);
+    }
+
+    .badge-red {
+      background: rgba(217, 74, 92, 0.15);
+      color: var(--accent-red);
+      border: 1px solid rgba(217, 74, 92, 0.3);
+    }
+
+    .badge-blue {
+      background: rgba(74, 144, 217, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(74, 144, 217, 0.3);
+    }
+
+    .badge-purple {
+      background: rgba(155, 111, 217, 0.15);
+      color: var(--accent-purple);
+      border: 1px solid rgba(155, 111, 217, 0.3);
+    }
+
+    .badge-orange {
+      background: rgba(217, 138, 74, 0.15);
+      color: var(--accent-orange);
+      border: 1px solid rgba(217, 138, 74, 0.3);
+    }
+
+    /* ── Highlight Box ── */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(212, 168, 67, 0.06), rgba(155, 111, 217, 0.06));
+      border: 1px solid rgba(212, 168, 67, 0.2);
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin: 16px 0;
+    }
+
+    .highlight-box.red {
+      background: linear-gradient(135deg, rgba(217, 74, 92, 0.06), rgba(217, 138, 74, 0.06));
+      border-color: rgba(217, 74, 92, 0.2);
+    }
+
+    .highlight-box strong {
+      color: var(--gold);
+    }
+
+    /* ── Faction Colors ── */
+    .faction-nocc {
+      color: var(--accent-red);
+    }
+
+    .faction-noble {
+      color: var(--accent-orange);
+    }
+
+    .faction-auch {
+      color: var(--accent-purple);
+    }
+
+    .faction-baron {
+      color: var(--text-dim);
+    }
+
+    .faction-bristia {
+      color: var(--accent-blue);
+    }
+
+    /* ── Matchup Diagram ── */
+    .matchup {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 24px;
+      margin: 24px 0;
+      flex-wrap: wrap;
+    }
+
+    .matchup-node {
+      background: var(--bg-card);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 24px;
+      text-align: center;
+      min-width: 140px;
+    }
+
+    .matchup-node .name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-bright);
+    }
+
+    .matchup-node .desc {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+
+    .matchup-arrow {
+      font-size: 24px;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+    }
+
+    .matchup-node.burst {
+      border-color: var(--accent-red);
+    }
+
+    .matchup-node.control {
+      border-color: var(--accent-purple);
+    }
+
+    .matchup-node.sustain {
+      border-color: var(--accent-green);
+    }
+
+    /* ── Stat Bars ── */
+    .stat-row {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-align: right;
+    }
+
+    .stat-bar-bg {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .stat-bar {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 24px;
+      }
+
+      .hero {
+        padding: 40px 20px 30px;
+      }
+
+      .card-grid,
+      .card-grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      .matchup {
+        flex-direction: column;
+      }
+
+      .summary-item {
+        padding: 12px 16px;
+      }
+    }
+
+    /* ── Comment System ── */
+    .comment-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-dim);
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 12px;
+    }
+    .comment-toggle:hover { color: var(--gold); border-color: var(--gold-dim); }
+    .comment-toggle .count { color: var(--gold); }
+
+    .comment-area {
+      display: none;
+      margin-top: 12px;
+      padding: 16px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+    }
+    .comment-area.open { display: block; }
+
+    .comment-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .comment-item {
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 8px;
+      border-left: 3px solid var(--gold-dim);
+    }
+    .comment-item .comment-meta {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .comment-item .comment-meta .comment-author { color: var(--gold); font-weight: 700; }
+    .comment-item .comment-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+    .comment-item .comment-delete {
+      font-size: 10px; color: var(--text-dim); cursor: pointer; opacity: 0.5;
+    }
+    .comment-item .comment-delete:hover { opacity: 1; color: var(--accent-red); }
+
+    .comment-input-row {
+      display: flex;
+      gap: 8px;
+    }
+    .comment-input-row input[type="text"] {
+      flex: 1;
+      padding: 10px 14px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 13px;
+      font-family: 'Noto Sans KR', sans-serif;
+      outline: none;
+    }
+    .comment-input-row input[type="text"]:focus { border-color: var(--gold-dim); }
+    .comment-input-row input[type="text"]::placeholder { color: var(--text-dim); }
+    .comment-input-row button {
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg-dark);
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: 'Noto Sans KR', sans-serif;
+      white-space: nowrap;
+    }
+    .comment-input-row button:hover { opacity: 0.9; }
+
+    .comment-author-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .comment-author-bar input {
+      width: 120px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--gold);
+      font-size: 12px;
+      font-family: 'Noto Sans KR', sans-serif;
+      outline: none;
+    }
+    .comment-author-bar input::placeholder { color: var(--text-dim); }
+    .comment-empty {
+      font-size: 12px;
+      color: var(--text-dim);
+      text-align: center;
+      padding: 16px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ══ HERO ══ -->
+  <div class="hero">
+    <div class="hero-badge">CONFIDENTIAL</div>
+    <h1><span>GE:</span> 개척시대</h1>
+    <div class="subtitle">Game Design Document — 캐릭터 매니지먼트 전략 RPG</div>
+    <div class="date">v0.3 · 2026.03.04 · 내부 공유용</div>
+    <div class="summary-bar">
+      <div class="summary-item"><span class="num">3:3</span><span class="label">기본 전투</span></div>
+      <div class="summary-item"><span class="num">10턴</span><span class="label">전투 라운드</span></div>
+      <div class="summary-item"><span class="num">5</span><span class="label">NPC 세력</span></div>
+      <div class="summary-item"><span class="num">395</span><span class="label">캐릭터 풀</span></div>
+      <div class="summary-item"><span class="num">18</span><span class="label">영지</span></div>
+    </div>
+  </div>
+
+  <!-- ══ NAV ══ -->
+  <div class="nav-bar">
+    <a class="nav-item active" href="#overview">📋 개요</a>
+    <a class="nav-item" href="#play">🗺️ 플레이 구조</a>
+    <a class="nav-item" href="#combat">⚔️ 전투 시스템</a>
+    <a class="nav-item" href="#characters">👤 캐릭터 분류</a>
+    <a class="nav-item" href="#factions">🏰 NPC 세력</a>
+    <a class="nav-item" href="#war">🔥 거점전</a>
+    <a class="nav-item" href="#raid">🗡️ 토벌</a>
+    <a class="nav-item" href="#barracks">🏠 배럭 라이프</a>
+    <a class="nav-item" href="#gacha">🎰 뽑기/성장</a>
+  </div>
+
+  <div class="container">
+
+    <!-- ══ 1. OVERVIEW ══ -->
+    <div class="section" id="overview">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(212,168,67,0.12)">📋</div>
+        <h2>게임 개요</h2>
+        <span class="tag">CORE CONCEPT</span>
+      </div>
+
+      <div class="highlight-box">
+        <p><strong>장르:</strong> 캐릭터 매니지먼트 전략 RPG (풋볼매니저 × 삼국지전략판 × GE IP)</p>
+        <p><strong>핵심 컨셉:</strong> GE 원작의 395명 캐릭터를 영입·육성·편성하여 신대륙에서 세력을 확장하는 전략 게임.</p>
+        <p><strong>배경:</strong> 레콩키스타 시대(1522~) — 3년 전쟁 이후 신대륙 개척 경쟁이 격화된 시기.</p>
+      </div>
+
+      <div class="card">
+        <h3>🎯 핵심 설계 원칙</h3>
+        <table class="tbl">
+          <tr>
+            <th>원칙</th>
+            <th>설명</th>
+          </tr>
+          <tr>
+            <td><strong>전투의 기본은 인간 3:3</strong></td>
+            <td>몬스터는 재료 관문. 진짜 전투는 인간 파티와의 3:3 전략전.</td>
+          </tr>
+          <tr>
+            <td><strong>레벨 깡패 없음</strong></td>
+            <td>조합·상성·시너지가 승패를 결정. 약해도 상성 좋으면 이긴다.</td>
+          </tr>
+          <tr>
+            <td><strong>캐릭터는 항상 부족</strong></td>
+            <td>공격 + 수비 + 토벌을 동시에 → 더 영입하고, 더 육성해야.</td>
+          </tr>
+          <tr>
+            <td><strong>감정적 과금</strong></td>
+            <td>"저 세력을 꺾으려면 이 캐릭터가 필요" → 전략적 필요에 의한 과금.</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>🔄 코어 루프</h3>
+        <div class="flow-box">캐릭터 영입(뽑기) → 육성/편성 → 토벌(재료 수급) → 거점전(영토 확장)
+          ↑ ↓
+          └──── 더 많은 캐릭터 필요! ←── 지킬 영토가 늘어남 ←──┘</div>
+      </div>
+    </div>
+
+    <!-- ══ 2. PLAY STRUCTURE ══ -->
+    <div class="section" id="play">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(78,204,163,0.12)">🗺️</div>
+        <h2>기본 플레이 구조</h2>
+        <span class="tag">PLAY STRUCTURE</span>
+      </div>
+
+      <div class="card">
+        <h3>🌍 신대륙 18개 영지 — 전역 맵</h3>
+        <p>유저는 퀸즈게이트에서 시작하여 영지를 확장. 각 영지에는 토벌 30스테이지 + 거점이 있으며, NPC 세력과 충돌한다.</p>
+        <div style="margin:20px 0 12px;padding:12px 20px;border-radius:10px;background:rgba(78,204,163,0.06);border-left:3px solid var(--accent-green)">
+          <strong style="color:var(--accent-green)">📗 초반 (R01~R06) — 1분대 (MCC 1팀)</strong>
+          <span style="float:right;font-size:12px;color:var(--text-dim)">튜토리얼 ~ D14</span>
+        </div>
+        <table class="tbl">
+          <tr><th>#</th><th>영지</th><th>환경 효과</th><th>충돌 세력</th><th>비고</th></tr>
+          <tr><td>01</td><td><strong>퀸즈게이트</strong></td><td>없음</td><td>—</td><td>🏠 시작 지역</td></tr>
+          <tr><td>02</td><td><strong>패루초 삼거리</strong></td><td>🌀 풍 +15%</td><td class="faction-baron">🗡️ 버론</td><td>첫 인간 적 파티</td></tr>
+          <tr><td>03</td><td><strong>AQM</strong></td><td>☠️ 독안개 2%/3s</td><td>산적단</td><td>첫 환경 피해</td></tr>
+          <tr><td>04</td><td><strong>왕들의 정원</strong></td><td>💚 회복 1%/5s</td><td class="faction-noble">🦊 십인 귀족</td><td>지구전 유리</td></tr>
+          <tr><td>05</td><td><strong>테트라 유적</strong></td><td>🔥 화 +15%</td><td class="faction-nocc">⚔️ NOCC</td><td>속성 조합 중요</td></tr>
+          <tr><td>06</td><td><strong>코임브라</strong></td><td>💧 수 +15%</td><td class="faction-nocc">⚔️ NOCC</td><td>교역 중심, 첫 거점전</td></tr>
+        </table>
+        <div style="margin:20px 0 12px;padding:12px 20px;border-radius:10px;background:rgba(212,168,67,0.06);border-left:3px solid var(--gold)">
+          <strong style="color:var(--gold)">📙 중반 (R07~R12) — 2~3분대 (MCC 2~3팀)</strong>
+          <span style="float:right;font-size:12px;color:var(--text-dim)">D17 ~ D35</span>
+        </div>
+        <table class="tbl">
+          <tr><th>#</th><th>영지</th><th>환경 효과</th><th>충돌 세력</th><th>비고</th></tr>
+          <tr><td>07</td><td><strong>지저벨 협곡</strong></td><td>🐢 이속 -15%</td><td class="faction-baron">🗡️ 버론</td><td>⚠️ 3분대 해금! (MCC 3팀)</td></tr>
+          <tr><td>08</td><td><strong>포르토벨로</strong></td><td>💀 저주 2.5%/4s</td><td class="faction-baron">🗡️ 버론</td><td>해적 본거지</td></tr>
+          <tr><td>09</td><td><strong>버려진 부두</strong></td><td>🔥 화 -15%</td><td>용병단</td><td>화캐 불리</td></tr>
+          <tr><td>10</td><td><strong>토르쉐 저택</strong></td><td>🏹 원거리 ATK +10%</td><td class="faction-noble">🦊 십인 귀족</td><td>사수 유리</td></tr>
+          <tr><td>11</td><td><strong>보나비스타</strong></td><td>⚡ 이속 +10%</td><td>용병단</td><td>미사일 천국</td></tr>
+          <tr><td>12</td><td><strong>튜링엔 숲</strong></td><td>🛡️ 탱커 DEF +15%</td><td class="faction-auch">📚 오슈 학파</td><td>지구전 유리</td></tr>
+        </table>
+        <div style="margin:20px 0 12px;padding:12px 20px;border-radius:10px;background:rgba(217,74,92,0.06);border-left:3px solid var(--accent-red)">
+          <strong style="color:var(--accent-red)">📕 후반 (R13~R18) — 3분대 필수 (MCC 3팀)</strong>
+          <span style="float:right;font-size:12px;color:var(--text-dim)">D40 ~ D90+ (엔드게임)</span>
+        </div>
+        <table class="tbl">
+          <tr><th>#</th><th>영지</th><th>환경 효과</th><th>충돌 세력</th><th>비고</th></tr>
+          <tr><td>13</td><td><strong>자캥 분화구</strong></td><td>🌋 용암 3%/3s</td><td class="faction-auch">📚 오슈 학파</td><td>수속성 필수</td></tr>
+          <tr><td>14</td><td><strong>자캥 수용소</strong></td><td>✨ 광 -15%</td><td>암살자 길드</td><td>암 캐릭터 활약</td></tr>
+          <tr><td>15</td><td><strong>토플로 두르가</strong></td><td>🏹 원거리 CRI +10%</td><td class="faction-bristia">🛡️ 브리스티아</td><td>미사일 최적지</td></tr>
+          <tr><td>16</td><td><strong>캐피바라 농원</strong></td><td>💚 회복 1.5%/5s</td><td class="faction-bristia">🛡️ 브리스티아</td><td>보급기지</td></tr>
+          <tr><td>17</td><td><strong>패루초 방벽</strong></td><td>❄️ 냉기 2%/2s</td><td>원정 정찰대</td><td>힐러 필수</td></tr>
+          <tr><td>18</td><td><strong>빙마탑</strong></td><td>❄️ 이속-20% + 빙결</td><td class="faction-auch">📚 오슈 학파</td><td>⚠️ 최종 영지</td></tr>
+        </table>
+        <div class="highlight-box" style="margin-top:16px">
+          <p>📊 <strong>총 1,620 스테이지</strong> (18영지 × 30스테이지 × 3난이도)</p>
+          <p>환경 효과가 전략에 영향 → 지역마다 유리한 조합이 다르다 → <strong>다양한 캐릭터 육성 동기</strong></p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>⚔️ 전투의 위계</h3>
+        <table class="tbl">
+          <tr>
+            <th>단계</th>
+            <th>적</th>
+            <th>전투 방식</th>
+            <th>긴장감</th>
+            <th>핵심 목적</th>
+          </tr>
+          <tr>
+            <td>몬스터</td>
+            <td>잡몹/보스</td>
+            <td>자동</td>
+            <td>★</td>
+            <td>재료 파밍 (관문)</td>
+          </tr>
+          <tr>
+            <td><strong>인간 파티</strong></td>
+            <td>해적/산적/용병 등</td>
+            <td><strong>3:3 전략전</strong></td>
+            <td>★★★</td>
+            <td>진짜 전투</td>
+          </tr>
+          <tr>
+            <td><strong>거점전</strong></td>
+            <td>NPC 세력 정예</td>
+            <td><strong>3:3 릴레이</strong></td>
+            <td>★★★★★</td>
+            <td>영토 쟁탈</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>💀 인간 적 파티 (토벌 존 길목)</h3>
+        <table class="tbl">
+          <tr>
+            <th>인간 적</th>
+            <th>연계 세력</th>
+            <th>출현 지역</th>
+            <th>특징</th>
+          </tr>
+          <tr>
+            <td>해적단</td>
+            <td class="faction-baron">🗡️ 버론</td>
+            <td>항구, 해안</td>
+            <td>속도 제압, 약탈</td>
+          </tr>
+          <tr>
+            <td>산적단</td>
+            <td>독립</td>
+            <td>산길, 숲</td>
+            <td>매복, 기습</td>
+          </tr>
+          <tr>
+            <td>암살자 길드</td>
+            <td class="faction-noble">🦊 십인 귀족</td>
+            <td>야간, 도시 근교</td>
+            <td>핵심 타겟 제거</td>
+          </tr>
+          <tr>
+            <td>용병단</td>
+            <td>독립/고용</td>
+            <td>다양</td>
+            <td>비스로 매수 가능</td>
+          </tr>
+          <tr>
+            <td>원정 정찰대</td>
+            <td class="faction-nocc">⚔️ NOCC</td>
+            <td>국경, 전초</td>
+            <td>정규군 편성</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 3. COMBAT ══ -->
+    <div class="section" id="combat">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(217,74,92,0.12)">⚔️</div>
+        <h2>전투 시스템</h2>
+        <span class="tag">10턴 3:3</span>
+      </div>
+
+      <div class="card">
+        <h3>🎮 전투 방식</h3>
+        <table class="tbl">
+          <tr>
+            <th>항목</th>
+            <th>설정</th>
+          </tr>
+          <tr>
+            <td>전투 방식</td>
+            <td>턴 기반 시뮬레이션 (서버 계산 → 클라이언트 연출)</td>
+          </tr>
+          <tr>
+            <td>전투 규모</td>
+            <td><strong>3 vs 3</strong> (인간 대 인간 기본)</td>
+          </tr>
+          <tr>
+            <td>라운드</td>
+            <td><strong>최대 10턴</strong></td>
+          </tr>
+          <tr>
+            <td>승리 조건</td>
+            <td>적 3인 전멸</td>
+          </tr>
+          <tr>
+            <td>10턴 초과</td>
+            <td>잔여 HP 비교 판정</td>
+          </tr>
+          <tr>
+            <td>전투 시간</td>
+            <td>~2분 30초(1배속) / ~1분 15초(2배속)</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>📊 10턴 전개 — 3막 구조</h3>
+        <div class="card-grid-3">
+          <div class="highlight-box">
+            <p><strong style="color:var(--accent-red)">턴 1~3: 개전기</strong></p>
+            <p>"누가 먼저 치느냐"</p>
+            <p>SPD 높은 쪽이 선공. 버프/디버프 깔기. 미사일 조합은 여기서 끝내려 함.</p>
+          </div>
+          <div class="highlight-box">
+            <p><strong style="color:var(--accent-orange)">턴 4~7: 중반</strong></p>
+            <p>"구도가 정해진다"</p>
+            <p>3:3 → 3:2 또는 2:2로. 수적 우위가 전투를 갈라놓음. CC 제어 조합의 전성기.</p>
+          </div>
+          <div class="highlight-box">
+            <p><strong style="color:var(--accent-green)">턴 8~10: 마무리</strong></p>
+            <p>"역전 또는 확인사살"</p>
+            <p>HP 위기 시 스킬 발동률 +10%. 지구전 조합의 진가 발휘.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🔄 역할 상성 — 가위바위보</h3>
+        <div class="matchup">
+          <div class="matchup-node burst">
+            <div class="name">🚀 미사일</div>
+            <div class="desc">1~3턴 폭딜</div>
+          </div>
+          <div class="matchup-arrow">→ 이김 →</div>
+          <div class="matchup-node control">
+            <div class="name">🔮 CC 제어</div>
+            <div class="desc">행동 봉쇄</div>
+          </div>
+          <div class="matchup-arrow">→ 이김 →</div>
+          <div class="matchup-node sustain">
+            <div class="name">🛡️ 지구전</div>
+            <div class="desc">탱커+힐 버팀</div>
+          </div>
+          <div class="matchup-arrow">→ 이김 →</div>
+          <div class="matchup-node burst">
+            <div class="name">🚀 미사일</div>
+            <div class="desc">(순환)</div>
+          </div>
+        </div>
+        <div class="highlight-box">
+          <p><strong>미사일 > CC:</strong> 빠른 딜이 CC 발동 전에 적을 처리</p>
+          <p><strong>CC > 지구전:</strong> 스턴/침묵으로 힐러를 봉쇄하면 탱커도 무너짐</p>
+          <p><strong>지구전 > 미사일:</strong> 탱커가 초반 폭딜을 흡수하면 미사일은 후속타 없음</p>
+          <p>→ <strong>"무조건 최강 조합"이 없다.</strong> 적 조합을 보고 카운터를 짜는 것이 핵심.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>📈 능력치 (7대 스탯)</h3>
+        <table class="tbl">
+          <tr>
+            <th>스탯</th>
+            <th>약칭</th>
+            <th>역할</th>
+          </tr>
+          <tr>
+            <td>공격력</td>
+            <td>ATK</td>
+            <td>딜의 기본</td>
+          </tr>
+          <tr>
+            <td>방어력</td>
+            <td>DEF</td>
+            <td>피해 감소</td>
+          </tr>
+          <tr>
+            <td>체력</td>
+            <td>HP</td>
+            <td>생존력 (웨이브 간 유지)</td>
+          </tr>
+          <tr>
+            <td>속도</td>
+            <td>SPD</td>
+            <td>행동 순서 — 높을수록 먼저 행동 (선공 결정)</td>
+          </tr>
+          <tr>
+            <td>치명타</td>
+            <td>CRI/CRD</td>
+            <td>폭딜 잠재력</td>
+          </tr>
+          <tr>
+            <td>저항</td>
+            <td>RES</td>
+            <td>CC/디버프 저항</td>
+          </tr>
+          <tr>
+            <td>마력</td>
+            <td>MP</td>
+            <td>스킬 자원 관리</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 4. CHARACTERS ══ -->
+    <div class="section" id="characters">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(155,111,217,0.12)">👤</div>
+        <h2>캐릭터 분류</h2>
+        <span class="tag">395명</span>
+      </div>
+
+      <div class="card">
+        <h3>⚔️ 5대 역할</h3>
+        <table class="tbl">
+          <tr>
+            <th>역할</th>
+            <th>GE 베이스</th>
+            <th>핵심 스탯</th>
+            <th>전투 내 역할</th>
+          </tr>
+          <tr>
+            <td>⚔️ <strong>전사</strong></td>
+            <td>파이터, 검사 계열</td>
+            <td>ATK, HP, DEF</td>
+            <td>전열 딜러, 준탱커</td>
+          </tr>
+          <tr>
+            <td>🔫 <strong>사수</strong></td>
+            <td>머스킷티어, 총사</td>
+            <td>ATK, SPD, CRI</td>
+            <td>후열 화력. 미사일 핵심</td>
+          </tr>
+          <tr>
+            <td>🔮 <strong>마법사</strong></td>
+            <td>워록, 위자드</td>
+            <td>ATK(마법), 속성</td>
+            <td>범위 딜, CC. 속성전 핵심</td>
+          </tr>
+          <tr>
+            <td>💚 <strong>치유사</strong></td>
+            <td>스카우트, 사제</td>
+            <td>HP회복, RES</td>
+            <td>힐, 정화, 버프. 지구전 핵심</td>
+          </tr>
+          <tr>
+            <td>⚡ <strong>특수</strong></td>
+            <td>무투가, 암살, 소환</td>
+            <td>다양</td>
+            <td>암살(선공 1킬), CC, 소환</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>⭐ 4단계 등급</h3>
+        <table class="tbl">
+          <tr>
+            <th>등급</th>
+            <th>비율</th>
+            <th>GE 기준</th>
+            <th>특징</th>
+          </tr>
+          <tr>
+            <td><span class="badge badge-gold">★★★★★ 전설</span></td>
+            <td>~5%</td>
+            <td>원작 핵심 인물</td>
+            <td>고유 스킬 극강, 획득 어려움</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-purple">★★★★ 레어</span></td>
+            <td>~15%</td>
+            <td>원작 네임드</td>
+            <td>특화된 강점, 조건부 강함</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-blue">★★★ 고급</span></td>
+            <td>~35%</td>
+            <td>원작 영입 캐릭터</td>
+            <td>안정적 성능, 범용적</td>
+          </tr>
+          <tr>
+            <td><span class="badge badge-green">★★ 일반</span></td>
+            <td>~45%</td>
+            <td>기본 클래스/NPC</td>
+            <td>쉽게 구함, 육성으로 성장</td>
+          </tr>
+        </table>
+        <div class="highlight-box">
+          <p><strong>핵심: "일반도 ★5까지 키우면 레어와 싸울 수 있다"</strong></p>
+          <p>스킬 계승으로 일반 캐릭터에 강력한 스킬을 이식 가능. 등급 = 출발점의 차이, 천장의 차이가 아님.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>🎯 6대 스킬 카테고리</h3>
+        <div class="card-grid-3">
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <span class="badge badge-red">🗡️ 딜 — 단일/범위 피해</span>
+            <span class="badge badge-purple">🔒 CC — 행동 불가/약화</span>
+            <span class="badge badge-green">💚 힐 — HP 회복</span>
+            <span class="badge badge-orange">🔺 버프 — 아군 강화</span>
+            <span class="badge badge-blue">🔻 디버프 — 적 약화</span>
+            <span class="badge badge-gold">🛡️ 보호 — 도발/보호막</span>
+          </div>
+        </div>
+        <table class="tbl" style="margin-top:16px">
+          <tr>
+            <th>CC 종류</th>
+            <th>지속</th>
+            <th>효과</th>
+          </tr>
+          <tr>
+            <td>스턴</td>
+            <td>1턴</td>
+            <td>행동 불가</td>
+          </tr>
+          <tr>
+            <td>빙결</td>
+            <td>1~2턴</td>
+            <td>행동 불가 + DEF 감소</td>
+          </tr>
+          <tr>
+            <td>감전</td>
+            <td>2턴</td>
+            <td>매 턴 피해 + SPD 감소</td>
+          </tr>
+          <tr>
+            <td>침묵</td>
+            <td>2턴</td>
+            <td>스킬 사용 불가 (일반 공격만)</td>
+          </tr>
+          <tr>
+            <td>화상</td>
+            <td>3턴</td>
+            <td>매 턴 지속 피해 (DoT)</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 5. FACTIONS ══ -->
+    <div class="section" id="factions">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(217,138,74,0.12)">🏰</div>
+        <h2>NPC 라이벌 세력</h2>
+        <span class="tag">원작 GE 기반</span>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <h3><span class="faction-nocc">⚔️</span> NOCC</h3>
+          <p><span class="badge badge-red">지구전 + 탱커</span></p>
+          <p><strong>신대륙 질서 통제 위원회.</strong> 본국 베스파뇰라의 통제 기관. 개척 가문의 자유 활동을 규제.</p>
+          <p>🎭 관료적, 권위적 — "우리가 법이다"</p>
+          <p>📍 리볼도외 근교, 코임브라</p>
+          <p>💥 유저 갈등: 채굴권 허가제, 통행세 부과</p>
+        </div>
+        <div class="card">
+          <h3><span class="faction-noble">🦊</span> 십인 귀족</h3>
+          <p><span class="badge badge-orange">디버프 + 경제전</span></p>
+          <p><strong>Los Diez Nobles.</strong> 몬토로, 에르난데즈 등 경제 지배층. 표면적 우호, 배후 음모.</p>
+          <p>🎭 교활, 계산적 — "정보가 곧 힘"</p>
+          <p>📍 바이런(루치페르 성), 코임브라 항구</p>
+          <p>💥 유저 갈등: 교역 수수료, 배신 높음</p>
+        </div>
+        <div class="card">
+          <h3><span class="faction-auch">📚</span> 오슈 학파</h3>
+          <p><span class="badge badge-purple">속성 마법 + CC</span></p>
+          <p><strong>Auch Academy.</strong> 마법과 학문의 도시. 고대 유적 연구에 몰두, 연구 자원 독점.</p>
+          <p>🎭 오만, 지적 — "무식한 개척자들"</p>
+          <p>📍 오슈, 빙마의 탑</p>
+          <p>💥 유저 갈등: 연구 지역 접근 제한</p>
+        </div>
+        <div class="card">
+          <h3><span class="faction-baron">🗡️</span> 버론</h3>
+          <p><span class="badge"
+              style="background:rgba(255,255,255,0.08);color:var(--text);border:1px solid var(--border)">속도 + 암살</span>
+          </p>
+          <p><strong>Los Barón.</strong> 무법자·해적·용병 연합. 커트(디트리히) 우두머리. 때로는 동맹 가능!</p>
+          <p>🎭 음험, 기회주의 — "약한 놈은 빼앗긴다"</p>
+          <p>📍 퀸즈게이트, 페루초</p>
+          <p>💥 유저 갈등: 교역로 습격, 약탈</p>
+        </div>
+        <div class="card">
+          <h3><span class="faction-bristia">🛡️</span> 브리스티아 원정군</h3>
+          <p><span class="badge badge-blue">미사일 + 속도</span></p>
+          <p><strong>Bristia Expeditionary Force.</strong> 독립을 꿈꾸는 북방 섬나라. 정의감 있지만 완고.</p>
+          <p>🎭 정의감, 완고 — "자유를 위해 싸운다"</p>
+          <p>📍 바하마르, 에라크</p>
+          <p>💥 유저 갈등: 자원 경쟁 (미워하기 어려운 적)</p>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px">
+        <h3>🔗 세력 간 관계도</h3>
+        <div class="flow-box">NOCC ──적대── 버론
+          │ │
+          우호 경쟁
+          │ │
+          십인 귀족 브리스티아 원정군
+          │ │
+          └──경쟁── 오슈 학파 ◀┘
+
+          → "적의 적은 친구" 외교 전략 필요
+          → 유저가 한 세력과 싸우면, 그 세력의 적이 우호적으로</div>
+      </div>
+    </div>
+
+    <!-- ══ 6. WAR ══ -->
+    <div class="section" id="war">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(217,74,92,0.12)">🔥</div>
+        <h2>거점전 — 공격과 수비</h2>
+        <span class="tag">콜로니전 기반</span>
+      </div>
+
+      <div class="card">
+        <h3>⚔️ 핵심: 동시에 공격하고 수비해야 한다</h3>
+        <div class="flow-box">[공격팀] — 적 세력의 거점을 공략하러 출격
+          A파티(미사일): 버론 거점 기습
+          B파티(속성): 오슈 학파 전초기지
+
+          [수비팀] — 내 거점을 지키는 주둔군
+          C파티(지구전): 리볼도외 수비
+          D파티(디버프): 코임브라 수비
+
+          [토벌팀] — 자원 파밍 진행
+          E파티: 퀸즈게이트 토벌
+
+          → 최소 5팀(15명)이 동시에 필요!
+          → 캐릭터가 부족하면 수비를 비우거나 토벌 포기
+          → 더 영입하고, 더 육성해야 한다</div>
+      </div>
+
+      <div class="card">
+        <h3>📅 세력전 3계층 (원작 콜로니전 변형)</h3>
+        <table class="tbl">
+          <tr>
+            <th>계층</th>
+            <th>주기</th>
+            <th>규모</th>
+            <th>성격</th>
+            <th>핵심 보상</th>
+          </tr>
+          <tr>
+            <td><strong>주간전</strong></td>
+            <td>매주 토요일</td>
+            <td>1~2 거점</td>
+            <td>일상적 국경 분쟁</td>
+            <td>훈장, 채굴권 갱신</td>
+          </tr>
+          <tr>
+            <td><strong>월간전</strong></td>
+            <td>매월 마지막 주</td>
+            <td>3~5 거점 (지역 단위)</td>
+            <td>세력 판도 변경</td>
+            <td>전설 서찰, 포로 기회</td>
+          </tr>
+          <tr>
+            <td><strong>시즌전</strong></td>
+            <td>분기 (3개월)</td>
+            <td>신대륙 전역</td>
+            <td>대전쟁 — 최종 콘텐츠</td>
+            <td>시즌 한정 전설 캐릭터</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>🏆 포로 시스템</h3>
+        <p>거점 공략 <strong>대승리(SSS)</strong> 시 적 세력 캐릭터를 포로로 획득!</p>
+        <table class="tbl">
+          <tr>
+            <th>선택지</th>
+            <th>효과</th>
+          </tr>
+          <tr>
+            <td><strong>가문에 편입</strong></td>
+            <td>전력 추가. 단, 충성도 30에서 시작 (탈주 위험)</td>
+          </tr>
+          <tr>
+            <td><strong>석방</strong></td>
+            <td>해당 세력 우호도 +30 (외교적 이득)</td>
+          </tr>
+          <tr>
+            <td><strong>분해</strong></td>
+            <td>스킬/재료 확보 (외교적 불이익)</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 7. RAID ══ -->
+    <div class="section" id="raid">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(74,144,217,0.12)">🗡️</div>
+        <h2>토벌 시스템</h2>
+        <span class="tag">PvE 재료 수급</span>
+      </div>
+
+      <div class="card">
+        <h3>🎯 토벌의 목적</h3>
+        <table class="tbl">
+          <tr>
+            <th>비교</th>
+            <th>토벌 (PvE)</th>
+            <th>거점전 (PvF)</th>
+          </tr>
+          <tr>
+            <td>적</td>
+            <td>몬스터/보스 + 인간 적 파티</td>
+            <td>NPC 세력 정예</td>
+          </tr>
+          <tr>
+            <td>목적</td>
+            <td>재료·소재 수급</td>
+            <td>영토·이권 쟁탈</td>
+          </tr>
+          <tr>
+            <td>성격</td>
+            <td>일 (노동) — "밭 가는 것"</td>
+            <td>전쟁 — "영주가 싸우는 것"</td>
+          </tr>
+          <tr>
+            <td>반복성</td>
+            <td>높음 (효율 루틴화)</td>
+            <td>낮음 (매번 다른 전개)</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>⚙️ 피로도 시스템</h3>
+        <p>각 캐릭터별 <strong>최대 피로도 100</strong>. 레이드 참여 시 턴 수에 비례하여 소모.</p>
+        <table class="tbl">
+          <tr>
+            <th>조합</th>
+            <th>총 전투 턴</th>
+            <th>피로도 소모</th>
+            <th>효율</th>
+          </tr>
+          <tr>
+            <td>미사일 (빠른 클리어)</td>
+            <td>12턴</td>
+            <td>17</td>
+            <td>★★★★★</td>
+          </tr>
+          <tr>
+            <td>일반 조합</td>
+            <td>20턴</td>
+            <td>25</td>
+            <td>★★★</td>
+          </tr>
+          <tr>
+            <td>지구전 (안전 클리어)</td>
+            <td>28턴</td>
+            <td>33</td>
+            <td>★★</td>
+          </tr>
+        </table>
+        <p style="margin-top:12px;color:var(--text-dim);font-size:13px">→ 미사일은 효율적이지만 위험. 지구전은 안전하지만 비효율.
+          <strong>트레이드오프</strong>가 전략.</p>
+      </div>
+    </div>
+
+    <!-- ══ 8. BARRACKS ══ -->
+    <div class="section" id="barracks">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(78,204,163,0.12)">🏠</div>
+        <h2>배럭 라이프</h2>
+        <span class="tag">캐릭터 관리</span>
+      </div>
+
+      <div class="card">
+        <h3>🏡 배럭의 역할</h3>
+        <p>전투 밖에서 캐릭터들이 생활하는 공간. <strong>풋볼매니저의 훈련장</strong>에 해당.</p>
+        <table class="tbl">
+          <tr>
+            <th>시스템</th>
+            <th>설명</th>
+            <th>전투 연동</th>
+          </tr>
+          <tr>
+            <td><strong>자원 생산</strong></td>
+            <td>식량, 소재, 비스 생산</td>
+            <td>전쟁 전 보급품 비축</td>
+          </tr>
+          <tr>
+            <td><strong>시설 업그레이드</strong></td>
+            <td>훈련장, 연구소, 대장간</td>
+            <td>캐릭터 스탯 보너스</td>
+          </tr>
+          <tr>
+            <td><strong>생활 직업</strong></td>
+            <td>채광, 요리, 제련 등</td>
+            <td>전투 소모품 제작</td>
+          </tr>
+          <tr>
+            <td><strong>피로도 회복</strong></td>
+            <td>배럭 배치 시 가속 회복</td>
+            <td>출전 가능 인원 관리</td>
+          </tr>
+          <tr>
+            <td><strong>관계/충성도</strong></td>
+            <td>캐릭터 간 인연, 충성도</td>
+            <td>시너지 보너스, 탈주 방지</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══ 9. GACHA ══ -->
+    <div class="section" id="gacha">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(212,168,67,0.12)">🎰</div>
+        <h2>뽑기 & 성장 시스템</h2>
+        <span class="tag">수익 모델</span>
+      </div>
+
+      <div class="card">
+        <h3>🃏 카드(캐릭터) 활용도 — "헛뽑은 없다"</h3>
+        <p>삼국지전략판처럼, 뽑은 캐릭터는 <strong>무조건 쓸모가 있다</strong>. 어떤 카드를 뽑아도 5가지 중 하나로 활용 가능.</p>
+        <table class="tbl">
+          <tr><th>활용 방법</th><th>설명</th><th>삼전 비교</th></tr>
+          <tr><td>① <strong>전투 투입</strong></td><td>MCC에 편성하여 직접 활약</td><td>무장 편성</td></tr>
+          <tr><td>② <strong>성급(★) 돌파</strong></td><td>동일 캐릭터를 합쳐서 ★ 상승 (★1→★5)</td><td>무장 돌파</td></tr>
+          <tr><td>③ <strong>분해 → 스킬 추출</strong></td><td>캐릭터를 갈아서 고유 스킬 추출. 다른 캐릭터에 장착!</td><td>전법 계승 (핵심!)</td></tr>
+          <tr><td>④ <strong>배럭 내정</strong></td><td>전투 대신 배럭에서 채광/요리/제련 등 자원 생산</td><td>내정관 배치</td></tr>
+          <tr><td>⑤ <strong>분해 → 재료</strong></td><td>범용 성급석, 비스(화폐), 도감 포인트 획득</td><td>무장 은퇴/분해</td></tr>
+        </table>
+        <div class="highlight-box" style="margin-top:16px">
+          <p>🔥 <strong>③ 스킬 추출이 핵심 과금 동력!</strong></p>
+          <p>S급 스킬 "성역의 기도"를 MCC 3명에게 모두 달려면 → 에밀리아 <strong>3장 분해</strong> 필요.</p>
+          <p>에밀리아 본인도 ★5로 키우려면 +7장. → 총 <strong>10장 이상</strong> 뽑아야!</p>
+          <p>삼전의 전법 계승과 동일 구조: "좋은 스킬은 항상 부족하다"</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>⚔️ 스킬 계승 시스템 — 삼전의 전법 계승</h3>
+        <table class="tbl">
+          <tr><th>가치</th><th>스킬 예시</th><th>소스 캐릭터</th><th>수요</th></tr>
+          <tr><td><span class="badge badge-gold">S 필수</span></td><td>성역의 기도 (범위 힐)</td><td>에밀리아 (전설)</td><td>★★★★★</td></tr>
+          <tr><td><span class="badge badge-gold">S 필수</span></td><td>무쌍 집중 (ATK +40%)</td><td>그라시엘로 (영웅)</td><td>★★★★★</td></tr>
+          <tr><td><span class="badge badge-purple">A 핵심</span></td><td>도발 방벽 (3턴 도발)</td><td>다리아 (레어)</td><td>★★★★</td></tr>
+          <tr><td><span class="badge badge-blue">B 유용</span></td><td>회피 직감 (EVD +20%)</td><td>리사 (레어)</td><td>★★★</td></tr>
+          <tr><td><span class="badge badge-green">C 보통</span></td><td>기본 강화 (ATK +5%)</td><td>파이터 (일반)</td><td>★★</td></tr>
+        </table>
+        <div class="flow-box">캐릭터 획득 → 고민의 순간:
+
+  "에밀리아 2번째 뽑았다!"
+     ├─ ★3 돌파에 쓸까?     → 보조 스킬 해금
+     ├─ 갈아서 스킬 만들까?  → "성역의 기도" 추출
+     └─ 배럭 군의관 시킬까?  → 피로 회복 가속
+
+  → 정답이 없다. 상황마다 최적 선택이 바뀐다.
+  → 이 고민이 게임의 깊이이자 과금 동기.</div>
+      </div>
+
+      <div class="card">
+        <h3>📦 소환 시스템</h3>
+        <table class="tbl">
+          <tr>
+            <th>티어</th>
+            <th>확률</th>
+            <th>천장</th>
+          </tr>
+          <tr>
+            <td>★★★★★ 전설</td>
+            <td>1.5%</td>
+            <td>80연차 보장</td>
+          </tr>
+          <tr>
+            <td>★★★★ 레어</td>
+            <td>8%</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>★★★ 고급</td>
+            <td>35%</td>
+            <td>—</td>
+          </tr>
+          <tr>
+            <td>★★ 일반</td>
+            <td>55.5%</td>
+            <td>—</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="card">
+        <h3>📈 성장 경로</h3>
+        <table class="tbl">
+          <tr>
+            <th>시스템</th>
+            <th>설명</th>
+            <th>과금 동력</th>
+          </tr>
+          <tr>
+            <td><strong>성급 업</strong></td>
+            <td>★2 → ★5 (동일 캐릭터 / 범용 재료)</td>
+            <td>중첩 뽑기</td>
+          </tr>
+          <tr>
+            <td><strong>스킬 계승</strong></td>
+            <td>다른 캐릭터의 스킬을 이식 (★4+)</td>
+            <td>핵심 과금 동력</td>
+          </tr>
+          <tr>
+            <td><strong>각성</strong></td>
+            <td>★5 이후 특수 소재로 초월 성장</td>
+            <td>엔드게임 과금</td>
+          </tr>
+        </table>
+        <div class="highlight-box" style="margin-top:16px">
+          <p><strong>감정적 과금 시나리오:</strong></p>
+          <p>"NOCC 블러드 네이비가 지구전 조합으로 공격해왔다 → 힐러를 무력화할 디버프 캐릭터가 필요 → 마침 헬레나 픽업 배너가 떠 있다 → 뽑아야겠다!"</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ FOOTER ══ -->
+  <div class="footer">
+    <p>GE: 개척시대 — Game Design Document v0.3</p>
+    <p style="margin-top:4px">© 2026 IMC Games · 내부 기밀 자료 · 무단 배포 금지</p>
+  </div>
+
+  <script>
+    // ── Scroll spy for nav ──
+    const navItems = document.querySelectorAll('.nav-item');
+    const sections = document.querySelectorAll('.section');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const top = section.offsetTop - 80;
+        if (window.scrollY >= top) current = section.id;
+      });
+      navItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('href') === '#' + current) item.classList.add('active');
+      });
+    });
+
+    // ── Smooth scroll ──
+    navItems.forEach(item => {
+      item.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(item.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+      });
+    });
+  </script>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAshoIjc2zUws3LH6zhOSqG_ba8RMY1o6I",
+      authDomain: "granado-afk-schedule.firebaseapp.com",
+      projectId: "granado-afk-schedule",
+      databaseURL: "https://granado-afk-schedule-default-rtdb.firebaseio.com",
+      storageBucket: "granado-afk-schedule.firebasestorage.app",
+      messagingSenderId: "152008333815",
+      appId: "1:152008333815:web:6d09a24a3709228c3736f2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Get saved author name
+    let savedAuthor = localStorage.getItem('gdd_comment_author') || '';
+
+    // Add comment UI to each section and each card
+    document.querySelectorAll('.section').forEach(section => {
+      const sectionId = section.id;
+      if (!sectionId) return;
+
+      // Add comment to each card within section
+      const cards = section.querySelectorAll('.card');
+      cards.forEach((card, cardIdx) => {
+        const commentId = sectionId + '_card_' + cardIdx;
+        const h3 = card.querySelector('h3');
+        const cardTitle = h3 ? h3.textContent.trim().substring(0, 30) : 'card_' + cardIdx;
+
+        // Create comment toggle button
+        const toggle = document.createElement('div');
+        toggle.className = 'comment-toggle';
+        toggle.innerHTML = '💬 코멘트 <span class="count" data-comment-id="' + commentId + '">0</span>';
+
+        // Create comment area
+        const area = document.createElement('div');
+        area.className = 'comment-area';
+        area.innerHTML = `
+          <div class="comment-list" id="comments-${commentId}">
+            <div class="comment-empty">아직 코멘트가 없습니다</div>
+          </div>
+          <div class="comment-author-bar">
+            <input type="text" placeholder="이름" class="author-input" value="${savedAuthor}">
+          </div>
+          <div class="comment-input-row">
+            <input type="text" placeholder="코멘트를 입력하세요..." class="comment-text-input">
+            <button class="comment-submit">등록</button>
+          </div>
+        `;
+
+        card.appendChild(toggle);
+        card.appendChild(area);
+
+        // Toggle click
+        toggle.addEventListener('click', () => {
+          area.classList.toggle('open');
+        });
+
+        // Submit comment
+        const submitBtn = area.querySelector('.comment-submit');
+        const textInput = area.querySelector('.comment-text-input');
+        const authorInput = area.querySelector('.author-input');
+
+        const submitComment = () => {
+          const text = textInput.value.trim();
+          const author = authorInput.value.trim() || '익명';
+          if (!text) return;
+
+          localStorage.setItem('gdd_comment_author', author);
+          savedAuthor = author;
+          // Update all author inputs
+          document.querySelectorAll('.author-input').forEach(inp => inp.value = author);
+
+          const commentsRef = ref(db, 'gdd_comments/' + commentId);
+          push(commentsRef, {
+            author: author,
+            text: text,
+            timestamp: Date.now()
+          });
+
+          textInput.value = '';
+        };
+
+        submitBtn.addEventListener('click', submitComment);
+        textInput.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') submitComment();
+        });
+
+        // Listen for comments
+        const commentsRef = ref(db, 'gdd_comments/' + commentId);
+        onValue(commentsRef, (snapshot) => {
+          const list = document.getElementById('comments-' + commentId);
+          const countEl = document.querySelector('[data-comment-id="' + commentId + '"]');
+          const data = snapshot.val();
+
+          if (!data) {
+            list.innerHTML = '<div class="comment-empty">아직 코멘트가 없습니다</div>';
+            countEl.textContent = '0';
+            return;
+          }
+
+          const entries = Object.entries(data).sort((a, b) => a[1].timestamp - b[1].timestamp);
+          countEl.textContent = entries.length;
+
+          list.innerHTML = entries.map(([key, val]) => {
+            const date = new Date(val.timestamp);
+            const timeStr = date.toLocaleDateString('ko-KR') + ' ' + date.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
+            return `<div class="comment-item">
+              <div class="comment-meta">
+                <span><span class="comment-author">${val.author}</span> · ${timeStr}</span>
+                <span class="comment-delete" data-key="${key}" data-cid="${commentId}">✕</span>
+              </div>
+              <div class="comment-text">${val.text}</div>
+            </div>`;
+          }).join('');
+
+          // Delete handlers
+          list.querySelectorAll('.comment-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const key = btn.dataset.key;
+              const cid = btn.dataset.cid;
+              if (confirm('이 코멘트를 삭제하시겠습니까?')) {
+                remove(ref(db, 'gdd_comments/' + cid + '/' + key));
+              }
+            });
+          });
+
+          // Auto scroll to bottom
+          list.scrollTop = list.scrollHeight;
+        });
+      });
+    });
+  </script>
+</body>
+
+</html>
