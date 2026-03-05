@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GE: 개척시대 — Game Design Document v0.3</title>
+  <title>GE: 개척시대 — Game Design Document v1.0</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
 
@@ -41,7 +41,7 @@
       min-height: 100vh;
     }
 
-    /* ── Hero ── */
+    /* Hero */
     .hero {
       background: linear-gradient(135deg, #0a0a0f 0%, #1a1028 40%, #0f1a2a 70%, #0a0a0f 100%);
       border-bottom: 1px solid var(--gold-dim);
@@ -132,7 +132,7 @@
       letter-spacing: 1px;
     }
 
-    /* ── Nav ── */
+    /* Tab Nav */
     .nav-bar {
       position: sticky;
       top: 0;
@@ -140,7 +140,7 @@
       background: rgba(10, 10, 15, 0.95);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--border);
-      padding: 0 24px;
+      padding: 0;
       display: flex;
       justify-content: center;
       gap: 0;
@@ -148,8 +148,8 @@
     }
 
     .nav-item {
-      padding: 14px 20px;
-      font-size: 13px;
+      padding: 14px 16px;
+      font-size: 12px;
       font-weight: 600;
       color: var(--text-dim);
       cursor: pointer;
@@ -165,14 +165,22 @@
       border-bottom-color: var(--gold);
     }
 
-    /* ── Container ── */
+    /* Tab content */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Container & Section */
     .container {
       max-width: 1100px;
       margin: 0 auto;
       padding: 40px 24px;
     }
 
-    /* ── Section ── */
     .section {
       margin-bottom: 64px;
       scroll-margin-top: 60px;
@@ -214,7 +222,7 @@
       font-weight: 700;
     }
 
-    /* ── Cards ── */
+    /* Cards */
     .card {
       background: var(--bg-card);
       border: 1px solid var(--border);
@@ -252,11 +260,11 @@
 
     .card-grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 16px;
     }
 
-    /* ── Tables ── */
+    /* Tables */
     .tbl {
       width: 100%;
       border-collapse: collapse;
@@ -285,7 +293,7 @@
       background: rgba(255, 255, 255, 0.02);
     }
 
-    /* ── Flow ── */
+    /* Flow box */
     .flow-box {
       background: rgba(0, 0, 0, 0.3);
       border: 1px solid var(--border);
@@ -299,7 +307,7 @@
       margin: 16px 0;
     }
 
-    /* ── Badges ── */
+    /* Badges */
     .badge {
       display: inline-flex;
       align-items: center;
@@ -346,7 +354,13 @@
       border: 1px solid rgba(217, 138, 74, 0.3);
     }
 
-    /* ── Highlight Box ── */
+    .badge-cyan {
+      background: rgba(74, 204, 217, 0.15);
+      color: var(--accent-cyan);
+      border: 1px solid rgba(74, 204, 217, 0.3);
+    }
+
+    /* Highlight box */
     .highlight-box {
       background: linear-gradient(135deg, rgba(212, 168, 67, 0.06), rgba(155, 111, 217, 0.06));
       border: 1px solid rgba(212, 168, 67, 0.2);
@@ -360,11 +374,21 @@
       border-color: rgba(217, 74, 92, 0.2);
     }
 
+    .highlight-box.green {
+      background: linear-gradient(135deg, rgba(78, 204, 163, 0.06), rgba(74, 144, 217, 0.06));
+      border-color: rgba(78, 204, 163, 0.2);
+    }
+
+    .highlight-box.blue {
+      background: linear-gradient(135deg, rgba(74, 144, 217, 0.06), rgba(155, 111, 217, 0.06));
+      border-color: rgba(74, 144, 217, 0.2);
+    }
+
     .highlight-box strong {
       color: var(--gold);
     }
 
-    /* ── Faction Colors ── */
+    /* Faction colors */
     .faction-nocc {
       color: var(--accent-red);
     }
@@ -385,7 +409,7 @@
       color: var(--accent-blue);
     }
 
-    /* ── Matchup Diagram ── */
+    /* Matchup */
     .matchup {
       display: flex;
       justify-content: center;
@@ -435,36 +459,77 @@
       border-color: var(--accent-green);
     }
 
-    /* ── Stat Bars ── */
-    .stat-row {
-      display: grid;
-      grid-template-columns: 60px 1fr;
+    /* Phase bar */
+    .phase-bar {
+      margin: 20px 0 12px;
+      padding: 12px 20px;
+      border-radius: 10px;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
+    }
+
+    .phase-bar.green {
+      background: rgba(78, 204, 163, 0.06);
+      border-left: 3px solid var(--accent-green);
+    }
+
+    .phase-bar.gold {
+      background: rgba(212, 168, 67, 0.06);
+      border-left: 3px solid var(--gold);
+    }
+
+    .phase-bar.red {
+      background: rgba(217, 74, 92, 0.06);
+      border-left: 3px solid var(--accent-red);
+    }
+
+    .phase-bar.blue {
+      background: rgba(74, 144, 217, 0.06);
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    .phase-bar.purple {
+      background: rgba(155, 111, 217, 0.06);
+      border-left: 3px solid var(--accent-purple);
+    }
+
+    /* Sub-tabs within a tab */
+    .sub-tabs {
+      display: flex;
       gap: 8px;
-      margin-bottom: 6px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
     }
 
-    .stat-label {
-      font-size: 11px;
-      font-weight: 700;
+    .sub-tab {
+      padding: 8px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
       color: var(--text-dim);
-      text-align: right;
     }
 
-    .stat-bar-bg {
-      height: 8px;
-      background: rgba(255, 255, 255, 0.06);
-      border-radius: 4px;
-      overflow: hidden;
+    .sub-tab:hover,
+    .sub-tab.active {
+      background: rgba(212, 168, 67, 0.12);
+      color: var(--gold);
+      border-color: var(--gold-dim);
     }
 
-    .stat-bar {
-      height: 100%;
-      border-radius: 4px;
-      background: linear-gradient(90deg, var(--gold-dim), var(--gold));
+    .sub-content {
+      display: none;
     }
 
-    /* ── Footer ── */
+    .sub-content.active {
+      display: block;
+    }
+
+    /* Footer */
     .footer {
       text-align: center;
       padding: 40px 24px;
@@ -473,8 +538,8 @@
       font-size: 12px;
     }
 
-    /* ── Responsive ── */
-    @media (max-width: 768px) {
+    /* Responsive */
+    @media (max-width:768px) {
       .hero h1 {
         font-size: 24px;
       }
@@ -495,592 +560,697 @@
       .summary-item {
         padding: 12px 16px;
       }
-    }
 
-    /* ── Comment System ── */
-    .comment-toggle {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-dim);
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 12px;
-    }
-    .comment-toggle:hover { color: var(--gold); border-color: var(--gold-dim); }
-    .comment-toggle .count { color: var(--gold); }
-
-    .comment-area {
-      display: none;
-      margin-top: 12px;
-      padding: 16px;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-    }
-    .comment-area.open { display: block; }
-
-    .comment-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 12px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
-
-    .comment-item {
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.03);
-      border-radius: 8px;
-      border-left: 3px solid var(--gold-dim);
-    }
-    .comment-item .comment-meta {
-      font-size: 11px;
-      color: var(--text-dim);
-      margin-bottom: 4px;
-      display: flex;
-      justify-content: space-between;
-    }
-    .comment-item .comment-meta .comment-author { color: var(--gold); font-weight: 700; }
-    .comment-item .comment-text { font-size: 13px; color: var(--text); line-height: 1.5; }
-    .comment-item .comment-delete {
-      font-size: 10px; color: var(--text-dim); cursor: pointer; opacity: 0.5;
-    }
-    .comment-item .comment-delete:hover { opacity: 1; color: var(--accent-red); }
-
-    .comment-input-row {
-      display: flex;
-      gap: 8px;
-    }
-    .comment-input-row input[type="text"] {
-      flex: 1;
-      padding: 10px 14px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text);
-      font-size: 13px;
-      font-family: 'Noto Sans KR', sans-serif;
-      outline: none;
-    }
-    .comment-input-row input[type="text"]:focus { border-color: var(--gold-dim); }
-    .comment-input-row input[type="text"]::placeholder { color: var(--text-dim); }
-    .comment-input-row button {
-      padding: 10px 20px;
-      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
-      color: var(--bg-dark);
-      border: none;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: 'Noto Sans KR', sans-serif;
-      white-space: nowrap;
-    }
-    .comment-input-row button:hover { opacity: 0.9; }
-
-    .comment-author-bar {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 8px;
-    }
-    .comment-author-bar input {
-      width: 120px;
-      padding: 6px 10px;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      color: var(--gold);
-      font-size: 12px;
-      font-family: 'Noto Sans KR', sans-serif;
-      outline: none;
-    }
-    .comment-author-bar input::placeholder { color: var(--text-dim); }
-    .comment-empty {
-      font-size: 12px;
-      color: var(--text-dim);
-      text-align: center;
-      padding: 16px;
+      .nav-item {
+        padding: 12px 10px;
+        font-size: 11px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-  <!-- ══ HERO ══ -->
+  <!-- HERO -->
   <div class="hero">
     <div class="hero-badge">CONFIDENTIAL</div>
     <h1><span>GE:</span> 개척시대</h1>
-    <div class="subtitle">Game Design Document — 캐릭터 매니지먼트 전략 RPG</div>
-    <div class="date">v0.3 · 2026.03.04 · 내부 공유용</div>
+    <div class="subtitle">Game Design Document — 가문 경영 전략 RPG</div>
+    <div class="date">v1.0 · 2026.03.05 · 내부 공유용</div>
     <div class="summary-bar">
-      <div class="summary-item"><span class="num">3:3</span><span class="label">기본 전투</span></div>
-      <div class="summary-item"><span class="num">10턴</span><span class="label">전투 라운드</span></div>
+      <div class="summary-item"><span class="num">3:3</span><span class="label">턴제 전투</span></div>
+      <div class="summary-item"><span class="num">12</span><span class="label">거점</span></div>
       <div class="summary-item"><span class="num">5</span><span class="label">NPC 세력</span></div>
       <div class="summary-item"><span class="num">395</span><span class="label">캐릭터 풀</span></div>
-      <div class="summary-item"><span class="num">18</span><span class="label">영지</span></div>
+      <div class="summary-item"><span class="num">8</span><span class="label">생활 직업</span></div>
+      <div class="summary-item"><span class="num">3</span><span class="label">화폐 체계</span></div>
     </div>
   </div>
 
-  <!-- ══ NAV ══ -->
+  <!-- NAV TABS -->
   <div class="nav-bar">
-    <a class="nav-item active" href="#overview">📋 개요</a>
-    <a class="nav-item" href="#play">🗺️ 플레이 구조</a>
-    <a class="nav-item" href="#combat">⚔️ 전투 시스템</a>
-    <a class="nav-item" href="#characters">👤 캐릭터 분류</a>
-    <a class="nav-item" href="#factions">🏰 NPC 세력</a>
-    <a class="nav-item" href="#war">🔥 거점전</a>
-    <a class="nav-item" href="#raid">🗡️ 토벌</a>
-    <a class="nav-item" href="#barracks">🏠 배럭 라이프</a>
-    <a class="nav-item" href="#gacha">🎰 뽑기/성장</a>
+    <a class="nav-item active" data-tab="overview">📋 개요</a>
+    <a class="nav-item" data-tab="field">🗺️ 필드탐색</a>
+    <a class="nav-item" data-tab="combat">⚔️ 전투</a>
+    <a class="nav-item" data-tab="characters">👤 캐릭터</a>
+    <a class="nav-item" data-tab="barracks">🏠 배럭라이프</a>
+    <a class="nav-item" data-tab="relationship">💞 관계</a>
+    <a class="nav-item" data-tab="factions">🏰 세력전</a>
+    <a class="nav-item" data-tab="raid">🗡️ 토벌</a>
+    <a class="nav-item" data-tab="economy">💰 경제</a>
+    <a class="nav-item" data-tab="gacha">🎰 뽑기/성장</a>
+    <a class="nav-item" data-tab="ui">📱 UI/온보딩</a>
+    <a class="nav-item" data-tab="journey">🗺️ 여정</a>
+    <a class="nav-item" data-tab="fun">🎮 재미기둥</a>
+    <a class="nav-item" data-tab="dilemma">⚖️ 딜레마</a>
+    <a class="nav-item" data-tab="emotion">💔 감정</a>
+    <a class="nav-item" data-tab="pacing">⏱ 페이싱</a>
   </div>
 
-  <div class="container">
-
-    <!-- ══ 1. OVERVIEW ══ -->
-    <div class="section" id="overview">
-      <div class="section-header">
-        <div class="section-icon" style="background:rgba(212,168,67,0.12)">📋</div>
-        <h2>게임 개요</h2>
-        <span class="tag">CORE CONCEPT</span>
-      </div>
-
-      <div class="highlight-box">
-        <p><strong>장르:</strong> 캐릭터 매니지먼트 전략 RPG (풋볼매니저 × 삼국지전략판 × GE IP)</p>
-        <p><strong>핵심 컨셉:</strong> GE 원작의 395명 캐릭터를 영입·육성·편성하여 신대륙에서 세력을 확장하는 전략 게임.</p>
-        <p><strong>배경:</strong> 레콩키스타 시대(1522~) — 3년 전쟁 이후 신대륙 개척 경쟁이 격화된 시기.</p>
-      </div>
-
-      <div class="card">
-        <h3>🎯 핵심 설계 원칙</h3>
-        <table class="tbl">
-          <tr>
-            <th>원칙</th>
-            <th>설명</th>
-          </tr>
-          <tr>
-            <td><strong>전투의 기본은 인간 3:3</strong></td>
-            <td>몬스터는 재료 관문. 진짜 전투는 인간 파티와의 3:3 전략전.</td>
-          </tr>
-          <tr>
-            <td><strong>레벨 깡패 없음</strong></td>
-            <td>조합·상성·시너지가 승패를 결정. 약해도 상성 좋으면 이긴다.</td>
-          </tr>
-          <tr>
-            <td><strong>캐릭터는 항상 부족</strong></td>
-            <td>공격 + 수비 + 토벌을 동시에 → 더 영입하고, 더 육성해야.</td>
-          </tr>
-          <tr>
-            <td><strong>감정적 과금</strong></td>
-            <td>"저 세력을 꺾으려면 이 캐릭터가 필요" → 전략적 필요에 의한 과금.</td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="card">
-        <h3>🔄 코어 루프</h3>
-        <div class="flow-box">캐릭터 영입(뽑기) → 육성/편성 → 토벌(재료 수급) → 거점전(영토 확장)
-          ↑ ↓
-          └──── 더 많은 캐릭터 필요! ←── 지킬 영토가 늘어남 ←──┘</div>
-      </div>
-    </div>
-
-    <!-- ══ 2. PLAY STRUCTURE ══ -->
-    <div class="section" id="play">
-      <div class="section-header">
-        <div class="section-icon" style="background:rgba(78,204,163,0.12)">🗺️</div>
-        <h2>기본 플레이 구조</h2>
-        <span class="tag">PLAY STRUCTURE</span>
-      </div>
-
-      <div class="card">
-        <h3>🗺️ 필드 탐색 시스템 — 히어로즈 스타일</h3>
-        <p>GE 원작 월드맵을 그대로 활용. 영지와 영지 사이를 <strong>칸(타일)</strong> 단위로 이동하며, 이동 중 적과 랜덤 조우.</p>
-
-        <div class="highlight-box" style="margin-bottom:16px">
-          <p>🎮 <strong>핵심 루프</strong>: 배럭 출발 → 칸 이동(피로↓) → 랜덤 조우(3:3 전투) → 영지 도착 → 보스전/거점 함락 → 점령 → 다음 영지</p>
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TAB: 개요 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="tab-content active" id="tab-overview">
+    <div class="container">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(212,168,67,0.12)">📋</div>
+          <h2>게임 개요</h2>
+          <span class="tag">CORE CONCEPT</span>
         </div>
 
-        <table class="tbl">
-          <tr><th>요소</th><th>설명</th><th>수치</th></tr>
-          <tr><td>🚶 <strong>칸 이동</strong></td><td>영지 간 포인트 이동. 1칸 = 1이동</td><td>초반 2~3칸 / 후반 4~5칸</td></tr>
-          <tr><td>💤 <strong>피로도</strong></td><td>1칸 이동 시 소모. 0이면 이동 불가</td><td>초반 5%/칸 → 후반 10%/칸</td></tr>
-          <tr><td>⚔️ <strong>랜덤 조우</strong></td><td>이동 중 확률적 적 만남. 3:3 턴제!</td><td>초반 30% → 후반 50%</td></tr>
-          <tr><td>🏰 <strong>거점 함락</strong></td><td>NPC 세력 거점. 함락 후 점령/수비</td><td>1~3분대 투입</td></tr>
-          <tr><td>🐉 <strong>토벌전</strong></td><td>영지 보스 처치</td><td>보스 난이도 점진 증가</td></tr>
-        </table>
-
-        <!-- 초반 -->
-        <div style="margin:20px 0 12px;padding:12px 20px;border-radius:10px;background:rgba(78,204,163,0.06);border-left:3px solid var(--accent-green)">
-          <strong style="color:var(--accent-green)">📗 초반 (R01~R06) — 1분대 (MCC 1팀)</strong>
-          <span style="float:right;font-size:12px;color:var(--text-dim)">피로 5%/칸 · 조우 30%</span>
-        </div>
-        <table class="tbl">
-          <tr><th>#</th><th>영지</th><th>유형</th><th>거리</th><th>충돌 세력</th><th>비고</th></tr>
-          <tr><td>01</td><td><strong>퀸즈게이트</strong></td><td>🏪 교역 도시</td><td>—</td><td>—</td><td>🏠 시작 거점</td></tr>
-          <tr><td>02</td><td><strong>패루초 삼거리</strong></td><td>🏰 거점 함락</td><td>3칸</td><td class="faction-baron">🗡️ 버론</td><td>첫 거점전</td></tr>
-          <tr><td>03</td><td><strong>AQM</strong></td><td>🐉 토벌전</td><td>2칸</td><td>산적단</td><td>독안개 환경</td></tr>
-          <tr><td>04</td><td><strong>왕들의 정원</strong></td><td>💚 휴식+토벌</td><td>3칸</td><td class="faction-noble">🦊 십인 귀족</td><td>회복 지형</td></tr>
-          <tr><td>05</td><td><strong>테트라 유적</strong></td><td>⚔️ 레이드 입구</td><td>2칸</td><td class="faction-nocc">⚔️ NOCC</td><td>첫 레이드</td></tr>
-          <tr><td>06</td><td><strong>코임브라</strong></td><td>🏰 거점 함락</td><td>3칸</td><td class="faction-nocc">⚔️ NOCC</td><td>첫 주요 거점</td></tr>
-        </table>
-
-        <!-- 중반 -->
-        <div style="margin:20px 0 12px;padding:12px 20px;border-radius:10px;background:rgba(212,168,67,0.06);border-left:3px solid var(--gold)">
-          <strong style="color:var(--gold)">📙 중반 (R07~R12) — 2~3분대 (MCC 2~3팀)</strong>
-          <span style="float:right;font-size:12px;color:var(--text-dim)">피로 7%/칸 · 조우 40%</span>
-        </div>
-        <table class="tbl">
-          <tr><th>#</th><th>영지</th><th>유형</th><th>거리</th><th>충돌 세력</th><th>비고</th></tr>
-          <tr><td>07</td><td><strong>지저벨 협곡</strong></td><td>🏰 거점 함락</td><td>4칸</td><td class="faction-baron">🗡️ 버론</td><td>⚠️ 3분대 해금!</td></tr>
-          <tr><td>08</td><td><strong>포르토벨로</strong></td><td>🏰 거점 함락</td><td>3칸</td><td class="faction-baron">🗡️ 버론</td><td>해적 본거지</td></tr>
-          <tr><td>09</td><td><strong>버려진 부두</strong></td><td>🐉 토벌전</td><td>3칸</td><td>용병단</td><td>용병 고용 가능</td></tr>
-          <tr><td>10</td><td><strong>토르쉐 저택</strong></td><td>🐉 토벌전</td><td>4칸</td><td class="faction-noble">🦊 십인 귀족</td><td>귀족 거점</td></tr>
-          <tr><td>11</td><td><strong>보나비스타</strong></td><td>🏪 교역 도시</td><td>3칸</td><td>용병단</td><td>속도전 지형</td></tr>
-          <tr><td>12</td><td><strong>튜링엔 숲</strong></td><td>⚔️ 레이드 입구</td><td>4칸</td><td class="faction-auch">📚 오슈 학파</td><td>오슈 영역 진입</td></tr>
-        </table>
-
-        <!-- 후반 -->
-        <div style="margin:20px 0 12px;padding:12px 20px;border-radius:10px;background:rgba(217,74,92,0.06);border-left:3px solid var(--accent-red)">
-          <strong style="color:var(--accent-red)">📕 후반 (R13~R18) — 3분대 필수 (MCC 3팀)</strong>
-          <span style="float:right;font-size:12px;color:var(--text-dim)">피로 10%/칸 · 조우 50%</span>
-        </div>
-        <table class="tbl">
-          <tr><th>#</th><th>영지</th><th>유형</th><th>거리</th><th>충돌 세력</th><th>비고</th></tr>
-          <tr><td>13</td><td><strong>자캥 분화구</strong></td><td>⚔️ 레이드 입구</td><td>5칸</td><td class="faction-auch">📚 오슈 학파</td><td>용암 지형</td></tr>
-          <tr><td>14</td><td><strong>자캥 수용소</strong></td><td>🏰 거점 함락</td><td>4칸</td><td>암살자 길드</td><td>암살자 영역</td></tr>
-          <tr><td>15</td><td><strong>토플로 두르가</strong></td><td>🏰 거점 함락</td><td>5칸</td><td class="faction-bristia">🛡️ 브리스티아</td><td>원정군 최전방</td></tr>
-          <tr><td>16</td><td><strong>캐피바라 농원</strong></td><td>💚 휴식+교역</td><td>4칸</td><td class="faction-bristia">🛡️ 브리스티아</td><td>보급기지</td></tr>
-          <tr><td>17</td><td><strong>패루초 방벽</strong></td><td>🐉 토벌전</td><td>5칸</td><td>원정 정찰대</td><td>극한 난이도</td></tr>
-          <tr><td>18</td><td><strong>빙마탑</strong></td><td>⚔️ 최종 레이드</td><td>5칸</td><td class="faction-auch">📚 오슈 학파</td><td>⚠️ 최종 보스</td></tr>
-        </table>
-
-        <div class="highlight-box" style="margin-top:16px">
-          <p>🗺️ <strong>GE 원작 월드맵</strong> 구조를 그대로 활용 — 영지 간 분기/갈림길 포함</p>
-          <p>💤 피로도 ↔ 배럭 라이프(군의관/요리사) 연동 — <strong>전투 밖에서도 전략적 판단</strong> 필요</p>
-          <p>🎲 후반부 이동 5칸 × 50% 조우 = 평균 2.5회 전투/이동 — <strong>3분대 없이는 돌파 불가</strong></p>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>⚔️ 전투의 위계</h3>
-        <table class="tbl">
-          <tr>
-            <th>단계</th>
-            <th>적</th>
-            <th>전투 방식</th>
-            <th>긴장감</th>
-            <th>핵심 목적</th>
-          </tr>
-          <tr>
-            <td>몬스터</td>
-            <td>잡몹/보스</td>
-            <td>자동</td>
-            <td>★</td>
-            <td>재료 파밍 (관문)</td>
-          </tr>
-          <tr>
-            <td><strong>인간 파티</strong></td>
-            <td>해적/산적/용병 등</td>
-            <td><strong>3:3 전략전</strong></td>
-            <td>★★★</td>
-            <td>진짜 전투</td>
-          </tr>
-          <tr>
-            <td><strong>거점전</strong></td>
-            <td>NPC 세력 정예</td>
-            <td><strong>3:3 릴레이</strong></td>
-            <td>★★★★★</td>
-            <td>영토 쟁탈</td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="card">
-        <h3>💀 인간 적 파티 (토벌 존 길목)</h3>
-        <table class="tbl">
-          <tr>
-            <th>인간 적</th>
-            <th>연계 세력</th>
-            <th>출현 지역</th>
-            <th>특징</th>
-          </tr>
-          <tr>
-            <td>해적단</td>
-            <td class="faction-baron">🗡️ 버론</td>
-            <td>항구, 해안</td>
-            <td>속도 제압, 약탈</td>
-          </tr>
-          <tr>
-            <td>산적단</td>
-            <td>독립</td>
-            <td>산길, 숲</td>
-            <td>매복, 기습</td>
-          </tr>
-          <tr>
-            <td>암살자 길드</td>
-            <td class="faction-noble">🦊 십인 귀족</td>
-            <td>야간, 도시 근교</td>
-            <td>핵심 타겟 제거</td>
-          </tr>
-          <tr>
-            <td>용병단</td>
-            <td>독립/고용</td>
-            <td>다양</td>
-            <td>비스로 매수 가능</td>
-          </tr>
-          <tr>
-            <td>원정 정찰대</td>
-            <td class="faction-nocc">⚔️ NOCC</td>
-            <td>국경, 전초</td>
-            <td>정규군 편성</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- ══ 3. COMBAT ══ -->
-    <div class="section" id="combat">
-      <div class="section-header">
-        <div class="section-icon" style="background:rgba(217,74,92,0.12)">⚔️</div>
-        <h2>전투 시스템</h2>
-        <span class="tag">10턴 3:3</span>
-      </div>
-
-      <div class="card">
-        <h3>🎮 전투 방식</h3>
-        <table class="tbl">
-          <tr>
-            <th>항목</th>
-            <th>설정</th>
-          </tr>
-          <tr>
-            <td>전투 방식</td>
-            <td>턴 기반 시뮬레이션 (서버 계산 → 클라이언트 연출)</td>
-          </tr>
-          <tr>
-            <td>전투 규모</td>
-            <td><strong>3 vs 3</strong> (인간 대 인간 기본)</td>
-          </tr>
-          <tr>
-            <td>라운드</td>
-            <td><strong>최대 10턴</strong></td>
-          </tr>
-          <tr>
-            <td>승리 조건</td>
-            <td>적 3인 전멸</td>
-          </tr>
-          <tr>
-            <td>10턴 초과</td>
-            <td>잔여 HP 비교 판정</td>
-          </tr>
-          <tr>
-            <td>전투 시간</td>
-            <td>~2분 30초(1배속) / ~1분 15초(2배속)</td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="card">
-        <h3>📊 10턴 전개 — 3막 구조</h3>
-        <div class="card-grid-3">
-          <div class="highlight-box">
-            <p><strong style="color:var(--accent-red)">턴 1~3: 개전기</strong></p>
-            <p>"누가 먼저 치느냐"</p>
-            <p>SPD 높은 쪽이 선공. 버프/디버프 깔기. 미사일 조합은 여기서 끝내려 함.</p>
-          </div>
-          <div class="highlight-box">
-            <p><strong style="color:var(--accent-orange)">턴 4~7: 중반</strong></p>
-            <p>"구도가 정해진다"</p>
-            <p>3:3 → 3:2 또는 2:2로. 수적 우위가 전투를 갈라놓음. CC 제어 조합의 전성기.</p>
-          </div>
-          <div class="highlight-box">
-            <p><strong style="color:var(--accent-green)">턴 8~10: 마무리</strong></p>
-            <p>"역전 또는 확인사살"</p>
-            <p>HP 위기 시 스킬 발동률 +10%. 지구전 조합의 진가 발휘.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>🔄 역할 상성 — 가위바위보</h3>
-        <div class="matchup">
-          <div class="matchup-node burst">
-            <div class="name">🚀 미사일</div>
-            <div class="desc">1~3턴 폭딜</div>
-          </div>
-          <div class="matchup-arrow">→ 이김 →</div>
-          <div class="matchup-node control">
-            <div class="name">🔮 CC 제어</div>
-            <div class="desc">행동 봉쇄</div>
-          </div>
-          <div class="matchup-arrow">→ 이김 →</div>
-          <div class="matchup-node sustain">
-            <div class="name">🛡️ 지구전</div>
-            <div class="desc">탱커+힐 버팀</div>
-          </div>
-          <div class="matchup-arrow">→ 이김 →</div>
-          <div class="matchup-node burst">
-            <div class="name">🚀 미사일</div>
-            <div class="desc">(순환)</div>
-          </div>
-        </div>
         <div class="highlight-box">
-          <p><strong>미사일 > CC:</strong> 빠른 딜이 CC 발동 전에 적을 처리</p>
-          <p><strong>CC > 지구전:</strong> 스턴/침묵으로 힐러를 봉쇄하면 탱커도 무너짐</p>
-          <p><strong>지구전 > 미사일:</strong> 탱커가 초반 폭딜을 흡수하면 미사일은 후속타 없음</p>
-          <p>→ <strong>"무조건 최강 조합"이 없다.</strong> 적 조합을 보고 카운터를 짜는 것이 핵심.</p>
+          <p><strong>장르:</strong> 가문 경영 전략 RPG (풋볼매니저 × 삼국지전략판 × HoMM × GE IP)</p>
+          <p><strong>핵심 컨셉:</strong> GE 원작의 395명 캐릭터를 영입·육성·편성하여 신대륙에서 가문을 경영하고 세력을 확장하는 전략 게임.</p>
+          <p><strong>배경:</strong> 레콩키스타 시대(1522~) — 3년 전쟁 이후 신대륙 개척 경쟁이 격화된 시기.</p>
         </div>
-      </div>
 
-      <div class="card">
-        <h3>📈 능력치 (7대 스탯)</h3>
-        <table class="tbl">
-          <tr>
-            <th>스탯</th>
-            <th>약칭</th>
-            <th>역할</th>
-          </tr>
-          <tr>
-            <td>공격력</td>
-            <td>ATK</td>
-            <td>딜의 기본</td>
-          </tr>
-          <tr>
-            <td>방어력</td>
-            <td>DEF</td>
-            <td>피해 감소</td>
-          </tr>
-          <tr>
-            <td>체력</td>
-            <td>HP</td>
-            <td>생존력 (웨이브 간 유지)</td>
-          </tr>
-          <tr>
-            <td>속도</td>
-            <td>SPD</td>
-            <td>행동 순서 — 높을수록 먼저 행동 (선공 결정)</td>
-          </tr>
-          <tr>
-            <td>치명타</td>
-            <td>CRI/CRD</td>
-            <td>폭딜 잠재력</td>
-          </tr>
-          <tr>
-            <td>저항</td>
-            <td>RES</td>
-            <td>CC/디버프 저항</td>
-          </tr>
-          <tr>
-            <td>마력</td>
-            <td>MP</td>
-            <td>스킬 자원 관리</td>
-          </tr>
-        </table>
+        <div class="card">
+          <h3>🎯 핵심 설계 철학 — "가문 경영 서사"</h3>
+          <div class="flow-box">캐릭터 = 전투 도구가 아닌, 가문의 식구
+
+            영입하고 → 같이 살고 → 역할을 주고 → 밥을 먹이고 →
+            관계가 형성되고 → 함께 전쟁하고 → 때론 떠나보내고 →
+            가문의 역사가 쌓이는 것
+
+            GE 원작의 혁신적 MCC(다캐릭터 동시 조작) + 395명 영입 캐릭터
+            + 가문 시스템의 정신을 계승하되, 삼전/FM/HoMM의 체계적 시스템 적용.</div>
+        </div>
+
+        <div class="card">
+          <h3>🎮 핵심 설계 원칙</h3>
+          <table class="tbl">
+            <tr>
+              <th>원칙</th>
+              <th>설명</th>
+            </tr>
+            <tr>
+              <td><strong>전투보다 운영</strong></td>
+              <td>전투는 결과를 보는 것. 운영(편성/배치/경영)이 핵심 재미.</td>
+            </tr>
+            <tr>
+              <td><strong>캐릭터 = 가문의 식구</strong></td>
+              <td>도구가 아닌 관계의 대상. 충성도·사기·관계가 성과에 영향.</td>
+            </tr>
+            <tr>
+              <td><strong>레벨 깡패 없음</strong></td>
+              <td>조합·상성·시너지가 승패 결정. 약해도 상성 좋으면 이긴다.</td>
+            </tr>
+            <tr>
+              <td><strong>캐릭터는 항상 부족</strong></td>
+              <td>공격 + 수비 + 토벌 + 생활 동시에 → 더 영입, 더 육성.</td>
+            </tr>
+            <tr>
+              <td><strong>PvF (Player vs Faction)</strong></td>
+              <td>PvP 피로감 없는 NPC 세력 전쟁. 적의 적은 친구.</td>
+            </tr>
+            <tr>
+              <td><strong>감정적 과금</strong></td>
+              <td>"저 세력을 꺾으려면 이 캐릭터가 필요" → 전략적 필요에 의한 과금.</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>🔄 코어 루프</h3>
+          <div class="flow-box">┌──────────────────────────────────────────────┐
+            │ GE 개척시대 핵심 루프 │
+            ├──────────┬──────────┬──────────┬─────────────┤
+            │ 배럭생활 │ 필드탐색 │ 토벌전투 │ 거점전쟁 │
+            │ (운영핵심) │ (HoMM식) │ (자원수급) │ (PvF전략) │
+            ├──────────┴──────────┴──────────┴─────────────┤
+            │ 전투 시스템 (서버 턴제 3v3) │
+            │ 삼전 스타일: 전법계승 + SPD행동순서 │
+            ├──────────────────────────────────────────────┤
+            │ 캐릭터 성장 (뽑기/성급/각성/스킬계승) │
+            ├──────────────────────────────────────────────┤
+            │ 관계/경제/유료화 시스템 │
+            └──────────────────────────────────────────────┘</div>
+        </div>
+
+        <div class="card">
+          <h3>📊 시장 포지션 — 블루오션</h3>
+          <table class="tbl">
+            <tr>
+              <th>요소</th>
+              <th>레퍼런스</th>
+              <th>시장 존재</th>
+            </tr>
+            <tr>
+              <td>운영/매니지먼트 중심</td>
+              <td>풋볼매니저</td>
+              <td>스포츠만</td>
+            </tr>
+            <tr>
+              <td>서버 턴제 전투</td>
+              <td>삼국지전략판</td>
+              <td>운영요소 없음</td>
+            </tr>
+            <tr>
+              <td>배럭 생활 시뮬</td>
+              <td>카이로소프트</td>
+              <td>전투 없음</td>
+            </tr>
+            <tr>
+              <td>HoMM 맵 탐색</td>
+              <td>Songs of Conquest</td>
+              <td>배럭 없음</td>
+            </tr>
+            <tr>
+              <td>NPC 세력 외교 (PvF)</td>
+              <td><strong>없음</strong></td>
+              <td><span class="badge badge-gold">완전 블루오션</span></td>
+            </tr>
+          </table>
+        </div>
       </div>
     </div>
+  </div>
 
-    <!-- ══ 4. CHARACTERS ══ -->
-    <div class="section" id="characters">
-      <div class="section-header">
-        <div class="section-icon" style="background:rgba(155,111,217,0.12)">👤</div>
-        <h2>캐릭터 분류</h2>
-        <span class="tag">395명</span>
-      </div>
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TAB: 필드탐색 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-field">
+    <div class="container">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(78,204,163,0.12)">🗺️</div>
+          <h2>필드 탐색 시스템</h2>
+          <span class="tag">거점-관할 지역 모델</span>
+        </div>
 
-      <div class="card">
-        <h3>⚔️ 5대 역할</h3>
-        <table class="tbl">
-          <tr>
-            <th>역할</th>
-            <th>GE 베이스</th>
-            <th>핵심 스탯</th>
-            <th>전투 내 역할</th>
-          </tr>
-          <tr>
-            <td>⚔️ <strong>전사</strong></td>
-            <td>파이터, 검사 계열</td>
-            <td>ATK, HP, DEF</td>
-            <td>전열 딜러, 준탱커</td>
-          </tr>
-          <tr>
-            <td>🔫 <strong>사수</strong></td>
-            <td>머스킷티어, 총사</td>
-            <td>ATK, SPD, CRI</td>
-            <td>후열 화력. 미사일 핵심</td>
-          </tr>
-          <tr>
-            <td>🔮 <strong>마법사</strong></td>
-            <td>워록, 위자드</td>
-            <td>ATK(마법), 속성</td>
-            <td>범위 딜, CC. 속성전 핵심</td>
-          </tr>
-          <tr>
-            <td>💚 <strong>치유사</strong></td>
-            <td>스카우트, 사제</td>
-            <td>HP회복, RES</td>
-            <td>힐, 정화, 버프. 지구전 핵심</td>
-          </tr>
-          <tr>
-            <td>⚡ <strong>특수</strong></td>
-            <td>무투가, 암살, 소환</td>
-            <td>다양</td>
-            <td>암살(선공 1킬), CC, 소환</td>
-          </tr>
-        </table>
-      </div>
+        <div class="highlight-box green">
+          <p><strong>핵심 컨셉:</strong> 거점 중심 영토 확장. 보유 거점에서 출발 → 관할 지역 타일 탐색 → 자원 수집/이벤트 → 새 거점 발견·편입.</p>
+          <p><strong>HoMM 차별화:</strong> 단순 정복이 아닌, 거점 = 배럭 + 자원 + 관할 지역. FM식 경영과 결합.</p>
+        </div>
 
-      <div class="card">
-        <h3>⭐ 4단계 등급</h3>
-        <table class="tbl">
-          <tr>
-            <th>등급</th>
-            <th>비율</th>
-            <th>GE 기준</th>
-            <th>특징</th>
-          </tr>
-          <tr>
-            <td><span class="badge badge-gold">★★★★★ 전설</span></td>
-            <td>~5%</td>
-            <td>원작 핵심 인물</td>
-            <td>고유 스킬 극강, 획득 어려움</td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-purple">★★★★ 레어</span></td>
-            <td>~15%</td>
-            <td>원작 네임드</td>
-            <td>특화된 강점, 조건부 강함</td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-blue">★★★ 고급</span></td>
-            <td>~35%</td>
-            <td>원작 영입 캐릭터</td>
-            <td>안정적 성능, 범용적</td>
-          </tr>
-          <tr>
-            <td><span class="badge badge-green">★★ 일반</span></td>
-            <td>~45%</td>
-            <td>기본 클래스/NPC</td>
-            <td>쉽게 구함, 육성으로 성장</td>
-          </tr>
-        </table>
-        <div class="highlight-box">
-          <p><strong>핵심: "일반도 ★5까지 키우면 레어와 싸울 수 있다"</strong></p>
-          <p>스킬 계승으로 일반 캐릭터에 강력한 스킬을 이식 가능. 등급 = 출발점의 차이, 천장의 차이가 아님.</p>
+        <!-- Sub-tabs for field -->
+        <div class="sub-tabs" data-group="field">
+          <div class="sub-tab active" data-sub="field-structure">세계 구조</div>
+          <div class="sub-tab" data-sub="field-tiles">타일 탐색</div>
+          <div class="sub-tab" data-sub="field-events">랜덤 이벤트</div>
+          <div class="sub-tab" data-sub="field-capture">거점 편입</div>
+        </div>
+
+        <!-- 세계 구조 -->
+        <div class="sub-content active" data-sub="field-structure">
+          <div class="card">
+            <h3>🌍 4권역 12거점 구조</h3>
+            <div class="flow-box">[세계 전체]
+              ├── 권역 1: 리볼도외 권역 (초반)
+              │ ├── ★ 거점: 리볼도외 (시작 거점) — 관할 필드 12타일
+              │ ├── ★ 거점: 패루초 삼거리 — 관할 필드 10타일
+              │ └── ★ 거점: 코임브라 — 관할 필드 14타일
+              ├── 권역 2: 오슈 권역 (중반)
+              │ ├── ★ 거점: 오슈 — 관할 필드 16타일
+              │ ├── ★ 거점: 자캥 — 관할 필드 14타일
+              │ └── ★ 거점: 토르쉐 저택 — 관할 필드 12타일
+              ├── 권역 3: 바하마르 권역 (후반)
+              │ ├── ★ 거점: 포르토벨로 — 관할 필드 14타일
+              │ ├── ★ 거점: 바하마르 — 관할 필드 16타일
+              │ └── ★ 거점: 에라크 — 관할 필드 12타일
+              └── 권역 4: 빙마 권역 (엔드)
+              ├── ★ 거점: 토플로 두르가 — 관할 필드 16타일
+              ├── ★ 거점: 캐피바라 농원 — 관할 필드 12타일
+              └── ★ 거점: 빙마탑 — 관할 필드 18타일</div>
+          </div>
+
+          <div class="card">
+            <h3>🏰 거점별 상세 — 초반 권역</h3>
+            <table class="tbl">
+              <tr>
+                <th>거점</th>
+                <th>관할 필드</th>
+                <th>타일 수</th>
+                <th>특산 자원</th>
+                <th>편입 조건</th>
+              </tr>
+              <tr>
+                <td><strong>리볼도외</strong></td>
+                <td>퀸즈게이트~패루초</td>
+                <td>12</td>
+                <td>식재료(풍부), 광물(보통)</td>
+                <td>시작 거점</td>
+              </tr>
+              <tr>
+                <td><strong>패루초 삼거리</strong></td>
+                <td>AQM~왕들의 정원</td>
+                <td>10</td>
+                <td>약초(풍부), 소재(보통)</td>
+                <td>리볼도외 완탐 + 보스 격파</td>
+              </tr>
+              <tr>
+                <td><strong>코임브라</strong></td>
+                <td>테트라~코임브라 항구</td>
+                <td>14</td>
+                <td>교역품(풍부), 광물(풍부)</td>
+                <td>패루초 완탐 + 보스 격파</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>📊 거점 유지 비용 — 경제 연동</h3>
+            <table class="tbl">
+              <tr>
+                <th>보유 거점 수</th>
+                <th>거점 유지비/일 (비스)</th>
+                <th>관할 필드 수</th>
+              </tr>
+              <tr>
+                <td>1 (시작)</td>
+                <td>0</td>
+                <td>12</td>
+              </tr>
+              <tr>
+                <td>2~3</td>
+                <td>500/거점</td>
+                <td>22~36</td>
+              </tr>
+              <tr>
+                <td>4~6</td>
+                <td>800/거점</td>
+                <td>48~78</td>
+              </tr>
+              <tr>
+                <td>7~9</td>
+                <td>1,200/거점</td>
+                <td>90~120</td>
+              </tr>
+              <tr>
+                <td>10~12</td>
+                <td>1,800/거점</td>
+                <td>132~170</td>
+              </tr>
+            </table>
+            <div class="highlight-box">
+              <p>→ 거점이 많을수록 강하지만 <strong>유지 비용도 증가</strong> → FM식 경영 딜레마</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 타일 탐색 -->
+        <div class="sub-content" data-sub="field-tiles">
+          <div class="card">
+            <h3>🗺️ 타일 기반 탐색</h3>
+            <div class="flow-box">1. [거점 선택] → 어떤 거점에서 출발할까?
+              ↓
+              2. [탐색대 편성] → 탐색 파티 3인 편성 (관계 시너지 고려)
+              ↓
+              3. [탐색 방향 선택] → 미탐색 타일 방향 결정
+              ↓
+              4. [이동] → 타일별 피로 소모 + 자원 자동 수집
+              │
+              ├─ [자원 타일 발견] → 채집꾼 배치 가능 (이후 자동 생산)
+              ├─ [이벤트 타일] → 랜덤 이벤트 처리
+              ├─ [적 조우 타일] → 3v3 전투 돌입
+              └─ [보물 타일] → 숨겨진 보물 획득!
+              ↓
+              5. [피로 소진 or 목표 달성] → 거점 귀환
+              ↓
+              6. [배럭 라이프] → 음식/의무관으로 피로 회복</div>
+          </div>
+
+          <div class="card">
+            <h3>🏔️ 7대 지형 타일</h3>
+            <table class="tbl">
+              <tr>
+                <th>지형</th>
+                <th>피로 소모</th>
+                <th>전투 보정</th>
+                <th>채집 자원</th>
+                <th>출현 지역</th>
+              </tr>
+              <tr>
+                <td>🌿 <strong>초원</strong></td>
+                <td>1</td>
+                <td>없음</td>
+                <td>식재료, 약초</td>
+                <td>리볼도외, 코임브라</td>
+              </tr>
+              <tr>
+                <td>🌲 <strong>숲</strong></td>
+                <td>2</td>
+                <td>목 속성 +15%</td>
+                <td>약초, 목재</td>
+                <td>왕들의 정원, 튜링엔</td>
+              </tr>
+              <tr>
+                <td>⛰️ <strong>산지</strong></td>
+                <td>3</td>
+                <td>지 속성 +15%</td>
+                <td>광물, 희귀석</td>
+                <td>자캥, 패루초</td>
+              </tr>
+              <tr>
+                <td>🏜️ <strong>사막</strong></td>
+                <td>2</td>
+                <td>화 속성 +15%</td>
+                <td>교역품</td>
+                <td>테트라, 바하마르</td>
+              </tr>
+              <tr>
+                <td>🌊 <strong>해안</strong></td>
+                <td>1</td>
+                <td>수 속성 +15%</td>
+                <td>해산물, 교역품</td>
+                <td>코임브라, 포르토벨로</td>
+              </tr>
+              <tr>
+                <td>🕳️ <strong>지하</strong></td>
+                <td>3</td>
+                <td>암 속성 +15%, 시야↓</td>
+                <td>희귀 광물</td>
+                <td>AQM, 자캥</td>
+              </tr>
+              <tr>
+                <td>❄️ <strong>빙설</strong></td>
+                <td>4</td>
+                <td>수 +15%, SPD -2</td>
+                <td>빙정석</td>
+                <td>빙마탑</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>🔍 탐색도 & 소탕</h3>
+            <table class="tbl">
+              <tr>
+                <th>탐색도</th>
+                <th>효과</th>
+              </tr>
+              <tr>
+                <td>30%</td>
+                <td>관할 지역 대략적 구조 파악</td>
+              </tr>
+              <tr>
+                <td>50%</td>
+                <td>이벤트 타일 위치 표시</td>
+              </tr>
+              <tr>
+                <td>70%</td>
+                <td>새 거점 타일 발견 가능!</td>
+              </tr>
+              <tr>
+                <td>100%</td>
+                <td><span class="badge badge-gold">소탕 해금</span> — 자동 탐색으로 자원 수집</td>
+              </tr>
+            </table>
+            <div class="highlight-box">
+              <p>탐색 조합 보너스: <strong>채집꾼/사냥꾼 관계 쌍</strong> → 랜덤 이벤트 보너스 +30% / <strong>관계 밀도 2+</strong> → 탐색도 획득 +15%
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 랜덤 이벤트 -->
+        <div class="sub-content" data-sub="field-events">
+          <div class="card">
+            <h3>🎲 초원/도시 이벤트</h3>
+            <table class="tbl">
+              <tr>
+                <th>이벤트</th>
+                <th>확률</th>
+                <th>내용</th>
+                <th>보상</th>
+              </tr>
+              <tr>
+                <td>이동 상인</td>
+                <td>20%</td>
+                <td>특가 아이템 판매</td>
+                <td>할인 구매 기회</td>
+              </tr>
+              <tr>
+                <td>NPC 조우</td>
+                <td>15%</td>
+                <td>미영입 캐릭터 만남</td>
+                <td>호감도 +, 영입 기회</td>
+              </tr>
+              <tr>
+                <td>야생 몬스터</td>
+                <td>25%</td>
+                <td>필드 몬스터 전투</td>
+                <td>소재, 경험치</td>
+              </tr>
+              <tr>
+                <td>약탈자 습격</td>
+                <td>15%</td>
+                <td>산적/해적 3v3 전투</td>
+                <td>비스, 장비</td>
+              </tr>
+              <tr>
+                <td>보물 발견</td>
+                <td>5%</td>
+                <td>숨겨진 보물 발견</td>
+                <td>희귀 장비, 서찰</td>
+              </tr>
+            </table>
+          </div>
+          <div class="card">
+            <h3>🌊 해안/사막 이벤트</h3>
+            <table class="tbl">
+              <tr>
+                <th>이벤트</th>
+                <th>확률</th>
+                <th>내용</th>
+                <th>보상</th>
+              </tr>
+              <tr>
+                <td>표류 화물</td>
+                <td>15%</td>
+                <td>해변에 떠밀린 화물</td>
+                <td>교역품, 장비</td>
+              </tr>
+              <tr>
+                <td>오아시스</td>
+                <td>10%</td>
+                <td>피로 전회복</td>
+                <td>피로 회복</td>
+              </tr>
+              <tr>
+                <td>모래 폭풍</td>
+                <td>15%</td>
+                <td>이동 불가 1턴</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td>보물 지도</td>
+                <td>5%</td>
+                <td>숨겨진 보물 힌트</td>
+                <td>보물 타일 표시</td>
+              </tr>
+              <tr>
+                <td>난파선</td>
+                <td>10%</td>
+                <td>탐색 미니게임</td>
+                <td>희귀 장비</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- 거점 편입 -->
+        <div class="sub-content" data-sub="field-capture">
+          <div class="card">
+            <h3>🏰 거점 발견 → 편입 프로세스</h3>
+            <div class="flow-box">[1. 발견] 관할 지역 끝에서 새 거점 타일 발견
+              · 탐색도 70%+ 필요
+              · "미지의 거점이 감지됩니다!"
+              ↓
+              [2. 정찰] 거점 정보 수집 (1~3회 정찰 파견)
+              · 적 구성, 난이도, 거점 특성 확인
+              · 정찰 횟수 ↑ → 적 정보 공개 ↑ (안개 해제)
+              ↓
+              [3. 공략] 거점 보스 격파 — 세력전 연동
+              · 거점 수비 NPC 세력과 3v3 릴레이전
+              · 난이도: 보유 거점 수에 비례하여 증가
+              ↓
+              [4. 편입] 점령 후 가문 거점으로 편입
+              · 시설 초기화 (Lv.1부터 건설)
+              · 새 관할 지역 탐색 개방!</div>
+          </div>
+          <div class="card">
+            <h3>✅ 편입 후 해금</h3>
+            <table class="tbl">
+              <tr>
+                <th>해금 요소</th>
+                <th>설명</th>
+              </tr>
+              <tr>
+                <td><strong>새 관할 지역</strong></td>
+                <td>탐색 가능한 필드 타일 추가</td>
+              </tr>
+              <tr>
+                <td><strong>거점 시설</strong></td>
+                <td>식당/대장간/연구소 등 건설 가능</td>
+              </tr>
+              <tr>
+                <td><strong>생활 배치</strong></td>
+                <td>새 거점에 캐릭터 파견·생활 활동</td>
+              </tr>
+              <tr>
+                <td><strong>NPC 외교</strong></td>
+                <td>주변 NPC 세력과 외교 가능</td>
+              </tr>
+              <tr>
+                <td><strong>특산 자원</strong></td>
+                <td>거점 고유 특산 자원 생산</td>
+              </tr>
+            </table>
+          </div>
         </div>
       </div>
+    </div>
+  </div>
 
-      <div class="card">
-        <h3>🎯 6대 스킬 카테고리</h3>
-        <div class="card-grid-3">
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TAB: 전투 시스템 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-combat">
+    <div class="container">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(217,74,92,0.12)">⚔️</div>
+          <h2>전투 시스템</h2>
+          <span class="tag">서버 턴제 3v3</span>
+        </div>
+
+        <div class="card">
+          <h3>🎮 전투 방식</h3>
+          <table class="tbl">
+            <tr>
+              <th>항목</th>
+              <th>설정</th>
+            </tr>
+            <tr>
+              <td>전투 방식</td>
+              <td>턴 기반 시뮬레이션 (서버 계산 → 클라이언트 연출)</td>
+            </tr>
+            <tr>
+              <td>전투 규모</td>
+              <td><strong>3 vs 3</strong> (인간 대 인간 기본)</td>
+            </tr>
+            <tr>
+              <td>라운드</td>
+              <td><strong>최대 10턴</strong></td>
+            </tr>
+            <tr>
+              <td>승리 조건</td>
+              <td>적 3인 전멸</td>
+            </tr>
+            <tr>
+              <td>10턴 초과</td>
+              <td>잔여 HP 비교 판정</td>
+            </tr>
+            <tr>
+              <td>전투 시간</td>
+              <td>~2분 30초(1배속) / ~1분 15초(2배속)</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>📊 10턴 전개 — 3막 구조</h3>
+          <div class="card-grid-3">
+            <div class="highlight-box red">
+              <p><strong style="color:var(--accent-red)">턴 1~3: 개전기</strong></p>
+              <p>"누가 먼저 치느냐"</p>
+              <p>SPD 높은 쪽이 선공. 버프/디버프 깔기. 미사일 조합은 여기서 끝내려 함.</p>
+            </div>
+            <div class="highlight-box">
+              <p><strong style="color:var(--accent-orange)">턴 4~7: 중반</strong></p>
+              <p>"구도가 정해진다"</p>
+              <p>3:3 → 3:2 또는 2:2로. 수적 우위가 전투를 갈라놓음. CC 제어 조합의 전성기.</p>
+            </div>
+            <div class="highlight-box green">
+              <p><strong style="color:var(--accent-green)">턴 8~10: 마무리</strong></p>
+              <p>"역전 또는 확인사살"</p>
+              <p>HP 위기 시 스킬 발동률 +10%. 지구전 조합의 진가 발휘.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>🔄 역할 상성 — 가위바위보</h3>
+          <div class="matchup">
+            <div class="matchup-node burst">
+              <div class="name">🚀 미사일</div>
+              <div class="desc">1~3턴 폭딜</div>
+            </div>
+            <div class="matchup-arrow">→ 이김 →</div>
+            <div class="matchup-node control">
+              <div class="name">🔮 CC 제어</div>
+              <div class="desc">행동 봉쇄</div>
+            </div>
+            <div class="matchup-arrow">→ 이김 →</div>
+            <div class="matchup-node sustain">
+              <div class="name">🛡️ 지구전</div>
+              <div class="desc">탱커+힐 버팀</div>
+            </div>
+            <div class="matchup-arrow">→ 이김 →</div>
+            <div class="matchup-node burst">
+              <div class="name">🚀 미사일</div>
+              <div class="desc">(순환)</div>
+            </div>
+          </div>
+          <div class="highlight-box">
+            <p><strong>미사일 > CC:</strong> 빠른 딜이 CC 발동 전에 적을 처리</p>
+            <p><strong>CC > 지구전:</strong> 스턴/침묵으로 힐러를 봉쇄하면 탱커도 무너짐</p>
+            <p><strong>지구전 > 미사일:</strong> 탱커가 초반 폭딜을 흡수하면 미사일은 후속타 없음</p>
+            <p>→ <strong>"무조건 최강 조합"이 없다.</strong> 적 조합을 보고 카운터를 짜는 것이 핵심.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>📈 7대 스탯</h3>
+          <table class="tbl">
+            <tr>
+              <th>스탯</th>
+              <th>약칭</th>
+              <th>역할</th>
+            </tr>
+            <tr>
+              <td>공격력</td>
+              <td>ATK</td>
+              <td>딜의 기본</td>
+            </tr>
+            <tr>
+              <td>방어력</td>
+              <td>DEF</td>
+              <td>피해 감소</td>
+            </tr>
+            <tr>
+              <td>체력</td>
+              <td>HP</td>
+              <td>생존력 (웨이브 간 유지)</td>
+            </tr>
+            <tr>
+              <td>속도</td>
+              <td>SPD</td>
+              <td>행동 순서 — 높을수록 먼저 행동</td>
+            </tr>
+            <tr>
+              <td>치명타</td>
+              <td>CRI/CRD</td>
+              <td>폭딜 잠재력</td>
+            </tr>
+            <tr>
+              <td>저항</td>
+              <td>RES</td>
+              <td>CC/디버프 저항</td>
+            </tr>
+            <tr>
+              <td>마력</td>
+              <td>MP</td>
+              <td>스킬 자원 관리</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>🎯 6대 스킬 카테고리</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
             <span class="badge badge-red">🗡️ 딜 — 단일/범위 피해</span>
             <span class="badge badge-purple">🔒 CC — 행동 불가/약화</span>
             <span class="badge badge-green">💚 힐 — HP 회복</span>
@@ -1088,595 +1258,1474 @@
             <span class="badge badge-blue">🔻 디버프 — 적 약화</span>
             <span class="badge badge-gold">🛡️ 보호 — 도발/보호막</span>
           </div>
-        </div>
-        <table class="tbl" style="margin-top:16px">
-          <tr>
-            <th>CC 종류</th>
-            <th>지속</th>
-            <th>효과</th>
-          </tr>
-          <tr>
-            <td>스턴</td>
-            <td>1턴</td>
-            <td>행동 불가</td>
-          </tr>
-          <tr>
-            <td>빙결</td>
-            <td>1~2턴</td>
-            <td>행동 불가 + DEF 감소</td>
-          </tr>
-          <tr>
-            <td>감전</td>
-            <td>2턴</td>
-            <td>매 턴 피해 + SPD 감소</td>
-          </tr>
-          <tr>
-            <td>침묵</td>
-            <td>2턴</td>
-            <td>스킬 사용 불가 (일반 공격만)</td>
-          </tr>
-          <tr>
-            <td>화상</td>
-            <td>3턴</td>
-            <td>매 턴 지속 피해 (DoT)</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- ══ 5. FACTIONS ══ -->
-    <div class="section" id="factions">
-      <div class="section-header">
-        <div class="section-icon" style="background:rgba(217,138,74,0.12)">🏰</div>
-        <h2>NPC 라이벌 세력</h2>
-        <span class="tag">원작 GE 기반</span>
-      </div>
-
-      <div class="card-grid">
-        <div class="card">
-          <h3><span class="faction-nocc">⚔️</span> NOCC</h3>
-          <p><span class="badge badge-red">지구전 + 탱커</span></p>
-          <p><strong>신대륙 질서 통제 위원회.</strong> 본국 베스파뇰라의 통제 기관. 개척 가문의 자유 활동을 규제.</p>
-          <p>🎭 관료적, 권위적 — "우리가 법이다"</p>
-          <p>📍 리볼도외 근교, 코임브라</p>
-          <p>💥 유저 갈등: 채굴권 허가제, 통행세 부과</p>
-        </div>
-        <div class="card">
-          <h3><span class="faction-noble">🦊</span> 십인 귀족</h3>
-          <p><span class="badge badge-orange">디버프 + 경제전</span></p>
-          <p><strong>Los Diez Nobles.</strong> 몬토로, 에르난데즈 등 경제 지배층. 표면적 우호, 배후 음모.</p>
-          <p>🎭 교활, 계산적 — "정보가 곧 힘"</p>
-          <p>📍 바이런(루치페르 성), 코임브라 항구</p>
-          <p>💥 유저 갈등: 교역 수수료, 배신 높음</p>
-        </div>
-        <div class="card">
-          <h3><span class="faction-auch">📚</span> 오슈 학파</h3>
-          <p><span class="badge badge-purple">속성 마법 + CC</span></p>
-          <p><strong>Auch Academy.</strong> 마법과 학문의 도시. 고대 유적 연구에 몰두, 연구 자원 독점.</p>
-          <p>🎭 오만, 지적 — "무식한 개척자들"</p>
-          <p>📍 오슈, 빙마의 탑</p>
-          <p>💥 유저 갈등: 연구 지역 접근 제한</p>
-        </div>
-        <div class="card">
-          <h3><span class="faction-baron">🗡️</span> 버론</h3>
-          <p><span class="badge"
-              style="background:rgba(255,255,255,0.08);color:var(--text);border:1px solid var(--border)">속도 + 암살</span>
-          </p>
-          <p><strong>Los Barón.</strong> 무법자·해적·용병 연합. 커트(디트리히) 우두머리. 때로는 동맹 가능!</p>
-          <p>🎭 음험, 기회주의 — "약한 놈은 빼앗긴다"</p>
-          <p>📍 퀸즈게이트, 페루초</p>
-          <p>💥 유저 갈등: 교역로 습격, 약탈</p>
-        </div>
-        <div class="card">
-          <h3><span class="faction-bristia">🛡️</span> 브리스티아 원정군</h3>
-          <p><span class="badge badge-blue">미사일 + 속도</span></p>
-          <p><strong>Bristia Expeditionary Force.</strong> 독립을 꿈꾸는 북방 섬나라. 정의감 있지만 완고.</p>
-          <p>🎭 정의감, 완고 — "자유를 위해 싸운다"</p>
-          <p>📍 바하마르, 에라크</p>
-          <p>💥 유저 갈등: 자원 경쟁 (미워하기 어려운 적)</p>
-        </div>
-      </div>
-
-      <div class="card" style="margin-top:16px">
-        <h3>🔗 세력 간 관계도</h3>
-        <div class="flow-box">NOCC ──적대── 버론
-          │ │
-          우호 경쟁
-          │ │
-          십인 귀족 브리스티아 원정군
-          │ │
-          └──경쟁── 오슈 학파 ◀┘
-
-          → "적의 적은 친구" 외교 전략 필요
-          → 유저가 한 세력과 싸우면, 그 세력의 적이 우호적으로</div>
-      </div>
-    </div>
-
-    <!-- ══ 6. WAR ══ -->
-    <div class="section" id="war">
-      <div class="section-header">
-        <div class="section-icon" style="background:rgba(217,74,92,0.12)">🔥</div>
-        <h2>거점전 — 공격과 수비</h2>
-        <span class="tag">콜로니전 기반</span>
-      </div>
-
-      <div class="card">
-        <h3>⚔️ 핵심: 동시에 공격하고 수비해야 한다</h3>
-        <div class="flow-box">[공격팀] — 적 세력의 거점을 공략하러 출격
-          A파티(미사일): 버론 거점 기습
-          B파티(속성): 오슈 학파 전초기지
-
-          [수비팀] — 내 거점을 지키는 주둔군
-          C파티(지구전): 리볼도외 수비
-          D파티(디버프): 코임브라 수비
-
-          [토벌팀] — 자원 파밍 진행
-          E파티: 퀸즈게이트 토벌
-
-          → 최소 5팀(15명)이 동시에 필요!
-          → 캐릭터가 부족하면 수비를 비우거나 토벌 포기
-          → 더 영입하고, 더 육성해야 한다</div>
-      </div>
-
-      <div class="card">
-        <h3>📅 세력전 3계층 (원작 콜로니전 변형)</h3>
-        <table class="tbl">
-          <tr>
-            <th>계층</th>
-            <th>주기</th>
-            <th>규모</th>
-            <th>성격</th>
-            <th>핵심 보상</th>
-          </tr>
-          <tr>
-            <td><strong>주간전</strong></td>
-            <td>매주 토요일</td>
-            <td>1~2 거점</td>
-            <td>일상적 국경 분쟁</td>
-            <td>훈장, 채굴권 갱신</td>
-          </tr>
-          <tr>
-            <td><strong>월간전</strong></td>
-            <td>매월 마지막 주</td>
-            <td>3~5 거점 (지역 단위)</td>
-            <td>세력 판도 변경</td>
-            <td>전설 서찰, 포로 기회</td>
-          </tr>
-          <tr>
-            <td><strong>시즌전</strong></td>
-            <td>분기 (3개월)</td>
-            <td>신대륙 전역</td>
-            <td>대전쟁 — 최종 콘텐츠</td>
-            <td>시즌 한정 전설 캐릭터</td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="card">
-        <h3>🏆 포로 시스템</h3>
-        <p>거점 공략 <strong>대승리(SSS)</strong> 시 적 세력 캐릭터를 포로로 획득!</p>
-        <table class="tbl">
-          <tr>
-            <th>선택지</th>
-            <th>효과</th>
-          </tr>
-          <tr>
-            <td><strong>가문에 편입</strong></td>
-            <td>전력 추가. 단, 충성도 30에서 시작 (탈주 위험)</td>
-          </tr>
-          <tr>
-            <td><strong>석방</strong></td>
-            <td>해당 세력 우호도 +30 (외교적 이득)</td>
-          </tr>
-          <tr>
-            <td><strong>분해</strong></td>
-            <td>스킬/재료 확보 (외교적 불이익)</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- ══ 7. RAID ══ -->
-    <div class="section" id="raid">
-      <div class="section-header">
-        <div class="section-icon" style="background:rgba(74,144,217,0.12)">🗡️</div>
-        <h2>토벌 시스템</h2>
-        <span class="tag">PvE 재료 수급</span>
-      </div>
-
-      <div class="card">
-        <h3>🎯 토벌의 목적</h3>
-        <table class="tbl">
-          <tr>
-            <th>비교</th>
-            <th>토벌 (PvE)</th>
-            <th>거점전 (PvF)</th>
-          </tr>
-          <tr>
-            <td>적</td>
-            <td>몬스터/보스 + 인간 적 파티</td>
-            <td>NPC 세력 정예</td>
-          </tr>
-          <tr>
-            <td>목적</td>
-            <td>재료·소재 수급</td>
-            <td>영토·이권 쟁탈</td>
-          </tr>
-          <tr>
-            <td>성격</td>
-            <td>일 (노동) — "밭 가는 것"</td>
-            <td>전쟁 — "영주가 싸우는 것"</td>
-          </tr>
-          <tr>
-            <td>반복성</td>
-            <td>높음 (효율 루틴화)</td>
-            <td>낮음 (매번 다른 전개)</td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="card">
-        <h3>⚙️ 피로도 시스템</h3>
-        <p>각 캐릭터별 <strong>최대 피로도 100</strong>. 레이드 참여 시 턴 수에 비례하여 소모.</p>
-        <table class="tbl">
-          <tr>
-            <th>조합</th>
-            <th>총 전투 턴</th>
-            <th>피로도 소모</th>
-            <th>효율</th>
-          </tr>
-          <tr>
-            <td>미사일 (빠른 클리어)</td>
-            <td>12턴</td>
-            <td>17</td>
-            <td>★★★★★</td>
-          </tr>
-          <tr>
-            <td>일반 조합</td>
-            <td>20턴</td>
-            <td>25</td>
-            <td>★★★</td>
-          </tr>
-          <tr>
-            <td>지구전 (안전 클리어)</td>
-            <td>28턴</td>
-            <td>33</td>
-            <td>★★</td>
-          </tr>
-        </table>
-        <p style="margin-top:12px;color:var(--text-dim);font-size:13px">→ 미사일은 효율적이지만 위험. 지구전은 안전하지만 비효율.
-          <strong>트레이드오프</strong>가 전략.</p>
-      </div>
-    </div>
-
-    <!-- ══ 8. BARRACKS ══ -->
-    <div class="section" id="barracks">
-      <div class="section-header">
-        <div class="section-icon" style="background:rgba(78,204,163,0.12)">🏠</div>
-        <h2>배럭 라이프</h2>
-        <span class="tag">캐릭터 관리</span>
-      </div>
-
-      <div class="card">
-        <h3>🏡 배럭의 역할</h3>
-        <p>전투 밖에서 캐릭터들이 생활하는 공간. <strong>풋볼매니저의 훈련장</strong>에 해당.</p>
-        <table class="tbl">
-          <tr>
-            <th>시스템</th>
-            <th>설명</th>
-            <th>전투 연동</th>
-          </tr>
-          <tr>
-            <td><strong>자원 생산</strong></td>
-            <td>식량, 소재, 비스 생산</td>
-            <td>전쟁 전 보급품 비축</td>
-          </tr>
-          <tr>
-            <td><strong>시설 업그레이드</strong></td>
-            <td>훈련장, 연구소, 대장간</td>
-            <td>캐릭터 스탯 보너스</td>
-          </tr>
-          <tr>
-            <td><strong>생활 직업</strong></td>
-            <td>채광, 요리, 제련 등</td>
-            <td>전투 소모품 제작</td>
-          </tr>
-          <tr>
-            <td><strong>피로도 회복</strong></td>
-            <td>배럭 배치 시 가속 회복</td>
-            <td>출전 가능 인원 관리</td>
-          </tr>
-          <tr>
-            <td><strong>관계/충성도</strong></td>
-            <td>캐릭터 간 인연, 충성도</td>
-            <td>시너지 보너스, 탈주 방지</td>
-          </tr>
-        </table>
-      </div>
-    </div>
-
-    <!-- ══ 9. GACHA ══ -->
-    <div class="section" id="gacha">
-      <div class="section-header">
-        <div class="section-icon" style="background:rgba(212,168,67,0.12)">🎰</div>
-        <h2>뽑기 & 성장 시스템</h2>
-        <span class="tag">수익 모델</span>
-      </div>
-
-      <div class="card">
-        <h3>🃏 카드(캐릭터) 활용도 — "헛뽑은 없다"</h3>
-        <p>삼국지전략판처럼, 뽑은 캐릭터는 <strong>무조건 쓸모가 있다</strong>. 어떤 카드를 뽑아도 5가지 중 하나로 활용 가능.</p>
-        <table class="tbl">
-          <tr><th>활용 방법</th><th>설명</th><th>삼전 비교</th></tr>
-          <tr><td>① <strong>전투 투입</strong></td><td>MCC에 편성하여 직접 활약</td><td>무장 편성</td></tr>
-          <tr><td>② <strong>성급(★) 돌파</strong></td><td>동일 캐릭터를 합쳐서 ★ 상승 (★1→★5)</td><td>무장 돌파</td></tr>
-          <tr><td>③ <strong>분해 → 스킬 추출</strong></td><td>캐릭터를 갈아서 고유 스킬 추출. 다른 캐릭터에 장착!</td><td>전법 계승 (핵심!)</td></tr>
-          <tr><td>④ <strong>배럭 내정</strong></td><td>전투 대신 배럭에서 채광/요리/제련 등 자원 생산</td><td>내정관 배치</td></tr>
-          <tr><td>⑤ <strong>분해 → 재료</strong></td><td>범용 성급석, 비스(화폐), 도감 포인트 획득</td><td>무장 은퇴/분해</td></tr>
-        </table>
-        <div class="highlight-box" style="margin-top:16px">
-          <p>🔥 <strong>③ 스킬 추출이 핵심 과금 동력!</strong></p>
-          <p>S급 스킬 "성역의 기도"를 MCC 3명에게 모두 달려면 → 에밀리아 <strong>3장 분해</strong> 필요.</p>
-          <p>에밀리아 본인도 ★5로 키우려면 +7장. → 총 <strong>10장 이상</strong> 뽑아야!</p>
-          <p>삼전의 전법 계승과 동일 구조: "좋은 스킬은 항상 부족하다"</p>
-        </div>
-      </div>
-
-      <div class="card">
-        <h3>⚔️ 스킬 계승 시스템 — 삼전의 전법 계승</h3>
-        <table class="tbl">
-          <tr><th>가치</th><th>스킬 예시</th><th>소스 캐릭터</th><th>수요</th></tr>
-          <tr><td><span class="badge badge-gold">S 필수</span></td><td>성역의 기도 (범위 힐)</td><td>에밀리아 (전설)</td><td>★★★★★</td></tr>
-          <tr><td><span class="badge badge-gold">S 필수</span></td><td>무쌍 집중 (ATK +40%)</td><td>그라시엘로 (영웅)</td><td>★★★★★</td></tr>
-          <tr><td><span class="badge badge-purple">A 핵심</span></td><td>도발 방벽 (3턴 도발)</td><td>다리아 (레어)</td><td>★★★★</td></tr>
-          <tr><td><span class="badge badge-blue">B 유용</span></td><td>회피 직감 (EVD +20%)</td><td>리사 (레어)</td><td>★★★</td></tr>
-          <tr><td><span class="badge badge-green">C 보통</span></td><td>기본 강화 (ATK +5%)</td><td>파이터 (일반)</td><td>★★</td></tr>
-        </table>
-        <div class="flow-box">캐릭터 획득 → 고민의 순간:
-
-  "에밀리아 2번째 뽑았다!"
-     ├─ ★3 돌파에 쓸까?     → 보조 스킬 해금
-     ├─ 갈아서 스킬 만들까?  → "성역의 기도" 추출
-     └─ 배럭 군의관 시킬까?  → 피로 회복 가속
-
-  → 정답이 없다. 상황마다 최적 선택이 바뀐다.
-  → 이 고민이 게임의 깊이이자 과금 동기.</div>
-      </div>
-
-      <div class="card">
-        <h3>📦 소환 시스템</h3>
-        <table class="tbl">
-          <tr>
-            <th>티어</th>
-            <th>확률</th>
-            <th>천장</th>
-          </tr>
-          <tr>
-            <td>★★★★★ 전설</td>
-            <td>1.5%</td>
-            <td>80연차 보장</td>
-          </tr>
-          <tr>
-            <td>★★★★ 레어</td>
-            <td>8%</td>
-            <td>—</td>
-          </tr>
-          <tr>
-            <td>★★★ 고급</td>
-            <td>35%</td>
-            <td>—</td>
-          </tr>
-          <tr>
-            <td>★★ 일반</td>
-            <td>55.5%</td>
-            <td>—</td>
-          </tr>
-        </table>
-      </div>
-
-      <div class="card">
-        <h3>📈 성장 경로</h3>
-        <table class="tbl">
-          <tr>
-            <th>시스템</th>
-            <th>설명</th>
-            <th>과금 동력</th>
-          </tr>
-          <tr>
-            <td><strong>성급 업</strong></td>
-            <td>★2 → ★5 (동일 캐릭터 / 범용 재료)</td>
-            <td>중첩 뽑기</td>
-          </tr>
-          <tr>
-            <td><strong>스킬 계승</strong></td>
-            <td>다른 캐릭터의 스킬을 이식 (★4+)</td>
-            <td>핵심 과금 동력</td>
-          </tr>
-          <tr>
-            <td><strong>각성</strong></td>
-            <td>★5 이후 특수 소재로 초월 성장</td>
-            <td>엔드게임 과금</td>
-          </tr>
-        </table>
-        <div class="highlight-box" style="margin-top:16px">
-          <p><strong>감정적 과금 시나리오:</strong></p>
-          <p>"NOCC 블러드 네이비가 지구전 조합으로 공격해왔다 → 힐러를 무력화할 디버프 캐릭터가 필요 → 마침 헬레나 픽업 배너가 떠 있다 → 뽑아야겠다!"</p>
+          <table class="tbl">
+            <tr>
+              <th>CC 종류</th>
+              <th>지속</th>
+              <th>효과</th>
+            </tr>
+            <tr>
+              <td>스턴</td>
+              <td>1턴</td>
+              <td>행동 불가</td>
+            </tr>
+            <tr>
+              <td>빙결</td>
+              <td>1~2턴</td>
+              <td>행동 불가 + DEF 감소</td>
+            </tr>
+            <tr>
+              <td>감전</td>
+              <td>2턴</td>
+              <td>매 턴 피해 + SPD 감소</td>
+            </tr>
+            <tr>
+              <td>침묵</td>
+              <td>2턴</td>
+              <td>스킬 사용 불가 (일반 공격만)</td>
+            </tr>
+            <tr>
+              <td>화상</td>
+              <td>3턴</td>
+              <td>매 턴 지속 피해 (DoT)</td>
+            </tr>
+          </table>
         </div>
       </div>
     </div>
-
   </div>
 
-  <!-- ══ FOOTER ══ -->
-  <div class="footer">
-    <p>GE: 개척시대 — Game Design Document v0.3</p>
-    <p style="margin-top:4px">© 2026 IMC Games · 내부 기밀 자료 · 무단 배포 금지</p>
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TAB: 캐릭터 분류 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-characters">
+    <div class="container">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(155,111,217,0.12)">👤</div>
+          <h2>캐릭터 시스템</h2>
+          <span class="tag">395명</span>
+        </div>
+
+        <div class="card">
+          <h3>⚔️ 5대 역할</h3>
+          <table class="tbl">
+            <tr>
+              <th>역할</th>
+              <th>GE 베이스</th>
+              <th>핵심 스탯</th>
+              <th>전투 내 역할</th>
+            </tr>
+            <tr>
+              <td>⚔️ <strong>전사</strong></td>
+              <td>파이터, 검사 계열</td>
+              <td>ATK, HP, DEF</td>
+              <td>전열 딜러, 준탱커</td>
+            </tr>
+            <tr>
+              <td>🔫 <strong>사수</strong></td>
+              <td>머스킷티어, 총사</td>
+              <td>ATK, SPD, CRI</td>
+              <td>후열 화력. 미사일 핵심</td>
+            </tr>
+            <tr>
+              <td>🔮 <strong>마법사</strong></td>
+              <td>워록, 위자드</td>
+              <td>ATK(마법), 속성</td>
+              <td>범위 딜, CC. 속성전 핵심</td>
+            </tr>
+            <tr>
+              <td>💚 <strong>치유사</strong></td>
+              <td>스카우트, 사제</td>
+              <td>HP회복, RES</td>
+              <td>힐, 정화, 버프. 지구전 핵심</td>
+            </tr>
+            <tr>
+              <td>⚡ <strong>특수</strong></td>
+              <td>무투가, 암살, 소환</td>
+              <td>다양</td>
+              <td>암살(선공 1킬), CC, 소환</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>⭐ 4단계 등급</h3>
+          <table class="tbl">
+            <tr>
+              <th>등급</th>
+              <th>비율</th>
+              <th>GE 기준</th>
+              <th>특징</th>
+            </tr>
+            <tr>
+              <td><span class="badge badge-gold">★★★★★ 전설</span></td>
+              <td>~5%</td>
+              <td>원작 핵심 인물</td>
+              <td>고유 스킬 극강, 획득 어려움</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-purple">★★★★ 레어</span></td>
+              <td>~15%</td>
+              <td>원작 네임드</td>
+              <td>특화된 강점, 조건부 강함</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-blue">★★★ 고급</span></td>
+              <td>~35%</td>
+              <td>원작 영입 캐릭터</td>
+              <td>안정적 성능, 범용적</td>
+            </tr>
+            <tr>
+              <td><span class="badge badge-green">★★ 일반</span></td>
+              <td>~45%</td>
+              <td>기본 클래스/NPC</td>
+              <td>쉽게 구함, 육성으로 성장</td>
+            </tr>
+          </table>
+          <div class="highlight-box">
+            <p><strong>핵심: "일반도 ★5까지 키우면 레어와 싸울 수 있다"</strong></p>
+            <p>스킬 계승으로 일반 캐릭터에 강력한 스킬을 이식 가능. 등급 = 출발점의 차이, 천장의 차이가 아님.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>⚔️ 전투의 위계</h3>
+          <table class="tbl">
+            <tr>
+              <th>단계</th>
+              <th>적</th>
+              <th>전투 방식</th>
+              <th>긴장감</th>
+              <th>핵심 목적</th>
+            </tr>
+            <tr>
+              <td>몬스터</td>
+              <td>잡몹/보스</td>
+              <td>자동</td>
+              <td>★</td>
+              <td>재료 파밍 (관문)</td>
+            </tr>
+            <tr>
+              <td><strong>인간 파티</strong></td>
+              <td>해적/산적/용병</td>
+              <td><strong>3:3 전략전</strong></td>
+              <td>★★★</td>
+              <td>진짜 전투</td>
+            </tr>
+            <tr>
+              <td><strong>거점전</strong></td>
+              <td>NPC 세력 정예</td>
+              <td><strong>3:3 릴레이</strong></td>
+              <td>★★★★★</td>
+              <td>영토 쟁탈</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <script>
-    // ── Scroll spy for nav ──
-    const navItems = document.querySelectorAll('.nav-item');
-    const sections = document.querySelectorAll('.section');
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TAB: 배럭라이프 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-barracks">
+    <div class="container">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(78,204,163,0.12)">🏠</div>
+          <h2>배럭 라이프</h2>
+          <span class="tag">가문 경영의 심장</span>
+        </div>
+        <div class="highlight-box green">
+          <p><strong>배럭 = 풋볼매니저의 훈련장 + 카이로소프트의 마을 경영.</strong></p>
+          <p>전투 밖에서 캐릭터가 생활하고, 자원을 생산하고, 관계를 쌓는 공간. 게임 플레이 시간의 ~40%를 차지.</p>
+        </div>
 
-    window.addEventListener('scroll', () => {
-      let current = '';
-      sections.forEach(section => {
-        const top = section.offsetTop - 80;
-        if (window.scrollY >= top) current = section.id;
-      });
-      navItems.forEach(item => {
-        item.classList.remove('active');
-        if (item.getAttribute('href') === '#' + current) item.classList.add('active');
-      });
-    });
+        <div class="sub-tabs" data-group="barracks">
+          <div class="sub-tab active" data-sub="bar-jobs">생활 직업</div>
+          <div class="sub-tab" data-sub="bar-facility">시설/분위기</div>
+          <div class="sub-tab" data-sub="bar-food">음식 시스템</div>
+        </div>
 
-    // ── Smooth scroll ──
-    navItems.forEach(item => {
-      item.addEventListener('click', e => {
-        e.preventDefault();
-        const target = document.querySelector(item.getAttribute('href'));
-        if (target) target.scrollIntoView({ behavior: 'smooth' });
-      });
-    });
-  </script>
-
-  <!-- Firebase SDK -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAshoIjc2zUws3LH6zhOSqG_ba8RMY1o6I",
-      authDomain: "granado-afk-schedule.firebaseapp.com",
-      projectId: "granado-afk-schedule",
-      databaseURL: "https://granado-afk-schedule-default-rtdb.firebaseio.com",
-      storageBucket: "granado-afk-schedule.firebasestorage.app",
-      messagingSenderId: "152008333815",
-      appId: "1:152008333815:web:6d09a24a3709228c3736f2"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Get saved author name
-    let savedAuthor = localStorage.getItem('gdd_comment_author') || '';
-
-    // Add comment UI to each section and each card
-    document.querySelectorAll('.section').forEach(section => {
-      const sectionId = section.id;
-      if (!sectionId) return;
-
-      // Add comment to each card within section
-      const cards = section.querySelectorAll('.card');
-      cards.forEach((card, cardIdx) => {
-        const commentId = sectionId + '_card_' + cardIdx;
-        const h3 = card.querySelector('h3');
-        const cardTitle = h3 ? h3.textContent.trim().substring(0, 30) : 'card_' + cardIdx;
-
-        // Create comment toggle button
-        const toggle = document.createElement('div');
-        toggle.className = 'comment-toggle';
-        toggle.innerHTML = '💬 코멘트 <span class="count" data-comment-id="' + commentId + '">0</span>';
-
-        // Create comment area
-        const area = document.createElement('div');
-        area.className = 'comment-area';
-        area.innerHTML = `
-          <div class="comment-list" id="comments-${commentId}">
-            <div class="comment-empty">아직 코멘트가 없습니다</div>
+        <div class="sub-content active" data-sub="bar-jobs">
+          <div class="card">
+            <h3>👷 8대 생활 직업</h3>
+            <table class="tbl">
+              <tr>
+                <th>#</th>
+                <th>직업</th>
+                <th>배치 시설</th>
+                <th>생산물</th>
+                <th>시간당 기본</th>
+              </tr>
+              <tr>
+                <td>1</td>
+                <td>⛏️ <strong>채집꾼</strong></td>
+                <td>필드/거점</td>
+                <td>식재료, 광물, 약초</td>
+                <td>식재료 3, 광물 2</td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td>🏹 <strong>사냥꾼</strong></td>
+                <td>필드/훈련장</td>
+                <td>골드, 몬스터 소재</td>
+                <td>골드 100, 소재 2개</td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td>🍳 <strong>요리사</strong></td>
+                <td>식당</td>
+                <td>피로 회복 음식, 버프 음식</td>
+                <td>피로 음식 1.5개</td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td>🔨 <strong>대장장이</strong></td>
+                <td>대장간</td>
+                <td>장비 수리, 강화석</td>
+                <td>수리점수 50</td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td>💰 <strong>상인</strong></td>
+                <td>교역소</td>
+                <td>비스(Vis), 골드</td>
+                <td>비스 80, 골드 50</td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td>📚 <strong>연구원</strong></td>
+                <td>연구소</td>
+                <td>스킬 포인트, 전술서</td>
+                <td>RP 30</td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td>🏥 <strong>의무관</strong></td>
+                <td>의무실</td>
+                <td>HP 회복, 치료제</td>
+                <td>HP 회복 촉진</td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td>🎯 <strong>훈련교관</strong></td>
+                <td>훈련장</td>
+                <td>경험치, 훈련 보너스</td>
+                <td>EXP 생산</td>
+              </tr>
+            </table>
           </div>
-          <div class="comment-author-bar">
-            <input type="text" placeholder="이름" class="author-input" value="${savedAuthor}">
+          <div class="card">
+            <h3>📊 직업 효율 등급 & 숙련도</h3>
+            <table class="tbl">
+              <tr>
+                <th>효율 등급</th>
+                <th>생산량 배율</th>
+                <th>조건</th>
+              </tr>
+              <tr>
+                <td><span class="badge badge-gold">S 최적</span></td>
+                <td>×1.5</td>
+                <td>해당 직업에 가장 적합한 캐릭터</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-purple">A 적합</span></td>
+                <td>×1.2</td>
+                <td>관련 스킬/스탯 보유</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">B 보통</span></td>
+                <td>×1.0</td>
+                <td>기본</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-green">C 비적합</span></td>
+                <td>×0.7</td>
+                <td>전투 특화 캐릭터 강제 배치</td>
+              </tr>
+            </table>
+            <div class="highlight-box">
+              <p>숙련도 Lv.1~10: 누적 활동 시간에 따라 성장. <strong>Lv.5</strong>에 숙련 특수 효과 발동, <strong>Lv.8</strong>에 장인 칭호 + 고유
+                이벤트, <strong>Lv.10</strong>에 전설급 장인 (×1.70 배율).</p>
+              <p>→ 오래 함께한 캐릭터가 <strong>"우리 가문의 핵심 인력"</strong>이 되는 설계.</p>
+            </div>
           </div>
-          <div class="comment-input-row">
-            <input type="text" placeholder="코멘트를 입력하세요..." class="comment-text-input">
-            <button class="comment-submit">등록</button>
+        </div>
+
+        <div class="sub-content" data-sub="bar-facility">
+          <div class="card">
+            <h3>🏗️ 거점 시설</h3>
+            <table class="tbl">
+              <tr>
+                <th>시설</th>
+                <th>기능</th>
+                <th>Max Lv</th>
+                <th>효과</th>
+              </tr>
+              <tr>
+                <td>🍳 식당</td>
+                <td>요리 제작</td>
+                <td>15</td>
+                <td>요리 효율 +10%/Lv</td>
+              </tr>
+              <tr>
+                <td>🔨 대장간</td>
+                <td>장비 수리/강화</td>
+                <td>15</td>
+                <td>강화 성공률 +5%/Lv</td>
+              </tr>
+              <tr>
+                <td>📚 연구소</td>
+                <td>스킬 연구</td>
+                <td>15</td>
+                <td>연구 속도 +8%/Lv</td>
+              </tr>
+              <tr>
+                <td>🏥 의무실</td>
+                <td>HP/피로 회복</td>
+                <td>15</td>
+                <td>회복 속도 +10%/Lv</td>
+              </tr>
+              <tr>
+                <td>🎯 훈련장</td>
+                <td>캐릭터 훈련</td>
+                <td>15</td>
+                <td>EXP 획득 +10%/Lv</td>
+              </tr>
+              <tr>
+                <td>💰 교역소</td>
+                <td>교역/판매</td>
+                <td>15</td>
+                <td>교역 수익 +8%/Lv</td>
+              </tr>
+              <tr>
+                <td>📊 경영실</td>
+                <td>유지비 절감</td>
+                <td>10</td>
+                <td>유지비 -3%/Lv</td>
+              </tr>
+            </table>
           </div>
-        `;
+          <div class="card">
+            <h3>🌤️ 거점 분위기</h3>
+            <table class="tbl">
+              <tr>
+                <th>분위기</th>
+                <th>등급</th>
+                <th>전체 효과</th>
+              </tr>
+              <tr>
+                <td>90+</td>
+                <td>🌟 <strong>화목</strong></td>
+                <td>생산 효율 +15%, 충성도 +1/일, 특수 이벤트 ×2</td>
+              </tr>
+              <tr>
+                <td>70~89</td>
+                <td>😊 양호</td>
+                <td>생산 효율 +5%</td>
+              </tr>
+              <tr>
+                <td>50~69</td>
+                <td>😐 보통</td>
+                <td>기본</td>
+              </tr>
+              <tr>
+                <td>30~49</td>
+                <td>😟 불안</td>
+                <td>생산 효율 -10%, 갈등 이벤트 ×2</td>
+              </tr>
+              <tr>
+                <td>0~29</td>
+                <td>💀 위기</td>
+                <td>생산 효율 -30%, 탈주 위험!</td>
+              </tr>
+            </table>
+          </div>
+        </div>
 
-        card.appendChild(toggle);
-        card.appendChild(area);
+        <div class="sub-content" data-sub="bar-food">
+          <div class="card">
+            <h3>🍳 음식 시스템 — 12종+</h3>
+            <table class="tbl">
+              <tr>
+                <th>음식</th>
+                <th>재료</th>
+                <th>효과</th>
+                <th>숙련 요구</th>
+              </tr>
+              <tr>
+                <td>🍞 기본 식사</td>
+                <td>식재료 ×1</td>
+                <td>피로 +10</td>
+                <td>Lv.1</td>
+              </tr>
+              <tr>
+                <td>🥘 리볼도외 스튜</td>
+                <td>식재료 ×2</td>
+                <td>피로 +15, HP +5%</td>
+                <td>Lv.1</td>
+              </tr>
+              <tr>
+                <td>🐟 코임브라 해물탕</td>
+                <td>식재료 ×3, 약초 ×1</td>
+                <td>피로 +25, HP +10%</td>
+                <td>Lv.2</td>
+              </tr>
+              <tr>
+                <td>🥩 패루초 바베큐</td>
+                <td>식재료 ×4, 소재 ×1</td>
+                <td>피로 +20, ATK +3%</td>
+                <td>Lv.2</td>
+              </tr>
+              <tr>
+                <td>🍰 오슈 약초케이크</td>
+                <td>식재료 ×3, 약초 ×3</td>
+                <td>피로 +30, MP +15%</td>
+                <td>Lv.4</td>
+              </tr>
+              <tr>
+                <td>🍷 장인의 만찬</td>
+                <td>식재료 ×10, 약초 ×5</td>
+                <td>피로 전회복, 올스탯+5%</td>
+                <td>Lv.7</td>
+              </tr>
+            </table>
+            <div class="highlight-box">
+              <p>→ 요리사 숙련도가 올라야 고급 음식 제작 가능. <strong>판필로를 3개월 키우면 장인이 되어 "장인의 만찬" 제작 가능</strong> → 대체 불가 인력!</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        // Toggle click
-        toggle.addEventListener('click', () => {
-          area.classList.toggle('open');
-        });
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TAB: 관계 시스템 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-relationship">
+    <div class="container">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(217,138,74,0.12)">💞</div>
+          <h2>관계 시스템</h2>
+          <span class="tag">가문의 서사</span>
+        </div>
+        <div class="highlight-box">
+          <p><strong>GE 원작 60종 인연관계를 계승하되, "숨겨진 등급" + "퀘스트 기반 해금"으로 탐색의 재미를 극대화.</strong></p>
+          <p>관계 보너스가 전투뿐 아니라 <strong>생활·운영·서사 전반</strong>에 영향.</p>
+        </div>
 
-        // Submit comment
-        const submitBtn = area.querySelector('.comment-submit');
-        const textInput = area.querySelector('.comment-text-input');
-        const authorInput = area.querySelector('.author-input');
+        <div class="sub-tabs" data-group="relationship">
+          <div class="sub-tab active" data-sub="rel-types">관계 유형</div>
+          <div class="sub-tab" data-sub="rel-bond">유대·감정</div>
+          <div class="sub-tab" data-sub="rel-synergy">시너지 체계</div>
+        </div>
 
-        const submitComment = () => {
-          const text = textInput.value.trim();
-          const author = authorInput.value.trim() || '익명';
-          if (!text) return;
+        <div class="sub-content active" data-sub="rel-types">
+          <div class="card">
+            <h3>💞 5대 관계 유형</h3>
+            <table class="tbl">
+              <tr>
+                <th>유형</th>
+                <th>아이콘</th>
+                <th>전투 보너스</th>
+                <th>생활 보너스</th>
+                <th>예시</th>
+              </tr>
+              <tr>
+                <td><strong>동료</strong></td>
+                <td>🤝</td>
+                <td>ATK/DEF +3~8%</td>
+                <td>생산량 +3~10%</td>
+                <td>무사시 ↔ 나르</td>
+              </tr>
+              <tr>
+                <td><strong>라이벌</strong></td>
+                <td>⚡</td>
+                <td>CRI +5~15%</td>
+                <td>훈련 EXP +5~15%</td>
+                <td>그라시엘로 ↔ 아이라완</td>
+              </tr>
+              <tr>
+                <td><strong>가문</strong></td>
+                <td>👨‍👩‍👧</td>
+                <td>HP +5~12%</td>
+                <td>시설 비용 -3~10%</td>
+                <td>몬토로 가문</td>
+              </tr>
+              <tr>
+                <td><strong>사제</strong></td>
+                <td>📖</td>
+                <td>스킬 위력 +4~10%</td>
+                <td>스킬 계승 +10%</td>
+                <td>빈센트 → 에밀리아</td>
+              </tr>
+              <tr>
+                <td><strong>연인</strong></td>
+                <td>💕</td>
+                <td>회복량 +5~15%</td>
+                <td>충성도 유지 가속</td>
+                <td>아데린 ↔ 레이븐</td>
+              </tr>
+            </table>
+          </div>
+          <div class="card">
+            <h3>🔍 숨겨진 등급 (유저 탐색 유도)</h3>
+            <table class="tbl">
+              <tr>
+                <th>등급</th>
+                <th>내부 명칭</th>
+                <th>보너스 배율</th>
+                <th>비율</th>
+                <th>유저 체감</th>
+              </tr>
+              <tr>
+                <td>★★★</td>
+                <td><span class="badge badge-gold">전설적 인연</span></td>
+                <td>×2.0</td>
+                <td>~10%</td>
+                <td>"이 조합 확실히 뭔가 다르다"</td>
+              </tr>
+              <tr>
+                <td>★★</td>
+                <td><span class="badge badge-purple">깊은 인연</span></td>
+                <td>×1.3</td>
+                <td>~35%</td>
+                <td>"꽤 좋은 시너지네"</td>
+              </tr>
+              <tr>
+                <td>★</td>
+                <td><span class="badge badge-blue">인연</span></td>
+                <td>×1.0</td>
+                <td>~55%</td>
+                <td>"기본 보너스"</td>
+              </tr>
+            </table>
+            <div class="highlight-box">
+              <p>등급은 <strong>유저에게 직접 공개하지 않음.</strong> 도감에 "???" 표시, 배럭 상호작용 빈도, 퀘스트 연출 차이로 <strong>자연스럽게 발견</strong>하도록
+                유도.</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>🔓 관계 해금 — 퀘스트 기반</h3>
+            <div class="flow-box">[트리거] 두 캐릭터를 같은 거점에 배치
+              ↓ (조건 충족 시)
+              [이벤트] 배럭에서 특별 상호작용 → 관계 퀘스트 시작
+              ↓
+              [퀘스트] "잃어버린 형제" — 특정 맵에서 두 캐릭터로 전투
+              ↓
+              [해금] 가문 인연 활성화 → ★★★ 전설적 인연 → 보너스 ×2.0
 
-          localStorage.setItem('gdd_comment_author', author);
-          savedAuthor = author;
-          // Update all author inputs
-          document.querySelectorAll('.author-input').forEach(inp => inp.value = author);
+              예시 A) 탐색형: 무사시 + 나르 → 같은 거점 5일 → "옛 전우" 퀘스트
+              예시 B) 대련형: 그라시엘로 + 아이라완 → 훈련장 3일 → 대련 이벤트</div>
+          </div>
+        </div>
 
-          const commentsRef = ref(db, 'gdd_comments/' + commentId);
-          push(commentsRef, {
-            author: author,
-            text: text,
-            timestamp: Date.now()
-          });
-
-          textInput.value = '';
-        };
-
-        submitBtn.addEventListener('click', submitComment);
-        textInput.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter') submitComment();
-        });
-
-        // Listen for comments
-        const commentsRef = ref(db, 'gdd_comments/' + commentId);
-        onValue(commentsRef, (snapshot) => {
-          const list = document.getElementById('comments-' + commentId);
-          const countEl = document.querySelector('[data-comment-id="' + commentId + '"]');
-          const data = snapshot.val();
-
-          if (!data) {
-            list.innerHTML = '<div class="comment-empty">아직 코멘트가 없습니다</div>';
-            countEl.textContent = '0';
-            return;
-          }
-
-          const entries = Object.entries(data).sort((a, b) => a[1].timestamp - b[1].timestamp);
-          countEl.textContent = entries.length;
-
-          list.innerHTML = entries.map(([key, val]) => {
-            const date = new Date(val.timestamp);
-            const timeStr = date.toLocaleDateString('ko-KR') + ' ' + date.toLocaleTimeString('ko-KR', {hour:'2-digit', minute:'2-digit'});
-            return `<div class="comment-item">
-              <div class="comment-meta">
-                <span><span class="comment-author">${val.author}</span> · ${timeStr}</span>
-                <span class="comment-delete" data-key="${key}" data-cid="${commentId}">✕</span>
+        <div class="sub-content" data-sub="rel-bond">
+          <div class="card">
+            <h3>💎 유대 레벨 (Lv.1~4)</h3>
+            <table class="tbl">
+              <tr>
+                <th>레벨</th>
+                <th>필요 유대점수</th>
+                <th>보너스 배율</th>
+                <th>해금 콘텐츠</th>
+              </tr>
+              <tr>
+                <td>Lv.1 (인식)</td>
+                <td>0 (해금 시)</td>
+                <td>×1.0</td>
+                <td>기본 관계 보너스</td>
+              </tr>
+              <tr>
+                <td>Lv.2 (이해)</td>
+                <td>100</td>
+                <td>×1.2</td>
+                <td>관계 스킨/대사 1단계</td>
+              </tr>
+              <tr>
+                <td>Lv.3 (신뢰)</td>
+                <td>300</td>
+                <td>×1.5</td>
+                <td>배럭 특수 상호작용 해금</td>
+              </tr>
+              <tr>
+                <td>Lv.4 (절대)</td>
+                <td>600</td>
+                <td>×2.0</td>
+                <td><span class="badge badge-gold">합동 스킬 해금</span> + 관계 스토리</td>
+              </tr>
+            </table>
+          </div>
+          <div class="card">
+            <h3>❤️ 개별 감정 — 충성도 / 사기 / 호감도</h3>
+            <div class="card-grid-3">
+              <div class="highlight-box">
+                <p><strong style="color:var(--accent-blue)">충성도 (0~100)</strong></p>
+                <p>가문에 대한 소속감. 90+: 스킬 +10%, 40↓: 탈주 위험!</p>
+                <p>▲ 급여 인상, 승전, 음식 / ▼ 냉대, 연패, 급여 삭감</p>
               </div>
-              <div class="comment-text">${val.text}</div>
-            </div>`;
-          }).join('');
+              <div class="highlight-box">
+                <p><strong style="color:var(--accent-green)">사기 (0~100)</strong></p>
+                <p>현재 전투 의욕. 95+: ATK +10% / 40↓: ATK -15%</p>
+                <p>▲ 승리, 연승, 좋은 음식 / ▼ 패배, 연패, 동료 전사</p>
+              </div>
+              <div class="highlight-box">
+                <p><strong style="color:var(--accent-orange)">호감도 (0~100)</strong></p>
+                <p>가주에 대한 개인적 감정. 높을수록 특수 이벤트, 스킬 발동률↑</p>
+                <p>▲ 선물, 생일 축하 / ▼ 방치, 혹사</p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-          // Delete handlers
-          list.querySelectorAll('.comment-delete').forEach(btn => {
-            btn.addEventListener('click', () => {
-              const key = btn.dataset.key;
-              const cid = btn.dataset.cid;
-              if (confirm('이 코멘트를 삭제하시겠습니까?')) {
-                remove(ref(db, 'gdd_comments/' + cid + '/' + key));
-              }
-            });
-          });
+        <div class="sub-content" data-sub="rel-synergy">
+          <div class="card">
+            <h3>🔗 다층 시너지 체계</h3>
+            <div class="flow-box">┌──────────────────────────────────────────────────────┐
+              │ [Layer 1] 1:1 관계 보너스 (동료/라이벌/가문/사제/연인) │
+              ├──────────────────────────────────────────────────────┤
+              │ [Layer 2] 클러스터(진영) 시너지 + 관계 체인 │
+              ├──────────────────────────────────────────────────────┤
+              │ [Layer 3] 합동 스킬 (Lv.4 유대) │
+              └──────────────────────────────────────────────────────┘
 
-          // Auto scroll to bottom
-          list.scrollTop = list.scrollHeight;
+              삼전이 진영/유파/전법/병종 시너지의 다층 구조로
+              수백 가지 조합을 만들어내듯,
+              GE도 관계 유형 × 등급 × 유대 레벨 × 클러스터 조합으로
+              전략적 깊이를 확보.</div>
+          </div>
+          <div class="card">
+            <h3>🏠 배럭 관계 이벤트</h3>
+            <table class="tbl">
+              <tr>
+                <th>이벤트</th>
+                <th>트리거</th>
+                <th>연출</th>
+                <th>효과</th>
+              </tr>
+              <tr>
+                <td>식사 함께하기</td>
+                <td>요리사 + 같은 거점</td>
+                <td>식당에서 함께 식사</td>
+                <td>유대 +2, 호감도 +1</td>
+              </tr>
+              <tr>
+                <td>훈련 대련</td>
+                <td>전투형 2인 (훈련장)</td>
+                <td>격렬한 대련</td>
+                <td>유대 +3, 사기 +5</td>
+              </tr>
+              <tr>
+                <td>심야 대화</td>
+                <td>같은 거점 2인 (밤)</td>
+                <td>별 아래 대화</td>
+                <td>유대 +5, 호감도 +2</td>
+              </tr>
+              <tr>
+                <td>갈등</td>
+                <td>충성도 낮은 2인</td>
+                <td>말다툼</td>
+                <td>유대 -3, 충성도 -2</td>
+              </tr>
+              <tr>
+                <td>인연 회상</td>
+                <td>★★+ 관계 (7일+)</td>
+                <td>과거 회상 컷씬</td>
+                <td>유대 +10</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TAB: 세력전 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-factions">
+    <div class="container">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(217,74,92,0.12)">🏰</div>
+          <h2>NPC 세력전 (PvF)</h2>
+          <span class="tag">Player vs Faction</span>
+        </div>
+        <div class="highlight-box red">
+          <p><strong>PvP의 피로감 없이, NPC 세력과의 전략적 전쟁.</strong> 적의 적은 친구 — 외교·포로·경제전이 결합된 세력 다이나믹.</p>
+        </div>
+
+        <div class="card-grid">
+          <div class="card">
+            <h3><span class="faction-nocc">⚔️</span> NOCC</h3>
+            <p><span class="badge badge-red">지구전 + 탱커</span></p>
+            <p><strong>신대륙 질서 통제 위원회.</strong> 본국의 통제 기관. 개척 가문의 자유 활동을 규제.</p>
+            <p>🎭 관료적, 권위적 — "우리가 법이다"</p>
+            <p>💥 채굴권 허가제, 통행세 부과</p>
+          </div>
+          <div class="card">
+            <h3><span class="faction-noble">🦊</span> 십인 귀족</h3>
+            <p><span class="badge badge-orange">디버프 + 경제전</span></p>
+            <p><strong>Los Diez Nobles.</strong> 몬토로, 에르난데즈 등 경제 지배층. 교활한 음모.</p>
+            <p>🎭 교활, 계산적 — "정보가 곧 힘"</p>
+            <p>💥 교역 수수료, 배신 높음</p>
+          </div>
+          <div class="card">
+            <h3><span class="faction-auch">📚</span> 오슈 학파</h3>
+            <p><span class="badge badge-purple">속성 마법 + CC</span></p>
+            <p><strong>Auch Academy.</strong> 마법과 학문의 도시. 연구 자원 독점.</p>
+            <p>🎭 오만, 지적 — "무식한 개척자들"</p>
+            <p>💥 연구 지역 접근 제한</p>
+          </div>
+          <div class="card">
+            <h3><span class="faction-baron">🗡️</span> 버론</h3>
+            <p><span class="badge"
+                style="background:rgba(255,255,255,0.08);color:var(--text);border:1px solid var(--border)">속도 +
+                암살</span></p>
+            <p><strong>Los Barón.</strong> 무법자·해적·용병 연합. 때로는 동맹 가능!</p>
+            <p>🎭 음험, 기회주의 — "약한 놈은 빼앗긴다"</p>
+            <p>💥 교역로 습격, 약탈</p>
+          </div>
+          <div class="card">
+            <h3><span class="faction-bristia">🛡️</span> 브리스티아 원정군</h3>
+            <p><span class="badge badge-blue">미사일 + 속도</span></p>
+            <p><strong>Bristia Expeditionary Force.</strong> 독립을 꿈꾸는 북방 섬나라.</p>
+            <p>🎭 정의감, 완고 — "자유를 위해 싸운다"</p>
+            <p>💥 자원 경쟁 (미워하기 어려운 적)</p>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:16px">
+          <h3>📅 세력전 3계층</h3>
+          <table class="tbl">
+            <tr>
+              <th>계층</th>
+              <th>주기</th>
+              <th>규모</th>
+              <th>성격</th>
+              <th>핵심 보상</th>
+            </tr>
+            <tr>
+              <td><strong>주간전</strong></td>
+              <td>매주 토요일</td>
+              <td>1~2 거점</td>
+              <td>일상적 국경 분쟁</td>
+              <td>훈장, 채굴권 갱신</td>
+            </tr>
+            <tr>
+              <td><strong>월간전</strong></td>
+              <td>매월 마지막 주</td>
+              <td>3~5 거점</td>
+              <td>세력 판도 변경</td>
+              <td>전설 서찰, 포로 기회</td>
+            </tr>
+            <tr>
+              <td><strong>시즌전</strong></td>
+              <td>분기 (3개월)</td>
+              <td>신대륙 전역</td>
+              <td>대전쟁 — 최종 콘텐츠</td>
+              <td>시즌 한정 전설 캐릭터</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>⚔️ 핵심: 동시에 공격하고 수비해야 한다</h3>
+          <div class="flow-box">[공격팀] — 적 세력의 거점을 공략하러 출격
+            A파티(미사일): 버론 거점 기습
+            B파티(속성): 오슈 학파 전초기지
+
+            [수비팀] — 내 거점을 지키는 주둔군
+            C파티(지구전): 리볼도외 수비
+            D파티(디버프): 코임브라 수비
+
+            [토벌팀] — 자원 파밍 계속
+            E파티: 퀸즈게이트 토벌
+
+            → 최소 5팀(15명)이 동시에 필요!
+            → 캐릭터가 부족하면 수비를 비우거나 토벌 포기
+            → 더 영입하고, 더 육성해야 한다</div>
+        </div>
+
+        <div class="card">
+          <h3>🏆 포로 시스템</h3>
+          <p>거점 공략 <strong>대승리(SSS)</strong> 시 적 세력 캐릭터를 포로로 획득!</p>
+          <table class="tbl">
+            <tr>
+              <th>선택지</th>
+              <th>효과</th>
+            </tr>
+            <tr>
+              <td><strong>가문에 편입</strong></td>
+              <td>전력 추가. 단, 충성도 30에서 시작 (탈주 위험)</td>
+            </tr>
+            <tr>
+              <td><strong>석방</strong></td>
+              <td>해당 세력 우호도 +30 (외교적 이득)</td>
+            </tr>
+            <tr>
+              <td><strong>분해</strong></td>
+              <td>스킬/재료 확보 (외교적 불이익)</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TAB: 토벌 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-raid">
+    <div class="container">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(74,144,217,0.12)">🗡️</div>
+          <h2>토벌 시스템</h2>
+          <span class="tag">PvE 재료 수급</span>
+        </div>
+
+        <div class="card">
+          <h3>🎯 토벌 vs 거점전</h3>
+          <table class="tbl">
+            <tr>
+              <th>비교</th>
+              <th>토벌 (PvE)</th>
+              <th>거점전 (PvF)</th>
+            </tr>
+            <tr>
+              <td>적</td>
+              <td>몬스터/보스 + 인간 적 파티</td>
+              <td>NPC 세력 정예</td>
+            </tr>
+            <tr>
+              <td>목적</td>
+              <td>재료·소재 수급</td>
+              <td>영토·이권 쟁탈</td>
+            </tr>
+            <tr>
+              <td>성격</td>
+              <td>일 (노동) — "밭 가는 것"</td>
+              <td>전쟁 — "영주가 싸우는 것"</td>
+            </tr>
+            <tr>
+              <td>반복성</td>
+              <td>높음 (효율 루틴화)</td>
+              <td>낮음 (매번 다른 전개)</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>⚙️ 피로도 & 효율 트레이드오프</h3>
+          <table class="tbl">
+            <tr>
+              <th>조합</th>
+              <th>총 전투 턴</th>
+              <th>피로도 소모</th>
+              <th>효율</th>
+            </tr>
+            <tr>
+              <td>미사일 (빠른 클리어)</td>
+              <td>12턴</td>
+              <td>17</td>
+              <td>★★★★★</td>
+            </tr>
+            <tr>
+              <td>일반 조합</td>
+              <td>20턴</td>
+              <td>25</td>
+              <td>★★★</td>
+            </tr>
+            <tr>
+              <td>지구전 (안전 클리어)</td>
+              <td>28턴</td>
+              <td>33</td>
+              <td>★★</td>
+            </tr>
+          </table>
+          <div class="highlight-box">
+            <p>미사일은 효율적이지만 위험. 지구전은 안전하지만 비효율. <strong>트레이드오프</strong>가 전략.</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>💀 인간 적 파티 (토벌 존 길목)</h3>
+          <table class="tbl">
+            <tr>
+              <th>인간 적</th>
+              <th>연계 세력</th>
+              <th>출현 지역</th>
+              <th>특징</th>
+            </tr>
+            <tr>
+              <td>해적단</td>
+              <td class="faction-baron">🗡️ 버론</td>
+              <td>항구, 해안</td>
+              <td>속도 제압</td>
+            </tr>
+            <tr>
+              <td>산적단</td>
+              <td>독립</td>
+              <td>산길, 숲</td>
+              <td>매복, 기습</td>
+            </tr>
+            <tr>
+              <td>암살자 길드</td>
+              <td class="faction-noble">🦊 십인 귀족</td>
+              <td>야간, 도시 근교</td>
+              <td>핵심 타겟 제거</td>
+            </tr>
+            <tr>
+              <td>용병단</td>
+              <td>독립/고용</td>
+              <td>다양</td>
+              <td>비스로 매수 가능</td>
+            </tr>
+            <tr>
+              <td>원정 정찰대</td>
+              <td class="faction-nocc">⚔️ NOCC</td>
+              <td>국경, 전초</td>
+              <td>정규군 편성</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TAB: 경제 시스템 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-economy">
+    <div class="container">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(212,168,67,0.12)">💰</div>
+          <h2>경제 시스템</h2>
+          <span class="tag">FM식 재정 관리</span>
+        </div>
+        <div class="highlight-box">
+          <p><strong>FM의 "이적료 vs 연봉" 딜레마를 RPG에 적용.</strong></p>
+          <p>캐릭터 유지비 vs 시설 투자 → 비싼 캐릭터를 뽑으면 유지가 힘들다. 재정 건전성 = 가문의 생존.</p>
+        </div>
+
+        <div class="sub-tabs" data-group="economy">
+          <div class="sub-tab active" data-sub="eco-currency">화폐 체계</div>
+          <div class="sub-tab" data-sub="eco-balance">수입/지출</div>
+          <div class="sub-tab" data-sub="eco-maintain">유지비</div>
+        </div>
+
+        <div class="sub-content active" data-sub="eco-currency">
+          <div class="card">
+            <h3>💎 3대 화폐</h3>
+            <table class="tbl">
+              <tr>
+                <th>화폐</th>
+                <th>아이콘</th>
+                <th>획득처</th>
+                <th>주요 용도</th>
+                <th>성격</th>
+              </tr>
+              <tr>
+                <td><strong>비스 (Vis)</strong></td>
+                <td>💵</td>
+                <td>사냥, 교역, 토벌</td>
+                <td>유지비, 일상 소비, 교역</td>
+                <td>넉넉 (운영 안정)</td>
+              </tr>
+              <tr>
+                <td><strong>골드</td>
+                <td>🪙</td>
+                <td>레이드, 분해, 업적</td>
+                <td>장비 강화, 성급 돌파, 시설 업그레이드</td>
+                <td>빠듯 (성장 갈증)</td>
+              </tr>
+              <tr>
+                <td><strong>보석</td>
+                <td>💎</td>
+                <td>업적, 이벤트, 과금</td>
+                <td>뽑기(서찰), 프리미엄 아이템</td>
+                <td>부족 (과금 동기)</td>
+              </tr>
+            </table>
+          </div>
+          <div class="card">
+            <h3>🔄 화폐 교환 규칙</h3>
+            <table class="tbl">
+              <tr>
+                <th>변환</th>
+                <th>가능</th>
+                <th>비율</th>
+                <th>제한</th>
+              </tr>
+              <tr>
+                <td>보석 → 비스</td>
+                <td>✅</td>
+                <td>1보석 = 10비스</td>
+                <td>일 300보석 한도</td>
+              </tr>
+              <tr>
+                <td>보석 → 골드</td>
+                <td>✅</td>
+                <td>1보석 = 8골드</td>
+                <td>일 300보석 한도</td>
+              </tr>
+              <tr>
+                <td>비스 ↔ 골드</td>
+                <td>❌</td>
+                <td>—</td>
+                <td>역할 분리 유지</td>
+              </tr>
+              <tr>
+                <td>보석 → 서찰</td>
+                <td>✅</td>
+                <td>280보석 = 1연차</td>
+                <td>무제한</td>
+              </tr>
+            </table>
+          </div>
+          <div class="card">
+            <h3>📦 1차 자원 (원자재)</h3>
+            <table class="tbl">
+              <tr>
+                <th>자원</th>
+                <th>생산자</th>
+                <th>생산량/h</th>
+                <th>용도</th>
+              </tr>
+              <tr>
+                <td>🌾 식재료</td>
+                <td>채집꾼</td>
+                <td>3개/h</td>
+                <td>음식 제작</td>
+              </tr>
+              <tr>
+                <td>⛏️ 광물</td>
+                <td>채집꾼</td>
+                <td>2개/h</td>
+                <td>장비 수리/강화</td>
+              </tr>
+              <tr>
+                <td>🌿 약초</td>
+                <td>채집꾼</td>
+                <td>2개/h</td>
+                <td>치료제, 약초케이크</td>
+              </tr>
+              <tr>
+                <td>🦴 몬스터 소재</td>
+                <td>사냥꾼, 레이드</td>
+                <td>2개/h + 레이드</td>
+                <td>장비 제작, 강화</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="sub-content" data-sub="eco-balance">
+          <div class="card">
+            <h3>📊 일일 수입/지출 (Lv.40 기준)</h3>
+            <div class="card-grid">
+              <div class="highlight-box green">
+                <p><strong style="color:var(--accent-green)">📈 일일 수입 (무과금)</strong></p>
+                <p>비스: ~5,000 / 골드: ~2,500 / 보석: ~200</p>
+                <p>주요 소스: 사냥꾼, 교역, 레이드, 일일 퀘스트</p>
+              </div>
+              <div class="highlight-box red">
+                <p><strong style="color:var(--accent-red)">📉 일일 지출</strong></p>
+                <p>유지비: ~3,000비스 / 음식: 식재료 ~30 / 수리: 광물 ~15</p>
+                <p>수입 ≈ 지출 (빠듯) → 효율 운영이 핵심</p>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <h3>📈 경제 구간별 체감</h3>
+            <div class="flow-box">[초반 — Lv.1~20] 캐릭터 10~15명 / 유지비 500~1,000 비스/일
+              수입 > 지출 → "돈 걱정 없이 성장하는 시기"
+
+              [중반 — Lv.21~40] 캐릭터 20~30명 / 유지비 2,000~3,000 비스/일
+              수입 ≈ 지출 → "아끼기 시작. 누구를 키울지 고민"
+
+              [후반 — Lv.41~60] 캐릭터 35~50명 / 유지비 3,500~6,000 비스/일
+              수입 < 지출 → "경영 효율이 생존의 열쇠. 적자면 캐릭터 방출 고민" </div>
+            </div>
+          </div>
+
+          <div class="sub-content" data-sub="eco-maintain">
+            <div class="card">
+              <h3>👥 캐릭터 유지비</h3>
+              <table class="tbl">
+                <tr>
+                  <th>등급</th>
+                  <th>일일 유지비 (비스)</th>
+                  <th>Lv 보정</th>
+                </tr>
+                <tr>
+                  <td>★★ Normal</td>
+                  <td>20</td>
+                  <td>+0.5/Lv</td>
+                </tr>
+                <tr>
+                  <td>★★★ High</td>
+                  <td>35</td>
+                  <td>+0.8/Lv</td>
+                </tr>
+                <tr>
+                  <td>★★★★ Rare</td>
+                  <td>60</td>
+                  <td>+1.2/Lv</td>
+                </tr>
+                <tr>
+                  <td>★★★★★ Legend</td>
+                  <td>100</td>
+                  <td>+2.0/Lv</td>
+                </tr>
+              </table>
+              <div class="highlight-box">
+                <p><strong>핵심 딜레마:</strong> 전설 캐릭터 Lv.50 유지비 = 200비스/일. 10명이면 2,000비스/일!</p>
+                <p>→ "캐릭터를 더 뽑을 것인가, 지금 인원으로 최적화할 것인가?" = FM의 스쿼드 관리와 동일.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- TAB: 뽑기/성장 -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-gacha">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(212,168,67,0.12)">🎰</div>
+            <h2>뽑기 & 성장 시스템</h2>
+            <span class="tag">수익 모델</span>
+          </div>
+
+          <div class="card">
+            <h3>🃏 카드 활용도 — "헛뽑은 없다"</h3>
+            <p>삼국지전략판처럼, 뽑은 캐릭터는 <strong>무조건 쓸모가 있다</strong>.</p>
+            <table class="tbl">
+              <tr>
+                <th>활용</th>
+                <th>설명</th>
+                <th>삼전 비교</th>
+              </tr>
+              <tr>
+                <td>① <strong>전투 투입</strong></td>
+                <td>MCC에 편성하여 직접 활약</td>
+                <td>무장 편성</td>
+              </tr>
+              <tr>
+                <td>② <strong>성급 돌파</strong></td>
+                <td>동일 캐릭터를 합쳐 ★ 상승 (★1→★5)</td>
+                <td>무장 돌파</td>
+              </tr>
+              <tr>
+                <td>③ <strong>분해 → 스킬 추출</strong></td>
+                <td>캐릭터를 갈아서 고유 스킬 추출!</td>
+                <td>전법 계승 (핵심!)</td>
+              </tr>
+              <tr>
+                <td>④ <strong>배럭 내정</strong></td>
+                <td>채광/요리/제련 등 자원 생산</td>
+                <td>내정관 배치</td>
+              </tr>
+              <tr>
+                <td>⑤ <strong>분해 → 재료</strong></td>
+                <td>범용 성급석, 비스, 도감 포인트</td>
+                <td>무장 은퇴</td>
+              </tr>
+            </table>
+            <div class="highlight-box">
+              <p>🔥 <strong>③ 스킬 추출이 핵심 과금 동력!</strong></p>
+              <p>S급 스킬 "성역의 기도"를 MCC 3명에게 모두 달려면 → 에밀리아 <strong>3장 분해</strong> 필요.</p>
+              <p>에밀리아 본인도 ★5로 키우려면 +7장. → 총 <strong>10장 이상</strong> 뽑아야!</p>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>⚔️ 스킬 계승 가치표</h3>
+            <table class="tbl">
+              <tr>
+                <th>가치</th>
+                <th>스킬 예시</th>
+                <th>소스 캐릭터</th>
+                <th>수요</th>
+              </tr>
+              <tr>
+                <td><span class="badge badge-gold">S 필수</span></td>
+                <td>성역의 기도 (범위 힐)</td>
+                <td>에밀리아 (전설)</td>
+                <td>★★★★★</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-gold">S 필수</span></td>
+                <td>무쌍 집중 (ATK +40%)</td>
+                <td>그라시엘로 (영웅)</td>
+                <td>★★★★★</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-purple">A 핵심</span></td>
+                <td>도발 방벽 (3턴 도발)</td>
+                <td>다리아 (레어)</td>
+                <td>★★★★</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">B 유용</span></td>
+                <td>회피 직감 (EVD +20%)</td>
+                <td>리사 (레어)</td>
+                <td>★★★</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-green">C 보통</span></td>
+                <td>기본 강화 (ATK +5%)</td>
+                <td>파이터 (일반)</td>
+                <td>★★</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>📦 소환 확률 & 성장 경로</h3>
+            <div class="card-grid">
+              <div>
+                <table class="tbl">
+                  <tr>
+                    <th>티어</th>
+                    <th>확률</th>
+                    <th>천장</th>
+                  </tr>
+                  <tr>
+                    <td>★★★★★ 전설</td>
+                    <td>1.5%</td>
+                    <td>80연차 보장</td>
+                  </tr>
+                  <tr>
+                    <td>★★★★ 레어</td>
+                    <td>8%</td>
+                    <td>—</td>
+                  </tr>
+                  <tr>
+                    <td>★★★ 고급</td>
+                    <td>35%</td>
+                    <td>—</td>
+                  </tr>
+                  <tr>
+                    <td>★★ 일반</td>
+                    <td>55.5%</td>
+                    <td>—</td>
+                  </tr>
+                </table>
+              </div>
+              <div>
+                <table class="tbl">
+                  <tr>
+                    <th>성장</th>
+                    <th>설명</th>
+                    <th>과금 동력</th>
+                  </tr>
+                  <tr>
+                    <td><strong>성급 업</strong></td>
+                    <td>★2 → ★5 (동일 캐릭터/범용)</td>
+                    <td>중첩 뽑기</td>
+                  </tr>
+                  <tr>
+                    <td><strong>스킬 계승</strong></td>
+                    <td>다른 캐릭터 스킬 이식 (★4+)</td>
+                    <td>핵심 과금</td>
+                  </tr>
+                  <tr>
+                    <td><strong>각성</strong></td>
+                    <td>★5 이후 특수 소재 초월 성장</td>
+                    <td>엔드게임</td>
+                  </tr>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- TAB: UI/온보딩 -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-ui">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(74,204,217,0.12)">📱</div>
+            <h2>UI/UX & 온보딩</h2>
+            <span class="tag">모바일 최적화</span>
+          </div>
+
+          <div class="card">
+            <h3>📱 메인 화면 — 5탭 구조</h3>
+            <div class="flow-box">하단 네비게이션 바 (최종 상태):
+              ┌────────┬────────┬────────┬────────┬────────┐
+              │ 🏠배럭 │ 🗺️월드 │ ⚔️전투 │ 👥가문 │ 📊관리 │
+              └────────┴────────┴────────┴────────┴────────┘
+
+              · 배럭: 거점 내부 화면 (시설/캐릭터/생활 활동)
+              · 월드: GE 원작 월드맵 (거점/관할지역/탐색)
+              · 전투: 편성, 레이드 파견, 세력전
+              · 가문: 캐릭터 목록, 관계 도감, 뽑기, 성장
+              · 관리: 경제 대시보드, 유지비, 도감, 설정</div>
+          </div>
+
+          <div class="card">
+            <h3>📖 온보딩 — 시간차 해금</h3>
+            <div class="highlight-box blue">
+              <p><strong>문제:</strong> 5개 시스템 동시 이해 → 유저 인지 과부하 → 이탈</p>
+              <p><strong>해법:</strong> Phase별 시간차 해금 + NPC 서사 안내</p>
+            </div>
+            <table class="tbl">
+              <tr>
+                <th>Phase</th>
+                <th>레벨</th>
+                <th>해금 내용</th>
+                <th>하단 바</th>
+              </tr>
+              <tr>
+                <td><span class="badge badge-green">Phase 0</span></td>
+                <td>Lv.1~5</td>
+                <td>전투만. 나머지 전부 숨김</td>
+                <td>⚔️전투 + 👥가문 (2개)</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-blue">Phase 1</span></td>
+                <td>Lv.6~20</td>
+                <td>배럭 + 생활 직업 시작</td>
+                <td>+🏠배럭 (3개)</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-purple">Phase 2</span></td>
+                <td>Lv.21~40</td>
+                <td>경제 + 관계 + 탐색 + 세력전</td>
+                <td>+🗺️월드 + 📊관리 (5개 완성)</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-gold">Phase 3</span></td>
+                <td>Lv.41+</td>
+                <td>전체 시스템 개방</td>
+                <td>모든 고급 기능</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>🎓 주요 해금 이벤트</h3>
+            <table class="tbl">
+              <tr>
+                <th>레벨</th>
+                <th>NPC 대사 (트리거)</th>
+                <th>해금</th>
+              </tr>
+              <tr>
+                <td>Lv.5</td>
+                <td>"첫 전투를 이겨내셨군요! 가문이 성장하고 있습니다"</td>
+                <td>뽑기(서찰) 해금</td>
+              </tr>
+              <tr>
+                <td>Lv.6</td>
+                <td>"가문원들이 지쳐있어요... 쉴 곳이 필요합니다"</td>
+                <td>배럭 탭 해금</td>
+              </tr>
+              <tr>
+                <td>Lv.10</td>
+                <td>"가주님, 가문원을 먹여 살리려면..."</td>
+                <td>유지비 첫 등장</td>
+              </tr>
+              <tr>
+                <td>Lv.12</td>
+                <td>"판필로가 요리를 하고 싶어 합니다"</td>
+                <td>식당/대장간 해금</td>
+              </tr>
+              <tr>
+                <td>Lv.20</td>
+                <td>"무사시와 나르가 옛 이야기를 나누고 있습니다"</td>
+                <td>관계 시스템 해금</td>
+              </tr>
+              <tr>
+                <td>Lv.25</td>
+                <td>"월드맵을 열어볼까요? 미지의 땅이 기다립니다"</td>
+                <td>월드맵 탭 해금</td>
+              </tr>
+              <tr>
+                <td>Lv.30</td>
+                <td>"경영실을 지으면 유지비를 줄일 수 있습니다"</td>
+                <td>관리 탭 해금</td>
+              </tr>
+              <tr>
+                <td>Lv.35</td>
+                <td>"라몬 세력이 우리 영토를 위협합니다"</td>
+                <td>세력전 해금</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>🔄 핵심 UX 패턴 — "접속 → 수령 → 행동 → 퇴장"</h3>
+            <div class="flow-box">[접속]
+              ↓ 자동
+              [축적 자원 요약 팝업]
+              "오프라인 동안 수확: 비스 3,200 / 식재료 24 / 광물 16"
+              [일괄 수령]
+              ↓
+              [오늘의 추천 행동] ← AI 추천 (강제 아님)
+              "① 패루초 탐색 계속 (탐색도 68%)"
+              "② 판필로 숙련도 Lv.5 임박! 음식 제작 추천"
+              "③ NOCC 주간전 D-2"
+              ↓
+              [자유 플레이] → [퇴장]</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <p>GE: 개척시대 — Game Design Document v1.0</p>
+      <p style="margin-top:4px">© 2026 · 내부 기밀 자료 · 무단 배포 금지</p>
+    </div>
+
+    <script>
+      // ── Main Tab Switching ──
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => {
+        item.addEventListener('click', e => {
+          e.preventDefault();
+          const tabId = item.getAttribute('data-tab');
+          // Deactivate all
+          navItems.forEach(n => n.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+          // Activate selected
+          item.classList.add('active');
+          const target = document.getElementById('tab-' + tabId);
+          if (target) target.classList.add('active');
         });
       });
-    });
-  </script>
+
+      // ── Sub-Tab Switching ──
+      document.querySelectorAll('.sub-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+          const sub = tab.getAttribute('data-sub');
+          const parent = tab.closest('.section');
+          // Deactivate siblings
+          parent.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+          parent.querySelectorAll('.sub-content').forEach(c => c.classList.remove('active'));
+          // Activate
+          tab.classList.add('active');
+          parent.querySelectorAll('[data-sub="' + sub + '"]').forEach(el => el.classList.add('active'));
+        });
+      });
+    </script>
+
 </body>
 
 </html>
