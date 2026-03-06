@@ -1,0 +1,581 @@
+/* ============================
+   GE 개척시대 — 배럭 라이프 프로토타입
+   Style System
+   ============================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700;900&family=Press+Start+2P&display=swap');
+
+/* === Design Tokens === */
+:root {
+  /* Palette — 16-bit era warm tones */
+  --bg-dark: #1a1425;
+  --bg-mid: #2a2035;
+  --bg-light: #3d2f50;
+  --accent-gold: #f0c040;
+  --accent-warm: #e87040;
+  --accent-green: #50c878;
+  --accent-blue: #5090d0;
+  --accent-red: #d04050;
+  --text-main: #f0e8d8;
+  --text-dim: #a098b0;
+  --text-bright: #fff8f0;
+  --panel-bg: rgba(26, 20, 37, 0.92);
+  --panel-border: rgba(240, 192, 64, 0.3);
+  --panel-glow: rgba(240, 192, 64, 0.08);
+
+  /* Sizing */
+  --hud-height: 52px;
+  --nav-height: 64px;
+  --border-radius: 8px;
+}
+
+/* === Reset & Base === */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0e0a14;
+  color: var(--text-main);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#app {
+  /* 9:16 mobile aspect ratio — 뷰포트 전체 활용 */
+  width: min(100vw, calc(100vh * 9 / 16));
+  height: min(100vh, calc(100vw * 16 / 9));
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border-radius: 0;
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0, 0, 0, 0.6), 0 0 120px rgba(240, 192, 64, 0.05);
+  border: 1px solid rgba(240, 192, 64, 0.15);
+}
+
+/* 데스크탑에서 둥근 모서리 */
+@media (min-width: 481px) {
+  #app {
+    border-radius: 16px;
+  }
+}
+
+/* === HUD (Top Bar) === */
+#hud {
+  height: auto;
+  background: linear-gradient(180deg, var(--bg-dark) 0%, rgba(26, 20, 37, 0.85) 100%);
+  border-bottom: 1px solid var(--panel-border);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  gap: 4px;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.hud-left,
+.hud-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-center {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  order: 3;
+  justify-content: center;
+}
+
+.hud-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hud-icon {
+  font-size: 16px;
+}
+
+.hud-label {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.hud-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent-gold);
+}
+
+.hud-resources {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.resource {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 3px 7px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-bright);
+  transition: transform 0.2s;
+}
+
+.resource:hover {
+  transform: scale(1.05);
+}
+
+.res-icon {
+  font-size: 14px;
+}
+
+.mood-good {
+  color: var(--accent-green);
+}
+
+.mood-neutral {
+  color: var(--accent-gold);
+}
+
+.mood-bad {
+  color: var(--accent-red);
+}
+
+#time-display {
+  font-size: 12px;
+  color: var(--accent-gold);
+  font-weight: 600;
+}
+
+/* === Main Barracks View === */
+#barracks-view {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+}
+
+#barracks-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* === Building Labels === */
+#building-labels {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.building-label {
+  position: absolute;
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent-gold);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8), 0 0 8px rgba(240, 192, 64, 0.3);
+  white-space: nowrap;
+  transform: translateX(-50%);
+  pointer-events: auto;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.building-label:hover {
+  color: var(--text-bright);
+}
+
+.building-label .bldg-level {
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-left: 4px;
+}
+
+/* === Character Tooltip === */
+.tooltip {
+  position: absolute;
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--border-radius);
+  padding: 10px 14px;
+  min-width: 180px;
+  z-index: 200;
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6), inset 0 0 30px var(--panel-glow);
+  backdrop-filter: blur(12px);
+  transition: opacity 0.15s;
+}
+
+.tooltip.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tooltip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.tooltip-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-bright);
+}
+
+.tooltip-stars {
+  color: var(--accent-gold);
+  font-size: 12px;
+}
+
+.tooltip-job {
+  font-size: 11px;
+  color: var(--accent-blue);
+  margin-bottom: 4px;
+}
+
+.tooltip-status {
+  font-size: 11px;
+  color: var(--accent-green);
+  margin-bottom: 6px;
+}
+
+.tooltip-fatigue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.fatigue-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.fatigue-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-green), var(--accent-gold));
+  border-radius: 3px;
+  transition: width 0.3s;
+}
+
+.fatigue-text {
+  font-size: 10px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+/* === Bottom Navigation === */
+#bottom-nav {
+  height: var(--nav-height);
+  background: linear-gradient(0deg, var(--bg-dark) 0%, rgba(26, 20, 37, 0.92) 100%);
+  border-top: 1px solid var(--panel-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 8px;
+  z-index: 100;
+  backdrop-filter: blur(8px);
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 12px;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.nav-btn:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.nav-btn.active {
+  color: var(--accent-gold);
+}
+
+.nav-btn.active::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: var(--accent-gold);
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--accent-gold);
+}
+
+.nav-icon {
+  font-size: 22px;
+}
+
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* === Side Panel === */
+#side-panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: var(--nav-height);
+  max-height: 55%;
+  width: 100%;
+  background: var(--panel-bg);
+  border-top: 1px solid var(--panel-border);
+  border-radius: 16px 16px 0 0;
+  z-index: 150;
+  padding: 16px;
+  overflow-y: auto;
+  transform: translateY(0);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(16px);
+}
+
+#side-panel.hidden {
+  transform: translateY(100%);
+}
+
+#panel-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.2s;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+#panel-close:hover {
+  color: var(--text-bright);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.panel-char-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.panel-char-name {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--text-bright);
+}
+
+.panel-char-title {
+  font-size: 12px;
+  color: var(--accent-gold);
+  margin-top: 2px;
+}
+
+.panel-section {
+  margin-bottom: 14px;
+}
+
+.panel-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding-bottom: 4px;
+}
+
+.panel-stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 3px 0;
+  font-size: 12px;
+}
+
+.panel-stat-label {
+  color: var(--text-dim);
+}
+
+.panel-stat-value {
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.panel-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.panel-action-btn {
+  flex: 1;
+  min-width: 80px;
+  padding: 8px;
+  border: 1px solid var(--panel-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-main);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.panel-action-btn:hover {
+  background: rgba(240, 192, 64, 0.1);
+  border-color: var(--accent-gold);
+  color: var(--accent-gold);
+}
+
+/* === Toast Notification === */
+#toast-container {
+  position: absolute;
+  top: 80px;
+  left: 10px;
+  right: 10px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.toast {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-left: 3px solid var(--accent-gold);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 11px;
+  color: var(--text-main);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  animation: toast-in 0.3s ease-out, toast-out 0.3s ease-in 2.7s forwards;
+  max-width: 90%;
+  text-align: center;
+}
+
+.toast-icon {
+  margin-right: 6px;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes toast-out {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+}
+
+/* === Ambient Effects === */
+.ambient-particle {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  animation: float-up 6s ease-in infinite;
+  opacity: 0;
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.5);
+  }
+
+  20% {
+    opacity: 0.6;
+  }
+
+  80% {
+    opacity: 0.3;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-80px) scale(1.2);
+  }
+}
+
+/* === Scrollbar === */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(240, 192, 64, 0.2);
+  border-radius: 2px;
+}

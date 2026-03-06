@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GE 개척시대 — 배럭 라이프 프로토타입</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div id="app">
+        <!-- Top HUD -->
+        <header id="hud">
+            <div class="hud-left">
+                <div class="hud-item" id="hud-family">
+                    <span class="hud-icon">🏠</span>
+                    <span class="hud-label">에스파다 가문</span>
+                    <span class="hud-value" id="family-level">Lv.12</span>
+                </div>
+            </div>
+            <div class="hud-center">
+                <div class="hud-resources">
+                    <div class="resource"><span class="res-icon">💰</span><span id="res-vis">12,450</span></div>
+                    <div class="resource"><span class="res-icon">🪙</span><span id="res-gold">34,200</span></div>
+                    <div class="resource"><span class="res-icon">🥩</span><span id="res-food">28</span></div>
+                    <div class="resource"><span class="res-icon">⛏️</span><span id="res-ore">15</span></div>
+                    <div class="resource"><span class="res-icon">🌿</span><span id="res-herb">22</span></div>
+                </div>
+            </div>
+            <div class="hud-right">
+                <div class="hud-item">
+                    <span class="hud-icon">☀️</span>
+                    <span class="hud-label" id="time-display">낮 14:32</span>
+                </div>
+                <div class="hud-item">
+                    <span class="hud-icon">😊</span>
+                    <span class="hud-label">분위기</span>
+                    <span class="hud-value mood-good" id="mood-value">양호 (78)</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Barracks View -->
+        <main id="barracks-view">
+            <canvas id="barracks-canvas"></canvas>
+
+            <!-- Floating Labels for buildings -->
+            <div id="building-labels"></div>
+
+            <!-- Character tooltip -->
+            <div id="char-tooltip" class="tooltip hidden">
+                <div class="tooltip-header">
+                    <span class="tooltip-name"></span>
+                    <span class="tooltip-stars"></span>
+                </div>
+                <div class="tooltip-job"></div>
+                <div class="tooltip-status"></div>
+                <div class="tooltip-fatigue">
+                    <div class="fatigue-bar">
+                        <div class="fatigue-fill"></div>
+                    </div>
+                    <span class="fatigue-text"></span>
+                </div>
+            </div>
+        </main>
+
+        <!-- Bottom Navigation -->
+        <nav id="bottom-nav">
+            <button class="nav-btn active" data-tab="barracks">
+                <span class="nav-icon">🏰</span>
+                <span class="nav-label">배럭</span>
+            </button>
+            <button class="nav-btn" data-tab="party">
+                <span class="nav-icon">⚔️</span>
+                <span class="nav-label">편성</span>
+            </button>
+            <button class="nav-btn" data-tab="explore">
+                <span class="nav-icon">🗺️</span>
+                <span class="nav-label">탐색</span>
+            </button>
+            <button class="nav-btn" data-tab="raid">
+                <span class="nav-icon">💀</span>
+                <span class="nav-label">토벌</span>
+            </button>
+            <button class="nav-btn" data-tab="war">
+                <span class="nav-icon">🏴</span>
+                <span class="nav-label">세력전</span>
+            </button>
+        </nav>
+
+        <!-- Side Panel (character detail) -->
+        <aside id="side-panel" class="hidden">
+            <button id="panel-close">✕</button>
+            <div id="panel-content"></div>
+        </aside>
+
+        <!-- Notification Toast -->
+        <div id="toast-container"></div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+
+</html>
