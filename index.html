@@ -601,6 +601,7 @@
     <a class="nav-item" data-tab="gacha">🎰 뽑기/성장</a>
     <a class="nav-item" data-tab="ui">📱 UI/온보딩</a>
     <a class="nav-item" data-tab="deep">📖 심화기획</a>
+    <a class="nav-item" data-tab="bgart">🎨 배경아트</a>
   </div>
 
   <!-- ══════════════════════════════════════════════ -->
@@ -9453,6 +9454,225 @@
         </div>
     </div>
 </div>
+<!-- ══════════════════════════════════════════════ -->
+<!-- TAB: 배경아트 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-bgart">
+  <div class="container">
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(78,204,163,0.12)">🎨</div>
+        <h2>배경 그래픽 제작 명세서</h2>
+        <span class="tag">BG ART SPEC</span>
+      </div>
+
+      <div class="highlight-box">
+        <p><strong>대상:</strong> 배경 그래픽 디자이너</p>
+        <p><strong>게임 특성:</strong> 2D 모바일 가문 경영 전략 게임. 전투는 서버 턴제 3v3 → 클라이언트 2D 연출. 배경은 전부 <strong>2D 일러스트</strong>로 제작.</p>
+        <p><strong>납품 규격:</strong> 2400×1080px / PSD(레이어 분리) + PNG(합본) / sRGB / 레이어: 원경·중경·근경·지면</p>
+      </div>
+
+      <!-- 총 물량 -->
+      <div class="card">
+        <h3>📊 총 물량 요약</h3>
+        <table class="tbl">
+          <tr><th>카테고리</th><th>수량</th><th>사용 화면</th><th>비고</th></tr>
+          <tr><td>배럭 배경</td><td><strong>1종</strong></td><td>가문 저택 홈 화면</td><td>가장 오래 보는 화면</td></tr>
+          <tr><td>거점(도시) 배경</td><td><strong>12종</strong></td><td>거점 진입 시</td><td>12거점 각각 고유</td></tr>
+          <tr><td>전투 배경</td><td><strong>7+5종</strong></td><td>3v3 턴제 전투</td><td>지형 7타입 + 권역별 변형 5</td></tr>
+          <tr><td>레이드 배경</td><td><strong>8종</strong></td><td>보스전 전용</td><td>레이드 지역별 고유</td></tr>
+          <tr><td>필드 탐색 배경</td><td><strong>4종</strong></td><td>타일맵 탐색 뒤 깔림</td><td>권역별 분위기</td></tr>
+          <tr style="background:rgba(212,168,67,0.08)"><td><strong>합계</strong></td><td><strong>37종</strong></td><td></td><td>변형 5종은 팔레트 스왑</td></tr>
+        </table>
+      </div>
+
+      <!-- 배럭 -->
+      <div class="card">
+        <h3>🏠 배럭 배경 (1종)</h3>
+        <table class="tbl">
+          <tr><th>항목</th><th>내용</th></tr>
+          <tr><td>컨셉</td><td>GE 리볼도외 귀족 저택의 안뜰. 분수대, 정원, 석조 건물</td></tr>
+          <tr><td>시간대</td><td>늦은 오후 (따뜻한 톤)</td></tr>
+          <tr><td>GE 원작 참고</td><td><code>barrack</code> / <code>reb_linden</code> (BgName: <code>barrack02</code>)</td></tr>
+          <tr><td>GE 게임 내 방문</td><td>리볼도외 시내 → 개척국(Dept. of Pioneering) 입장</td></tr>
+        </table>
+      </div>
+
+      <!-- 거점 12종 -->
+      <div class="card">
+        <h3>🏘️ 거점(도시) 배경 12종</h3>
+        <p style="margin-bottom:12px;color:var(--text-dim)">유저가 거점에 들어갔을 때 표시. 캐릭터 배치/시설 관리 화면의 배경.</p>
+
+        <h4 style="color:var(--accent-green);margin:16px 0 8px">권역 1: 리볼도외 (초반)</h4>
+        <table class="tbl">
+          <tr><th>#</th><th>거점명</th><th>컨셉</th><th>GE 맵코드</th><th>GE BgName</th><th>GE 영문명</th><th>GE 내 방문법</th></tr>
+          <tr><td>1</td><td><strong>리볼도외</strong></td><td>서유럽 중세 성벽+분수 광장</td><td><code>reb_basic</code></td><td><code>reb_basic</code></td><td>Cite de Reboldoeux</td><td>게임 시작 기본 도시</td></tr>
+          <tr><td>2</td><td><strong>패루초 삼거리</strong></td><td>숲 속 교역소, 목조 건물</td><td><code>btl_reb04</code></td><td><code>btl_reb04</code></td><td>Ferruccio Junction</td><td>리볼도외→패루초 전장 워프</td></tr>
+          <tr><td>3</td><td><strong>코임브라</strong></td><td>지중해풍 항구 무역도시</td><td><code>coim_basic</code></td><td><code>coim_basic</code></td><td>Port of Coimbra</td><td>코임브라 도시 입장</td></tr>
+        </table>
+
+        <h4 style="color:var(--accent-blue);margin:16px 0 8px">권역 2: 오슈 (중반)</h4>
+        <table class="tbl">
+          <tr><th>#</th><th>거점명</th><th>컨셉</th><th>GE 맵코드</th><th>GE BgName</th><th>GE 영문명</th><th>GE 내 방문법</th></tr>
+          <tr><td>4</td><td><strong>보나비스타</strong></td><td>강변 열대 교역소, 수상 가옥</td><td><code>btl_reb02</code></td><td><code>btl_reb02</code></td><td>Tributary to Bonavista</td><td>리볼도외 전장→Bonavista</td></tr>
+          <tr><td>5</td><td><strong>오슈</strong></td><td>학원 도시, 도서관, 첨탑</td><td><code>auch_basic</code></td><td><code>auch_basic</code></td><td>City of Auch</td><td>오슈 도시 입장</td></tr>
+          <tr><td>6</td><td><strong>토르쉐</strong></td><td>고딕 저택+실험실</td><td><code>fld_tor</code></td><td><code>fld_tor</code></td><td>Dr. Torsche's Mansion</td><td>오슈→토르쉐 저택 입장</td></tr>
+        </table>
+
+        <h4 style="color:var(--accent-orange);margin:16px 0 8px">권역 3: 바하마르 (후반)</h4>
+        <table class="tbl">
+          <tr><th>#</th><th>거점명</th><th>컨셉</th><th>GE 맵코드</th><th>GE BgName</th><th>GE 영문명</th><th>GE 내 방문법</th></tr>
+          <tr><td>7</td><td><strong>포르토벨로</strong></td><td>해적 항구, 좌초선 아지트</td><td><code>fld_ptv</code></td><td><code>fld_ptv</code></td><td>Porto Bello</td><td>포르토벨로 필드 워프</td></tr>
+          <tr><td>8</td><td><strong>바하마르</strong></td><td>밀림 야영지, 텐트+모닥불</td><td><code>bah_basic</code></td><td><code>bah_basic</code></td><td>Bahamar, Base Camp</td><td>바하마르 베이스캠프</td></tr>
+          <tr><td>9</td><td><strong>에라크</strong></td><td>사막 오아시스, 아라비안</td><td><code>erc_basic</code></td><td><code>erc_basic</code></td><td>Errac, Las dos tierras</td><td>에라크 도시 입장</td></tr>
+        </table>
+
+        <h4 style="color:var(--accent-cyan);margin:16px 0 8px">권역 4: 브리스티아 (최종)</h4>
+        <table class="tbl">
+          <tr><th>#</th><th>거점명</th><th>컨셉</th><th>GE 맵코드</th><th>GE BgName</th><th>GE 영문명</th><th>GE 내 방문법</th></tr>
+          <tr><td>10</td><td><strong>토플로 두르가</strong></td><td>고산 석조 요새, 운해 위 성채</td><td><code>btl_ttr03</code></td><td><code>btl_ttr03</code></td><td>Topolo Durga</td><td>테트라 전장→Topolo Durga</td></tr>
+          <tr><td>11</td><td><strong>캐피바라</strong></td><td>지하 농원 마을, 발광 동굴</td><td>—</td><td>—</td><td>—</td><td><code>bah_witch</code> 분위기 참고</td></tr>
+          <tr><td>12</td><td><strong>빙마탑</strong></td><td>얼음 성채, 극한 환경</td><td><code>btl_ktv05</code></td><td><code>btl_ktv05</code></td><td>Snowfield of Glaciel Spirit</td><td>KTV→빙설원 워프</td></tr>
+        </table>
+      </div>
+
+      <!-- 전투 배경 -->
+      <div class="card">
+        <h3>⚔️ 전투 배경 — 지형 7타입</h3>
+        <p style="margin-bottom:12px;color:var(--text-dim)">전투 화면 = 좌측 아군 3명, 우측 적 3명. 하단 30%는 캐릭터 스프라이트 차지 → 상단/원경 위주 디테일.</p>
+        <table class="tbl">
+          <tr><th>#</th><th>지형</th><th>배경 컨셉</th><th>지면</th><th>색감</th><th>GE BgName</th><th>GE 내 방문법</th></tr>
+          <tr><td>1</td><td><strong>초원</strong></td><td>넓은 풀밭+먼 산</td><td>풀+흙</td><td style="color:#4ecca3">초록+금빛</td><td><code>btl_reb03</code></td><td>리볼도외 전장→Rion Prairie</td></tr>
+          <tr><td>2</td><td><strong>숲</strong></td><td>울창한 나무 사이 빈터</td><td>낙엽+이끼</td><td style="color:#2E5D34">진초록+갈색</td><td><code>btl_auch01</code></td><td>오슈 전장→Thueringenwald</td></tr>
+          <tr><td>3</td><td><strong>산지</strong></td><td>절벽/고원 바위 지대</td><td>자갈+암석</td><td style="color:#8B3A3A">적갈색+회색</td><td><code>btl_ttr01</code></td><td>테트라 전장→Tetra Hill</td></tr>
+          <tr><td>4</td><td><strong>사막</strong></td><td>모래 평원+유적 실루엣</td><td>모래+돌</td><td style="color:#d98a4a">황갈색+금</td><td><code>btl_erc01</code></td><td>에라크 전장→La tierra dia</td></tr>
+          <tr><td>5</td><td><strong>해안</strong></td><td>해변/부두+수평선</td><td>모래+목재</td><td style="color:#4a90d9">파랑+갈색</td><td><code>btl_coim01</code></td><td>코임브라 전장→Jezebel Glen</td></tr>
+          <tr><td>6</td><td><strong>지하</strong></td><td>동굴/지하묘지 내부</td><td>돌바닥</td><td style="color:#9b6fd9">보라+회색</td><td><code>btl_alq01</code></td><td>AQM 던전 입장</td></tr>
+          <tr><td>7</td><td><strong>빙설</strong></td><td>눈보라 얼어붙은 대지</td><td>얼음+눈</td><td style="color:#4accd9">흰색+남색</td><td><code>btl_ktv04</code></td><td>KTV 전장→Frozen Plain</td></tr>
+        </table>
+
+        <h4 style="margin:16px 0 8px;color:var(--gold)">권역별 변형 (팔레트 스왑, +5종)</h4>
+        <table class="tbl">
+          <tr><th>지형</th><th>권역1</th><th>권역2</th><th>권역3</th><th>권역4</th></tr>
+          <tr><td>초원</td><td>밝은 낮 (기본)</td><td style="color:var(--accent-orange)">석양</td><td>—</td><td>—</td></tr>
+          <tr><td>숲</td><td>빛줄기 (기본)</td><td style="color:var(--accent-cyan)">밤+반딧불</td><td>—</td><td>—</td></tr>
+          <tr><td>해안</td><td>맑은 낮 (기본)</td><td>—</td><td style="color:var(--accent-purple)">밤+보라안개</td><td>—</td></tr>
+          <tr><td>지하</td><td>횃불 (기본)</td><td>—</td><td style="color:var(--accent-red)">용암 빛</td><td>—</td></tr>
+          <tr><td>산지</td><td>—</td><td>—</td><td>기본</td><td style="color:var(--accent-cyan)">눈 섞인 산지</td></tr>
+        </table>
+        <div class="highlight-box" style="margin-top:12px">
+          <p>→ <strong>기본 7종 + 변형 5종 = 전투 배경 총 12종.</strong> 변형은 팔레트+시간대+이펙트만 변경 (신규 작화 아님).</p>
+        </div>
+      </div>
+
+      <!-- 레이드 배경 -->
+      <div class="card">
+        <h3>🗡️ 레이드 배경 8종</h3>
+        <p style="margin-bottom:12px;color:var(--text-dim)">토벌(레이드) = 웨이브형 보스전. 일반 전투보다 극적인 분위기. 각 지역마다 고유 배경 1종.</p>
+        <table class="tbl">
+          <tr><th>#</th><th>레이드 지역</th><th>보스</th><th>배경 컨셉</th><th>GE BgName</th><th>GE 내 방문법</th></tr>
+          <tr><td>1</td><td><strong>퀸즈게이트</strong></td><td>하인 (암)</td><td>성문 광장, 석양+다크오라</td><td><code>btl_reb01</code></td><td>리볼도외 전장→Stone Pit</td></tr>
+          <tr><td>2</td><td><strong>패루초</strong></td><td>초반 보스</td><td>숲 공터, 거대 고목</td><td><code>btl_reb04</code></td><td>리볼도외 전장→Ferruccio</td></tr>
+          <tr><td>3</td><td><strong>AQM 해안</strong></td><td>그렘린 킹 (수)</td><td>해안 동굴, 파도+인광</td><td><code>btl_alq01</code></td><td>AQM→Cathari Falls</td></tr>
+          <tr><td>4</td><td><strong>코임브라 동굴</strong></td><td>로비딕 (화)</td><td>광산 내부, 횃불+광물</td><td><code>btl_coim01</code></td><td>코임브라 전장→Jezebel</td></tr>
+          <tr><td>5</td><td><strong>오슈 근교</strong></td><td>마스터 위자드 (광)</td><td>학원 뒤 숲, 마법진</td><td><code>btl_auch01</code></td><td>오슈 전장→Thueringenwald</td></tr>
+          <tr><td>6</td><td><strong>바하마르 전선</strong></td><td>화속성 보스</td><td>전쟁터, 불길+잔해</td><td><code>btl_bah01</code></td><td>바하마르 전장→Marshland</td></tr>
+          <tr><td>7</td><td><strong>에라크 사막</strong></td><td>풍속성 보스</td><td>사막 폭풍, 모래소용돌이</td><td><code>btl_erc01</code></td><td>에라크 전장→La tierra dia</td></tr>
+          <tr><td>8</td><td><strong>빙마의 탑</strong></td><td>빙마 (수, 최종)</td><td>빙탑 최상층, 얼음+오로라</td><td><code>btl_ktv05</code></td><td>KTV→Snowfield</td></tr>
+        </table>
+      </div>
+
+      <!-- 필드 탐색 -->
+      <div class="card">
+        <h3>🗺️ 필드 탐색 배경 4종</h3>
+        <p style="margin-bottom:12px;color:var(--text-dim)">타일맵 UI가 화면 대부분 차지 → 분위기 위주. 권역별 1종.</p>
+        <table class="tbl">
+          <tr><th>#</th><th>권역</th><th>배경 컨셉</th><th>색감</th><th>GE 참고</th></tr>
+          <tr><td>1</td><td>리볼도외</td><td>밝은 초원+성벽 원경</td><td style="color:var(--accent-green)">초록+금빛</td><td><code>fld_reb</code></td></tr>
+          <tr><td>2</td><td>오슈</td><td>숲+학원 첨탑 원경</td><td style="color:#2E5D34">진초록+갈색</td><td><code>fld_auch</code></td></tr>
+          <tr><td>3</td><td>바하마르</td><td>사막/열대+군사기지</td><td style="color:var(--accent-orange)">주황+갈색</td><td><code>btl_bah05</code></td></tr>
+          <tr><td>4</td><td>브리스티아</td><td>눈덮인 산맥+성채</td><td style="color:var(--accent-cyan)">흰색+남색</td><td><code>btl_ktv03</code></td></tr>
+        </table>
+      </div>
+
+      <!-- GE 맵 코드 참조표 -->
+      <div class="card">
+        <h3>📍 GE 원작 맵 코드 참조표</h3>
+        <p style="margin-bottom:12px;color:var(--text-dim)">배경 디자이너가 <strong>원작 GE에 직접 접속</strong>하여 해당 필드를 확인할 때 사용. BgName = 원작 3D 맵 파일명.</p>
+
+        <h4 style="margin:16px 0 8px;color:var(--gold)">도시 맵 (직접 입장)</h4>
+        <table class="tbl">
+          <tr><th>GE 맵코드</th><th>BgName</th><th>영문명</th><th>접속법</th><th>매핑</th></tr>
+          <tr><td><code>reb_basic</code></td><td><code>reb_basic</code></td><td>Cite de Reboldoeux</td><td>시작 도시</td><td>거점01</td></tr>
+          <tr><td><code>coim_basic</code></td><td><code>coim_basic</code></td><td>Port of Coimbra</td><td>코임브라 입장</td><td>거점03</td></tr>
+          <tr><td><code>auch_basic</code></td><td><code>auch_basic</code></td><td>City of Auch</td><td>오슈 입장</td><td>거점05</td></tr>
+          <tr><td><code>bah_basic</code></td><td><code>bah_basic</code></td><td>Bahamar Base Camp</td><td>바하마르 입장</td><td>거점08</td></tr>
+          <tr><td><code>erc_basic</code></td><td><code>erc_basic</code></td><td>Errac, Las dos tierras</td><td>에라크 입장</td><td>거점09</td></tr>
+          <tr><td><code>bst_basic</code></td><td><code>bst_basic</code></td><td>Kielce</td><td>킬체 입장</td><td>브리스티아 참고</td></tr>
+          <tr><td><code>gig_basic</code></td><td><code>gig_basic</code></td><td>Port of Gigante Island</td><td>기간테 항구</td><td>화산섬 참고</td></tr>
+        </table>
+
+        <h4 style="margin:16px 0 8px;color:var(--gold)">필드 맵 (이동/워프)</h4>
+        <table class="tbl">
+          <tr><th>GE 맵코드</th><th>BgName</th><th>영문명</th><th>접속법</th><th>매핑</th></tr>
+          <tr><td><code>fld_reb</code></td><td><code>fld_reb</code></td><td>Queen's Gate</td><td>리볼도외→퀸즈게이트</td><td>탐색/초원</td></tr>
+          <tr><td><code>fld_alq</code></td><td><code>fld_alq</code></td><td>Al Quelt Moreza</td><td>리볼도외 하수구</td><td>지하</td></tr>
+          <tr><td><code>fld_coim</code></td><td><code>fld_coim</code></td><td>Nimrod Bridge</td><td>코임브라→다리</td><td>해안</td></tr>
+          <tr><td><code>fld_auch</code></td><td><code>fld_auch</code></td><td>Thueringen Lakeside</td><td>오슈→호숫가</td><td>숲</td></tr>
+          <tr><td><code>fld_jaq</code></td><td><code>fld_jaq</code></td><td>Lava Plateau</td><td>자캥 화산</td><td>지하(용암)</td></tr>
+          <tr><td><code>fld_ptv</code></td><td><code>fld_ptv</code></td><td>Porto Bello</td><td>포르토벨로</td><td>해안(밤)</td></tr>
+          <tr><td><code>fld_tor</code></td><td><code>fld_tor</code></td><td>Torsche's Mansion</td><td>오슈→토르쉐</td><td>거점06</td></tr>
+          <tr><td><code>fld_ttr</code></td><td><code>fld_ttr</code></td><td>Tetra Great Ruins</td><td>테트라 유적</td><td>사막</td></tr>
+        </table>
+
+        <h4 style="margin:16px 0 8px;color:var(--gold)">전투 맵 (전장 워프)</h4>
+        <table class="tbl">
+          <tr><th>GE 맵코드</th><th>BgName</th><th>영문명</th><th>접속법</th><th>매핑</th></tr>
+          <tr><td><code>btl_reb01</code></td><td><code>btl_reb01</code></td><td>Stone Pit</td><td>리볼도외 전장</td><td>레이드01</td></tr>
+          <tr><td><code>btl_reb03</code></td><td><code>btl_reb03</code></td><td>Rion Prairie</td><td>리볼도외 전장</td><td>전투:초원</td></tr>
+          <tr><td><code>btl_reb04</code></td><td><code>btl_reb04</code></td><td>Ferruccio Junction</td><td>리볼도외 전장</td><td>레이드02</td></tr>
+          <tr><td><code>btl_alq01</code></td><td><code>btl_alq01</code></td><td>Cathari Falls</td><td>AQM</td><td>레이드03</td></tr>
+          <tr><td><code>btl_coim01</code></td><td><code>btl_coim01</code></td><td>Jezebel Glen</td><td>코임브라 전장</td><td>레이드04</td></tr>
+          <tr><td><code>btl_auch01</code></td><td><code>btl_auch01</code></td><td>Thueringenwald</td><td>오슈 전장</td><td>전투:숲/레이드05</td></tr>
+          <tr><td><code>btl_ttr01</code></td><td><code>btl_ttr01</code></td><td>Tetra Hill</td><td>테트라 전장</td><td>전투:산지</td></tr>
+          <tr><td><code>btl_erc01</code></td><td><code>btl_erc01</code></td><td>La tierra dia</td><td>에라크 전장</td><td>전투:사막/레이드07</td></tr>
+          <tr><td><code>btl_bah01</code></td><td><code>btl_bah01</code></td><td>Marshland</td><td>바하마르 전장</td><td>레이드06</td></tr>
+          <tr><td><code>btl_ktv04</code></td><td><code>btl_ktv04</code></td><td>Frozen Plain</td><td>KTV 전장</td><td>전투:빙설</td></tr>
+          <tr><td><code>btl_ktv05</code></td><td><code>btl_ktv05</code></td><td>Snowfield</td><td>KTV 전장</td><td>레이드08</td></tr>
+        </table>
+      </div>
+
+      <!-- 에셋 ID -->
+      <div class="card">
+        <h3>📦 이미지 에셋 ID 목록</h3>
+        <table class="tbl">
+          <tr><th>에셋 ID</th><th>카테고리</th><th>수량</th><th>해상도</th><th>포맷</th></tr>
+          <tr><td><code>bg_barracks</code></td><td>배럭</td><td>1</td><td>2400×1080</td><td>PSD+PNG</td></tr>
+          <tr><td><code>bg_outpost_[01~12]</code></td><td>거점</td><td>12</td><td>2400×1080</td><td>PSD+PNG</td></tr>
+          <tr><td><code>bg_battle_[terrain]</code></td><td>전투 기본</td><td>7</td><td>2400×1080</td><td>PSD+PNG</td></tr>
+          <tr><td><code>bg_battle_[terrain]_v[N]</code></td><td>전투 변형</td><td>5</td><td>2400×1080</td><td>PSD+PNG</td></tr>
+          <tr><td><code>bg_raid_[01~08]</code></td><td>레이드</td><td>8</td><td>2400×1080</td><td>PSD+PNG</td></tr>
+          <tr><td><code>bg_explore_[01~04]</code></td><td>필드 탐색</td><td>4</td><td>2400×1080</td><td>PSD+PNG</td></tr>
+        </table>
+      </div>
+
+      <!-- 우선순위 -->
+      <div class="card">
+        <h3>📋 제작 우선순위</h3>
+        <table class="tbl">
+          <tr><th>Phase</th><th>배경</th><th>수량</th></tr>
+          <tr style="background:rgba(212,168,67,0.08)"><td><strong>P1</strong></td><td>배럭 + 거점01(리볼도외) + 전투(초원) + 레이드01</td><td><strong>4종</strong></td></tr>
+          <tr><td>P2</td><td>거점02~03 + 전투(숲/해안) + 레이드02~03 + 탐색01</td><td>6종</td></tr>
+          <tr><td>P3</td><td>거점04~06 + 전투(산지/사막) + 레이드04~05 + 탐색02</td><td>6종</td></tr>
+          <tr><td>P4</td><td>거점07~09 + 전투(지하) + 레이드06~07 + 탐색03</td><td>6종</td></tr>
+          <tr><td>P5</td><td>거점10~12 + 전투(빙설) + 레이드08 + 탐색04 + 변형5종</td><td>10종</td></tr>
+        </table>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <!-- FOOTER -->
     <div class="footer">
       <p>GE: 개척시대 — Game Design Document v1.0</p>
