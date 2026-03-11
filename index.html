@@ -9536,6 +9536,82 @@
         </table>
       </div>
 
+      <!-- 거점별 관할 필드 지역 -->
+      <div class="card">
+        <h3>🗺️ 거점별 관할 필드 지역 — 전체 목록</h3>
+        <p style="margin-bottom:12px;color:var(--text-dim)">각 거점이 관할하는 <strong>개별 필드 지역</strong>. 전투 배경은 지형 타입으로 공유하지만, 디자이너가 각 지역의 분위기를 파악할 수 있도록 GE 원작 맵코드를 매핑.</p>
+
+        <h4 style="color:var(--accent-green);margin:16px 0 8px">거점 01: 리볼도외 — 관할 12타일 (퀸즈게이트~패루초)</h4>
+        <table class="tbl">
+          <tr><th>필드 지역</th><th>지형</th><th>전투BG</th><th>GE 맵코드</th><th>GE BgName</th><th>GE 영문명</th><th>GE 내 방문법</th></tr>
+          <tr><td><strong>퀸즈게이트</strong></td><td>초원</td><td>초원</td><td><code>fld_reb</code></td><td><code>fld_reb</code></td><td>Queen's Gate</td><td>리볼도외→퀸즈게이트 출구</td></tr>
+          <tr><td>리온 초원</td><td>초원</td><td>초원</td><td><code>btl_reb03</code></td><td><code>btl_reb03</code></td><td>Rion Prairie</td><td>리볼도외 전장→Rion Prairie</td></tr>
+          <tr><td>채석장</td><td>산지</td><td>산지</td><td><code>btl_reb01</code></td><td><code>btl_reb01</code></td><td>Stone Pit</td><td>리볼도외 전장→Stone Pit</td></tr>
+          <tr><td>라고 셀레스테</td><td>해안</td><td>해안</td><td><code>btl_reb05</code></td><td><code>btl_reb05</code></td><td>Lago Celeste</td><td>리볼도외 전장→Lago Celeste</td></tr>
+          <tr><td>보나비스타 지류</td><td>숲</td><td>숲</td><td><code>btl_reb02</code></td><td><code>btl_reb02</code></td><td>Tributary to Bonavista</td><td>리볼도외 전장→Bonavista</td></tr>
+          <tr><td>베아그스 하비에르</td><td>초원</td><td>초원</td><td><code>btl_reb06</code></td><td><code>btl_reb06</code></td><td>Veags Javier</td><td>리볼도외 전장→Veags Javier</td></tr>
+        </table>
+
+        <h4 style="color:var(--accent-green);margin:16px 0 8px">거점 02: 패루초 삼거리 — 관할 10타일 (AQM~왕들의 정원)</h4>
+        <table class="tbl">
+          <tr><th>필드 지역</th><th>지형</th><th>전투BG</th><th>GE 맵코드</th><th>GE BgName</th><th>GE 영문명</th><th>GE 내 방문법</th></tr>
+          <tr><td><strong>알쿠에트 모레자 (AQM)</strong></td><td>지하</td><td>지하</td><td><code>fld_alq</code></td><td><code>fld_alq</code></td><td>Al Quelt Moreza</td><td>리볼도외 하수구→AQM 입구</td></tr>
+          <tr><td>카타리 폭포</td><td>지하</td><td>지하</td><td><code>btl_alq01</code></td><td><code>btl_alq01</code></td><td>Cathari Falls</td><td>AQM→Cathari Falls</td></tr>
+          <tr><td>리오 알비</td><td>지하</td><td>지하</td><td><code>btl_alq02</code></td><td><code>btl_alq02</code></td><td>Rio Albi</td><td>AQM→Rio Albi</td></tr>
+          <tr style="background:rgba(212,168,67,0.08)"><td><strong>왕들의 정원</strong></td><td>초원</td><td>초원</td><td><code>btl_ttr02</code></td><td><code>btl_ttr02</code></td><td>King's Garden</td><td>테트라 전장→King's Garden</td></tr>
+        </table>
+
+        <h4 style="color:var(--accent-green);margin:16px 0 8px">거점 03: 코임브라 — 관할 14타일 (테트라~코임브라 항구)</h4>
+        <table class="tbl">
+          <tr><th>필드 지역</th><th>지형</th><th>전투BG</th><th>GE 맵코드</th><th>GE BgName</th><th>GE 영문명</th><th>GE 내 방문법</th></tr>
+          <tr><td><strong>테트라 대유적</strong></td><td>사막</td><td>사막</td><td><code>fld_ttr</code></td><td><code>fld_ttr</code></td><td>Tetra Great Ruins</td><td>테트라 유적지 워프</td></tr>
+          <tr><td>테트라 힐</td><td>산지</td><td>산지</td><td><code>btl_ttr01</code></td><td><code>btl_ttr01</code></td><td>Tetra Hill</td><td>테트라 전장→Tetra Hill</td></tr>
+          <tr><td>니므로드 다리</td><td>해안</td><td>해안</td><td><code>fld_coim</code></td><td><code>fld_coim</code></td><td>Nimrod Bridge</td><td>코임브라→니므로드 다리</td></tr>
+          <tr><td>지저벨 골짜기</td><td>숲</td><td>숲</td><td><code>btl_coim01</code></td><td><code>btl_coim01</code></td><td>Jezebel Glen</td><td>코임브라 전장→Jezebel Glen</td></tr>
+          <tr><td>코임브라 구항구</td><td>해안</td><td>해안</td><td><code>btl_coim02</code></td><td><code>btl_coim02</code></td><td>Old Port in Coimbra</td><td>코임브라 전장→Old Port</td></tr>
+        </table>
+
+        <h4 style="color:var(--accent-blue);margin:16px 0 8px">거점 04~06: 오슈 권역</h4>
+        <table class="tbl">
+          <tr><th>거점</th><th>필드 지역</th><th>지형</th><th>GE 맵코드</th><th>GE BgName</th><th>GE 영문명</th><th>GE 내 방문법</th></tr>
+          <tr><td rowspan="2"><strong>보나비스타</strong></td><td>보나비스타 강변</td><td>해안</td><td><code>btl_reb02</code></td><td><code>btl_reb02</code></td><td>Tributary to Bonavista</td><td>리볼도외 전장→Bonavista</td></tr>
+          <tr><td>아베르탈</td><td>숲</td><td><code>btl_tbk01</code></td><td><code>btl_tbk01</code></td><td>Abertal</td><td>Topolo 전장→Abertal</td></tr>
+          <tr><td rowspan="3"><strong>오슈</strong></td><td>튜링엔 호숫가</td><td>숲</td><td><code>fld_auch</code></td><td><code>fld_auch</code></td><td>Thueringen Lakeside</td><td>오슈→튜링엔 호숫가</td></tr>
+          <tr><td>튜링엔 숲</td><td>숲</td><td><code>btl_auch01</code></td><td><code>btl_auch01</code></td><td>Thueringenwald</td><td>오슈 전장→Thueringenwald</td></tr>
+          <tr><td>세 자매 호수</td><td>해안</td><td><code>btl_auch02</code></td><td><code>btl_auch02</code></td><td>El Lago de las Tres Hermanas</td><td>오슈 전장→Tres Hermanas</td></tr>
+          <tr><td rowspan="2"><strong>토르쉐</strong></td><td>토르쉐 저택 정원</td><td>숲</td><td><code>fld_tor</code></td><td><code>fld_tor</code></td><td>Savage Garden</td><td>오슈→토르쉐 저택</td></tr>
+          <tr><td>비아 플루비알</td><td>숲</td><td><code>btl_tbk02</code></td><td><code>btl_tbk02</code></td><td>Via Fluvial</td><td>Topolo 전장→Via Fluvial</td></tr>
+        </table>
+
+        <h4 style="color:var(--accent-orange);margin:16px 0 8px">거점 07~09: 바하마르 권역</h4>
+        <table class="tbl">
+          <tr><th>거점</th><th>필드 지역</th><th>지형</th><th>GE 맵코드</th><th>GE BgName</th><th>GE 영문명</th><th>GE 내 방문법</th></tr>
+          <tr><td rowspan="2"><strong>포르토벨로</strong></td><td>포르토벨로 해안</td><td>해안</td><td><code>fld_ptv</code></td><td><code>fld_ptv</code></td><td>Porto Bello</td><td>포르토벨로 워프</td></tr>
+          <tr><td>폐부두</td><td>해안</td><td><code>btl_ptv01</code></td><td><code>btl_ptv01</code></td><td>Deserted Quay</td><td>포르토벨로 전장→Deserted Quay</td></tr>
+          <tr><td rowspan="3"><strong>바하마르</strong></td><td>습지대</td><td>숲</td><td><code>btl_bah01</code></td><td><code>btl_bah01</code></td><td>Marshland</td><td>바하마르 전장→Marshland</td></tr>
+          <tr><td>그림자 늪</td><td>숲</td><td><code>btl_bah02</code></td><td><code>btl_bah02</code></td><td>Pantano la Sombra</td><td>바하마르 전장→Sombra</td></tr>
+          <tr><td>예언자의 숲</td><td>숲</td><td><code>btl_bah05</code></td><td><code>btl_bah05</code></td><td>Prophet's Forest</td><td>바하마르 전장→Prophet's Forest</td></tr>
+          <tr><td rowspan="2"><strong>에라크</strong></td><td>낮의 사막</td><td>사막</td><td><code>btl_erc01</code></td><td><code>btl_erc01</code></td><td>La tierra dia</td><td>에라크 전장→La tierra dia</td></tr>
+          <tr><td>밤의 사막</td><td>사막</td><td><code>btl_erc02</code></td><td><code>btl_erc02</code></td><td>La tierra la noche</td><td>에라크 전장→La tierra noche</td></tr>
+        </table>
+
+        <h4 style="color:var(--accent-cyan);margin:16px 0 8px">거점 10~12: 브리스티아 권역</h4>
+        <table class="tbl">
+          <tr><th>거점</th><th>필드 지역</th><th>지형</th><th>GE 맵코드</th><th>GE BgName</th><th>GE 영문명</th><th>GE 내 방문법</th></tr>
+          <tr><td rowspan="2"><strong>토플로 두르가</strong></td><td>토플로 두르가 고원</td><td>산지</td><td><code>btl_ttr03</code></td><td><code>btl_ttr03</code></td><td>Topolo Durga</td><td>테트라 전장→Topolo Durga</td></tr>
+          <tr><td>데프리미다 계곡</td><td>산지</td><td><code>btl_tbk03</code></td><td><code>btl_tbk03</code></td><td>Deprimida Valley</td><td>Topolo 전장→Deprimida</td></tr>
+          <tr><td rowspan="2"><strong>캐피바라</strong></td><td>자캥 용암 고원</td><td>지하</td><td><code>fld_jaq</code></td><td><code>fld_jaq</code></td><td>Lava Plateau of Jaquin</td><td>자캥 화산 워프</td></tr>
+          <tr><td>자캥 분화구</td><td>지하</td><td><code>btl_jaq01</code></td><td><code>btl_jaq01</code></td><td>Crater of Jaquin</td><td>자캥 전장→Crater</td></tr>
+          <tr><td rowspan="3"><strong>빙마탑</strong></td><td>패루초 방벽</td><td>빙설</td><td><code>btl_ktv02</code></td><td><code>btl_ktv02</code></td><td>Perrucho Wall</td><td>KTV 전장→Perrucho Wall</td></tr>
+          <tr><td>동토</td><td>빙설</td><td><code>btl_ktv04</code></td><td><code>btl_ktv04</code></td><td>Frozen Plain</td><td>KTV 전장→Frozen Plain</td></tr>
+          <tr><td>빙설원</td><td>빙설</td><td><code>btl_ktv05</code></td><td><code>btl_ktv05</code></td><td>Snowfield of Glaciel Spirit</td><td>KTV 전장→Snowfield</td></tr>
+        </table>
+
+        <div class="highlight-box" style="margin-top:12px">
+          <p>위 필드 지역들은 <strong>타일 탐색 시 조우하는 개별 장소</strong>. 전투 시에는 해당 타일의 <strong>지형 타입</strong>에 따라 전투 배경이 결정됨 (아래 §전투 배경 참조).</p>
+        </div>
+      </div>
+
       <!-- 전투 배경 -->
       <div class="card">
         <h3>⚔️ 전투 배경 — 지형 7타입</h3>
