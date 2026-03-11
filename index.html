@@ -10129,7 +10129,12 @@
         }
 
         function getEntry(id) {
-          if (!progressData[id]) progressData[id] = { illust: false, sd: false, icon: false, note: '' };
+          if (!progressData[id]) progressData[id] = { illust: false, gif: false, icon: false, note: '' };
+          // migrate old 'sd' key to 'gif'
+          if (progressData[id].sd !== undefined) {
+            progressData[id].gif = progressData[id].gif || progressData[id].sd;
+            delete progressData[id].sd;
+          }
           return progressData[id];
         }
 
@@ -10151,12 +10156,13 @@
 
         function updateRowStyle(row, id) {
           const entry = getEntry(id);
-          const allDone = entry.illust && entry.sd && entry.icon;
-          const anyDone = entry.illust || entry.sd || entry.icon;
+          const allDone = entry.illust && entry.gif && entry.icon;
+          const anyDone = entry.illust || entry.gif || entry.icon;
           row.style.background = allDone ? 'rgba(78,204,163,0.08)' : '';
           row.style.opacity = allDone ? '0.7' : '1';
-          // 첫 번째 셀에 완료 표시
-          const idCell = row.querySelector('td');
+          // ID 셀에 완료 표시 (체크박스 3개 뒤 4번째 td)
+          const cells = row.querySelectorAll('td');
+          const idCell = cells[3];
           if (idCell) {
             const rawId = idCell.textContent.replace(/[✅🔶]/g, '').trim();
             idCell.textContent = allDone ? '✅ ' + rawId : anyDone ? '🔶 ' + rawId : rawId;
@@ -10177,33 +10183,34 @@
               const firstTh = headerRow.querySelector('th');
               if (!firstTh || firstTh.textContent.trim() !== 'ID') return;
 
-              // 헤더에 체크박스 컬럼 추가
-              const thIllust = document.createElement('th');
-              thIllust.textContent = '일러';
-              thIllust.style.cssText = 'width:45px;text-align:center;font-size:12px';
-              const thSD = document.createElement('th');
-              thSD.textContent = 'SD';
-              thSD.style.cssText = 'width:40px;text-align:center;font-size:12px';
-              const thIcon = document.createElement('th');
-              thIcon.textContent = '아이콘';
-              thIcon.style.cssText = 'width:55px;text-align:center;font-size:12px';
-              headerRow.appendChild(thIllust);
-              headerRow.appendChild(thSD);
-              headerRow.appendChild(thIcon);
+              // 헤더 맨 앞에 체크박스 컬럼 추가
+              const fields = [
+                { key: 'illust', label: '일러', w: '45px' },
+                { key: 'gif',   label: 'GIF',  w: '40px' },
+                { key: 'icon',  label: '아이콘', w: '55px' }
+              ];
+              // 역순으로 insertBefore(firstTh) → 결과적으로 일러|GIF|아이콘|ID...
+              for (let f = fields.length - 1; f >= 0; f--) {
+                const th = document.createElement('th');
+                th.textContent = fields[f].label;
+                th.style.cssText = 'width:' + fields[f].w + ';text-align:center;font-size:12px';
+                headerRow.insertBefore(th, firstTh);
+              }
 
-              // 데이터 행에 체크박스 추가
+              // 데이터 행 맨 앞에 체크박스 추가
               const rows = table.querySelectorAll('tr');
               for (let i = 1; i < rows.length; i++) {
                 const row = rows[i];
-                const idCell = row.querySelector('td');
-                if (!idCell) continue;
-                const id = idCell.textContent.trim().padStart(3, '0');
+                const firstCell = row.querySelector('td');
+                if (!firstCell) continue;
+                const id = firstCell.textContent.trim().padStart(3, '0');
 
-                ['illust', 'sd', 'icon'].forEach(field => {
+                // 역순 삽입 → 일러|GIF|아이콘 순서 유지
+                ['icon', 'gif', 'illust'].forEach(field => {
                   const td = document.createElement('td');
                   td.style.textAlign = 'center';
                   td.appendChild(makeCheckbox(id, field));
-                  row.appendChild(td);
+                  row.insertBefore(td, firstCell);
                 });
 
                 updateRowStyle(row, id);
@@ -10223,7 +10230,7 @@
             const entry = progressData[id];
             if (!entry) { total++; continue; }
             total++;
-            const checks = [entry.illust, entry.sd, entry.icon].filter(Boolean).length;
+            const checks = [entry.illust, entry.gif, entry.icon].filter(Boolean).length;
             if (checks === 3) done++;
             else if (checks > 0) partial++;
           }
