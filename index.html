@@ -602,6 +602,7 @@
     <a class="nav-item" data-tab="ui">📱 UI/온보딩</a>
     <a class="nav-item" data-tab="deep">📖 심화기획</a>
     <a class="nav-item" data-tab="bgart">🎨 배경아트</a>
+    <a class="nav-item" data-tab="charart">🧑‍🎨 캐릭터아트</a>
   </div>
 
   <!-- ══════════════════════════════════════════════ -->
@@ -9746,6 +9747,322 @@
       </div>
 
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!-- TAB: 캐릭터아트 -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="tab-content" id="tab-charart">
+  <div class="container">
+
+    <!-- ─── 총 물량 요약 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(168,85,247,0.12)">🧑‍🎨</div>
+        <h2>캐릭터 그래픽 제작 명세서</h2>
+      </div>
+      <p>120명 캐릭터의 그래픽 리소스 제작을 위한 작업 지시서입니다.<br>
+         GE 원작 데이터명(ClassName)을 포함하여, 원작 게임 내에서 해당 캐릭터를 직접 확인할 수 있습니다.</p>
+
+      <h3>📊 총 물량 요약</h3>
+      <table>
+        <tr><th>에셋 종류</th><th>규격</th><th>수량</th><th>비고</th></tr>
+        <tr><td>전신 일러스트 (카드용)</td><td>640×960 px</td><td>120종</td><td>캐릭터당 1종 (기본 의상)</td></tr>
+        <tr><td>SD 캐릭터 (전투용)</td><td>256×256 px</td><td>120종</td><td>Idle/Attack/Skill/Hit/Victory 5포즈</td></tr>
+        <tr><td>카드 프레임</td><td>640×960 px</td><td>6종</td><td>등급별 디자인 (★2~★5C7)</td></tr>
+        <tr><td>속성 아이콘</td><td>64×64 px</td><td>6종</td><td>화/수/풍/지/광/암</td></tr>
+        <tr><td>스킬 아이콘</td><td>128×128 px</td><td>360종</td><td>캐릭터당 3개 (스킬1~3)</td></tr>
+        <tr><td>전용 장비 아이콘</td><td>128×128 px</td><td>240종</td><td>캐릭터당 2개 (무기+방어구)</td></tr>
+        <tr><td>미니 초상화 (UI용)</td><td>96×96 px</td><td>120종</td><td>편성/목록 표시용</td></tr>
+        <tr><td>스킨 일러스트</td><td>640×960 px</td><td>~60종</td><td>5성 위주 추가 스킨 (런칭 후)</td></tr>
+      </table>
+
+      <h3>🎴 카드 프레임 디자인</h3>
+      <table>
+        <tr><th>등급</th><th>프레임 스타일</th><th>해당 캐릭터 수</th></tr>
+        <tr><td>★★</td><td>은색 일반</td><td>5명</td></tr>
+        <tr><td>★★★</td><td>동색 강화</td><td>15명</td></tr>
+        <tr><td>★★★★</td><td>자주색 보석</td><td>30명</td></tr>
+        <tr><td>★★★★★ C5</td><td>금색 일반</td><td>35명</td></tr>
+        <tr><td>★★★★★ C6</td><td>금색 + 보석 장식</td><td>25명</td></tr>
+        <tr><td>★★★★★ C7</td><td>금색 + GE 문장</td><td>10명</td></tr>
+      </table>
+
+      <h3>🔥 속성 컬러 팔레트</h3>
+      <table>
+        <tr><th>속성</th><th>주 색상</th><th>캐릭터 수</th></tr>
+        <tr><td>🔥 화(Fire)</td><td>#FF4444 / #FF8800</td><td>18명</td></tr>
+        <tr><td>💧 수(Water)</td><td>#4488FF / #00CCFF</td><td>22명</td></tr>
+        <tr><td>🌪️ 풍(Wind)</td><td>#44CC44 / #88FF00</td><td>24명</td></tr>
+        <tr><td>🪨 지(Earth)</td><td>#BB8844 / #FFAA00</td><td>22명</td></tr>
+        <tr><td>✨ 광(Light)</td><td>#FFDD44 / #FFFFFF</td><td>15명</td></tr>
+        <tr><td>🌑 암(Dark)</td><td>#8844BB / #440066</td><td>19명</td></tr>
+      </table>
+    </div>
+
+    <!-- ─── ★2 (2성) ─── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(192,192,192,0.15)">⚔️</div>
+        <h2>★★ (2성) — 5명 · 튜토리얼 지급</h2>
+      </div>
+      <p>카드 프레임: <strong>은색 일반</strong> · 오픈: W01</p>
+      <table>
+        <tr><th>ID</th><th>이름(KR)</th><th>이름(EN)</th><th>속성</th><th>역할</th><th>소속</th><th>무기</th><th>GE ClassName</th><th>GE Actor</th></tr>
+        <tr><td>001</td><td>파이터</td><td>Fighter</td><td>🔥 화</td><td>Tanker</td><td>리볼도외</td><td>검, 대검, 폴암</td><td><code>Fighter</code></td><td>—</td></tr>
+        <tr><td>002</td><td>머스킷티어</td><td>Musketeer</td><td>🌪️ 풍</td><td>Dealer</td><td>코임브라</td><td>장총, 권총</td><td><code>Musketeer</code></td><td>—</td></tr>
+        <tr><td>003</td><td>위자드</td><td>Wizard</td><td>✨ 광</td><td>Support</td><td>오슈</td><td>스태프, 로드</td><td><code>Wizard</code></td><td>—</td></tr>
+        <tr><td>004</td><td>워록</td><td>Warlock</td><td>🔥 화</td><td>Dealer</td><td>바하마르</td><td>화염/빙한/전격 팔찌</td><td><code>Warlock</code></td><td>—</td></tr>
+        <tr><td>005</td><td>스카우트</td><td>Scout</td><td>💧 수</td><td>Healer</td><td>리볼도외</td><td>로자리오, 단검</td><td><code>Scout</code></td><td>—</td></tr>
+      </table>
+    </div>
+
+    <!-- ─── ★3 (3성) ─── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(205,127,50,0.15)">⚔️</div>
+        <h2>★★★ (3성) — 15명 · 노말 뽑기</h2>
+      </div>
+      <p>카드 프레임: <strong>동색 강화</strong></p>
+      <table>
+        <tr><th>ID</th><th>이름(KR)</th><th>이름(EN)</th><th>속성</th><th>역할</th><th>소속</th><th>무기</th><th>GE ClassName</th><th>GE Actor</th></tr>
+        <tr><td>006</td><td>라미로</td><td>Ramiro</td><td>🌪️ 풍</td><td>Dealer</td><td>리볼도외</td><td>대검, 검, 단검</td><td><code>Ramiro</code></td><td>PC_SET_BOY1_BODY</td></tr>
+        <tr><td>007</td><td>티뷰론</td><td>Tiburon</td><td>🌪️ 풍</td><td>Dealer</td><td>리볼도외</td><td>대검, 검, 단검</td><td><code>Tiburon</code></td><td>PC_SET_BOY2_BODY</td></tr>
+        <tr><td>008</td><td>리볼도외 솔저</td><td>Soldier</td><td>🪨 지</td><td>Tanker</td><td>리볼도외</td><td>검, 폴암</td><td><code>Soldier</code></td><td>—</td></tr>
+        <tr><td>009</td><td>오슈 인팬트리</td><td>Infantry</td><td>🌪️ 풍</td><td>Dealer</td><td>오슈</td><td>장총</td><td><code>Infantry</code></td><td>PC_SET_INFANT_BODY</td></tr>
+        <tr><td>010</td><td>예가네</td><td>Yeganeh</td><td>🪨 지</td><td>Support·Tanker</td><td>리볼도외</td><td>망치, 검</td><td><code>Yeganeh</code></td><td>PC_SET_YEGA_BODY</td></tr>
+        <tr><td>011</td><td>샤리프</td><td>Sharif</td><td>🔥 화</td><td>Dealer</td><td>리볼도외</td><td>검, 권총, 장총</td><td><code>Sharif</code></td><td>PC_SET_JEW_BODY</td></tr>
+        <tr><td>012</td><td>소랑</td><td>Sorang</td><td>💧 수</td><td>Dealer</td><td>오슈</td><td>너클</td><td><code>Sorang</code></td><td>PC_SET_SORANG_BODY</td></tr>
+        <tr><td>013</td><td>그랑디스</td><td>Grandies</td><td>🪨 지</td><td>Tanker·Dealer</td><td>오슈</td><td>검, 대검</td><td><code>Grandies</code></td><td>PC_SET_GRANDIES_BODY</td></tr>
+        <tr><td>014</td><td>라다</td><td>Rada</td><td>🪨 지</td><td>Tanker·Support</td><td>바하마르</td><td>특수 무기</td><td><code>Rada</code></td><td>—</td></tr>
+        <tr><td>015</td><td>레이첼</td><td>Rachel</td><td>💧 수</td><td>Dealer·Support</td><td>브리스티아</td><td>권총</td><td><code>Rachel</code></td><td>PC_SET_RACHEL_BODY</td></tr>
+        <tr><td>016</td><td>코임브라 트루퍼</td><td>Coimbra Trooper</td><td>💧 수</td><td>Tanker</td><td>코임브라</td><td>검, 폴암</td><td><code>Trooper</code></td><td>PC_SET_GUARD_BODY</td></tr>
+        <tr><td>017</td><td>구난기사단</td><td>Rescue Knight</td><td>🪨 지</td><td>Tanker·Support</td><td>구난기사단</td><td>총, 방패</td><td><code>RescueKnight</code></td><td>—</td></tr>
+        <tr><td>018</td><td>비키</td><td>Viki</td><td>💧 수</td><td>Healer·Support</td><td>리볼도외</td><td>로자리오</td><td><code>Viki</code></td><td>PC_SET_VIKI_BODY</td></tr>
+        <tr><td>019</td><td>브루니</td><td>Brunie</td><td>🔥 화</td><td>Dealer</td><td>리볼도외</td><td>장총, 권총</td><td><code>Brunie</code></td><td>—</td></tr>
+        <tr><td>020</td><td>라셀</td><td>Racel</td><td>🪨 지</td><td>Dealer</td><td>타르가</td><td>검, 단검</td><td><code>Racel</code></td><td>PC_SET_TARGA_BODY</td></tr>
+      </table>
+    </div>
+
+    <!-- ─── ★4 (4성) ─── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(128,0,128,0.12)">⚔️</div>
+        <h2>★★★★ (4성) — 30명 · 프리미엄 뽑기</h2>
+      </div>
+      <p>카드 프레임: <strong>자주색 보석</strong></p>
+      <table>
+        <tr><th>ID</th><th>이름(KR)</th><th>이름(EN)</th><th>속성</th><th>역할</th><th>소속</th><th>무기</th><th>GE ClassName</th><th>GE Actor</th></tr>
+        <tr><td>021</td><td>잇지</td><td>Idge</td><td>🔥 화</td><td>Dealer</td><td>리볼도외</td><td>대검, 폴암, 검</td><td><code>Idge</code></td><td>PC_SET_SMITH_BODY</td></tr>
+        <tr><td>022</td><td>판필로</td><td>Panfilo</td><td>🔥 화</td><td>Dealer</td><td>코임브라</td><td>검</td><td><code>Panfilo</code></td><td>PC_SET_COOK_BODY</td></tr>
+        <tr><td>023</td><td>소호</td><td>Soho</td><td>🌪️ 풍</td><td>Dealer·Support</td><td>코임브라</td><td>로자리오, 단검</td><td><code>Soho</code></td><td>PC_SET_SOHO_BODY</td></tr>
+        <tr><td>024</td><td>알레한드로</td><td>Alejandro</td><td>🔥 화</td><td>Dealer·Tanker</td><td>코임브라</td><td>폴암, 대검, 검</td><td><code>Alejandro</code></td><td>PC_SET_FISH_BODY</td></tr>
+        <tr><td>025</td><td>잭</td><td>Jack</td><td>🪨 지</td><td>Support·Tanker</td><td>리볼도외</td><td>망치, 폴암</td><td><code>Jack</code></td><td>PC_SET_JACK_BODY</td></tr>
+        <tr><td>026</td><td>클로드</td><td>Claude</td><td>🪨 지</td><td>Tanker·Dealer</td><td>리볼도외</td><td>검, 대검, 폴암</td><td><code>Claude</code></td><td>PC_SET_WEP_BODY</td></tr>
+        <tr><td>027</td><td>까뜨린느(지능)</td><td>Catherine (INT)</td><td>🌑 암</td><td>Dealer</td><td>리볼도외</td><td>팔찌, 스태프, 로드</td><td><code>CatherineINT</code></td><td>PC_SET_CATHERINE_BODY</td></tr>
+        <tr><td>028</td><td>주안</td><td>Juan</td><td>🌪️ 풍</td><td>Dealer</td><td>코임브라</td><td>—</td><td><code>—</code></td><td>—</td></tr>
+        <tr><td>029</td><td>호세</td><td>Jose</td><td>🔥 화</td><td>Dealer</td><td>코임브라</td><td>폴암, 캐논</td><td><code>Jose</code></td><td>—</td></tr>
+        <tr><td>030</td><td>백호</td><td>Backho</td><td>🌑 암</td><td>Dealer</td><td>오슈</td><td>너클</td><td><code>Backho</code></td><td>PC_SET_BACKHO_BODY</td></tr>
+        <tr><td>031</td><td>리오넬</td><td>Leonele</td><td>💧 수</td><td>Dealer</td><td>베스파뇰라</td><td>권총, 장총</td><td><code>Leonele</code></td><td>PC_SET_LEONELE_BODY</td></tr>
+        <tr><td>032</td><td>빈센트</td><td>Vincent</td><td>🌑 암</td><td>Healer·Support</td><td>크로스</td><td>스태프, 로자리오</td><td><code>Vincent</code></td><td>PC_SET_VINCENT_BODY</td></tr>
+        <tr><td>033</td><td>카자라이네</td><td>Karjalainen</td><td>💧 수</td><td>Support</td><td>크로스</td><td>레이피어, 세이버</td><td><code>Karjalainen</code></td><td>—</td></tr>
+        <tr><td>034</td><td>셜린</td><td>Sherlin</td><td>🔥 화</td><td>Dealer</td><td>10인 귀족</td><td>화염팔찌</td><td><code>Sherlin</code></td><td>PC_SET_SHERLIN_BODY</td></tr>
+        <tr><td>035</td><td>루딘</td><td>Ludin</td><td>🔥 화</td><td>Dealer</td><td>베스파뇰라</td><td>화염팔찌</td><td><code>Ludin</code></td><td>PC_SET_LUDIN_BODY</td></tr>
+        <tr><td>036</td><td>셀바</td><td>Selva</td><td>🌪️ 풍</td><td>Dealer</td><td>브리스티아</td><td>레이피어, 검</td><td><code>Selva</code></td><td>PC_SET_SELVABONES_BODY</td></tr>
+        <tr><td>037</td><td>나르</td><td>Nar</td><td>🪨 지</td><td>Tanker</td><td>에라크</td><td>특수 무기</td><td><code>Nar</code></td><td>PC_SET_NAR_BODY</td></tr>
+        <tr><td>038</td><td>베아트리체</td><td>Beatrice</td><td>🌑 암</td><td>Dealer</td><td>앱시니아</td><td>전격팔찌</td><td><code>Veatrice</code></td><td>PC_SET_VEATRICE_BODY</td></tr>
+        <tr><td>039</td><td>엔지</td><td>Angie</td><td>🪨 지</td><td>Support</td><td>리볼도외</td><td>망치</td><td><code>Angie</code></td><td>PC_SET_ANGIE_BODY</td></tr>
+        <tr><td>040</td><td>아니아</td><td>Ania</td><td>🌪️ 풍</td><td>Dealer</td><td>에라크</td><td>특수 무기</td><td><code>Ania</code></td><td>PC_SET_ANIA_BODY</td></tr>
+        <tr><td>041</td><td>엘리사</td><td>Elisa</td><td>💧 수</td><td>Healer·Support</td><td>카스티야함대</td><td>로자리오</td><td><code>ElisaOfficer</code></td><td>PC_SET_ELISAOFFICER_BODY</td></tr>
+        <tr><td>042</td><td>로미나</td><td>Romina</td><td>✨ 광</td><td>Tanker·Support</td><td>구난기사단</td><td>총, 방패</td><td><code>Romina</code></td><td>PC_SET_RESCUE_BODY</td></tr>
+        <tr><td>043</td><td>미후유</td><td>Mifuyu</td><td>🔥 화</td><td>Dealer</td><td>동방</td><td>검, 대검</td><td><code>Mifuyu</code></td><td>PC_SET_ASUKA_BODY</td></tr>
+        <tr><td>044</td><td>아소카</td><td>Asoka</td><td>🪨 지</td><td>Dealer</td><td>동방</td><td>검</td><td><code>Asoka</code></td><td>PC_SET_MIFUYU_BODY</td></tr>
+        <tr><td>045</td><td>올리비아</td><td>Olivia</td><td>🌪️ 풍</td><td>Dealer</td><td>브리스티아</td><td>단검</td><td><code>Olivia</code></td><td>PC_SET_OLIVIA_BODY</td></tr>
+        <tr><td>046</td><td>로트</td><td>Roth</td><td>💧 수</td><td>Tanker</td><td>코임브라</td><td>검</td><td><code>Viking</code></td><td>PC_SET_VIKING_BODY</td></tr>
+        <tr><td>047</td><td>베로니프</td><td>Berroniff</td><td>💧 수</td><td>Healer</td><td>일리에</td><td>로자리오</td><td><code>Berroniff</code></td><td>PC_SET_BERRONIFF_BODY</td></tr>
+        <tr><td>048</td><td>마리</td><td>Mary</td><td>🔥 화</td><td>Dealer</td><td>리볼도외</td><td>샷건</td><td><code>Mary</code></td><td>PC_SET_MARY_BODY</td></tr>
+        <tr><td>049</td><td>토라</td><td>Tora</td><td>🌑 암</td><td>Dealer</td><td>코임브라</td><td>단검, 검</td><td><code>Tora</code></td><td>PC_SET_TORA_BODY</td></tr>
+        <tr><td>050</td><td>랄프</td><td>Ralph</td><td>🔥 화</td><td>Dealer</td><td>베스파뇰라</td><td>특수 무기</td><td><code>Ralph</code></td><td>PC_SET_RALPH_BODY</td></tr>
+      </table>
+    </div>
+
+    <!-- ─── ★5 C5 (5성 일반) ─── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(255,215,0,0.12)">⭐</div>
+        <h2>★★★★★ C5 (5성 일반) — 35명 · 상시 프리미엄</h2>
+      </div>
+      <p>카드 프레임: <strong>금색 일반</strong></p>
+      <table>
+        <tr><th>ID</th><th>이름(KR)</th><th>이름(EN)</th><th>속성</th><th>역할</th><th>소속</th><th>무기</th><th>GE ClassName</th><th>GE Actor</th></tr>
+        <tr><td>051</td><td>리사</td><td>Lisa</td><td>🌪️ 풍</td><td>Dealer</td><td>코임브라</td><td>단검, 검</td><td><code>Lisa</code></td><td>PC_SET_WAIT_BODY</td></tr>
+        <tr><td>052</td><td>아델리나</td><td>Adelina</td><td>🌪️ 풍</td><td>Dealer</td><td>코임브라</td><td>검, 권총</td><td><code>Adelina</code></td><td>PC_SET_PIR_BODY</td></tr>
+        <tr><td>053</td><td>칼리</td><td>Calyce</td><td>🌪️ 풍</td><td>Dealer</td><td>오슈</td><td>단검</td><td><code>Calyce</code></td><td>PC_SET_CALYCE_BODY</td></tr>
+        <tr><td>054</td><td>앙드레</td><td>Andre</td><td>🌪️ 풍</td><td>Dealer</td><td>리볼도외</td><td>레이피어, 세이버</td><td><code>Andre</code></td><td>—</td></tr>
+        <tr><td>055</td><td>소소</td><td>Soso</td><td>💧 수</td><td>Dealer</td><td>오슈</td><td>너클</td><td><code>Soso</code></td><td>PC_SET_SOSO_BODY</td></tr>
+        <tr><td>056</td><td>리오</td><td>Rio</td><td>🌪️ 풍</td><td>Dealer·Support</td><td>오슈</td><td>전격팔찌</td><td><code>Rio</code></td><td>PC_SET_ALC_BODY</td></tr>
+        <tr><td>057</td><td>로르크</td><td>Lorch</td><td>🌑 암</td><td>Dealer·Support</td><td>베스파뇰라</td><td>망치, 샷건</td><td><code>Lorch</code></td><td>PC_SET_LORCH_BODY</td></tr>
+        <tr><td>058</td><td>나탈리</td><td>Natalie</td><td>🪨 지</td><td>Tanker·Support</td><td>구난기사단</td><td>총, 방패</td><td><code>Natalie</code></td><td>PC_SET_NATALIE_BODY</td></tr>
+        <tr><td>059</td><td>다리아</td><td>Daria</td><td>🪨 지</td><td>Tanker</td><td>일리에</td><td>총, 방패</td><td><code>Daria</code></td><td>PC_SET_DARIA_BODY</td></tr>
+        <tr><td>060</td><td>헬레나</td><td>Hellena</td><td>✨ 광</td><td>Dealer</td><td>10인 귀족</td><td>화염/빙한/전격 팔찌</td><td><code>Hellena</code></td><td>PC_SET_HELLENA_BODY</td></tr>
+        <tr><td>061</td><td>샤론</td><td>Sharon</td><td>✨ 광</td><td>Support·Dealer</td><td>10인 귀족</td><td>스태프</td><td><code>Sharon</code></td><td>PC_SET_EVASHARONL_BODY</td></tr>
+        <tr><td>062</td><td>클레어</td><td>Claire</td><td>✨ 광</td><td>Dealer·Support</td><td>리볼도외</td><td>특수 무기</td><td><code>Clair</code></td><td>PC_SET_CLAIR_BODY</td></tr>
+        <tr><td>063</td><td>이온</td><td>Ion</td><td>💧 수</td><td>Dealer</td><td>10인 귀족</td><td>빙한팔찌</td><td><code>Ion</code></td><td>PC_SET_ION_BODY</td></tr>
+        <tr><td>064</td><td>시리우스</td><td>Sirius</td><td>✨ 광</td><td>Tanker·Dealer</td><td>아르모니아</td><td>검</td><td><code>hknight</code></td><td>PC_SET_HKNIGHT_BODY</td></tr>
+        <tr><td>065</td><td>로라</td><td>Laura</td><td>✨ 광</td><td>Dealer</td><td>아르모니아</td><td>장총</td><td><code>Laura</code></td><td>PC_SET_LAURA_BODY</td></tr>
+        <tr><td>066</td><td>제라드</td><td>Gerard</td><td>🪨 지</td><td>Support·Dealer</td><td>오슈</td><td>—</td><td><code>—</code></td><td>—</td></tr>
+        <tr><td>067</td><td>까뜨린느(기술)</td><td>Catherine (DEX)</td><td>🌪️ 풍</td><td>Dealer</td><td>리볼도외</td><td>장총, 권총, 샷건</td><td><code>CatherineDEX</code></td><td>PC_SET_CATHERINE_BODY</td></tr>
+        <tr><td>068</td><td>네나</td><td>Nena</td><td>🪨 지</td><td>Dealer·Tanker</td><td>바하마르</td><td>폴암</td><td><code>Nena</code></td><td>PC_SET_NENA_BODY</td></tr>
+        <tr><td>069</td><td>셀라네</td><td>Selane</td><td>💧 수</td><td>Dealer</td><td>아르모니아</td><td>빙한팔찌</td><td><code>Selane</code></td><td>PC_SET_SELANE_BODY</td></tr>
+        <tr><td>070</td><td>프리데</td><td>Freeday</td><td>🌪️ 풍</td><td>Support</td><td>베스파뇰라</td><td>특수 무기</td><td><code>Freeday</code></td><td>PC_SET_FREEDAY_BODY</td></tr>
+        <tr><td>071</td><td>바네사</td><td>Vanessa</td><td>🔥 화</td><td>Dealer</td><td>오슈</td><td>특수 무기</td><td><code>Vanessa</code></td><td>PC_SET_VANESSA_BODY</td></tr>
+        <tr><td>072</td><td>에이미</td><td>Amy</td><td>🪨 지</td><td>Support·Healer</td><td>일리에</td><td>특수 무기</td><td><code>Amy</code></td><td>PC_SET_AMY_BODY</td></tr>
+        <tr><td>073</td><td>린</td><td>Lynn</td><td>✨ 광</td><td>Tanker·Dealer</td><td>일리에</td><td>특수 무기</td><td><code>Lynn</code></td><td>PC_SET_LYNNB_BODY</td></tr>
+        <tr><td>074</td><td>레빈</td><td>Levin</td><td>🌑 암</td><td>Dealer</td><td>버론</td><td>검</td><td><code>Levin</code></td><td>PC_SET_LEVIN_BODY</td></tr>
+        <tr><td>075</td><td>JD</td><td>JD</td><td>🪨 지</td><td>Dealer</td><td>브리스티아</td><td>검</td><td><code>Jd</code></td><td>PC_SET_JD_BODY</td></tr>
+        <tr><td>076</td><td>세실</td><td>Sesil</td><td>🌪️ 풍</td><td>Dealer</td><td>아르모니아</td><td>특수 무기 (활)</td><td><code>Sesil</code></td><td>PC_SET_SESIL_BODY</td></tr>
+        <tr><td>077</td><td>마르체티</td><td>Marchetti</td><td>✨ 광</td><td>Dealer·Support</td><td>브리스티아</td><td>스태프</td><td><code>Marchetti</code></td><td>PC_SET_MARCHETTI_BODY</td></tr>
+        <tr><td>078</td><td>제인</td><td>Jane</td><td>🌪️ 풍</td><td>Dealer</td><td>오슈</td><td>권총</td><td><code>Jane</code></td><td>PC_SET_JANE_BODY</td></tr>
+        <tr><td>079</td><td>카노</td><td>Kano</td><td>💧 수</td><td>Healer·Support</td><td>브리스티아</td><td>로자리오</td><td><code>Kano</code></td><td>PC_SET_KANO_BODY</td></tr>
+        <tr><td>080</td><td>로사</td><td>Rosa</td><td>💧 수</td><td>Support</td><td>기간떼</td><td>특수 무기</td><td><code>Rosa</code></td><td>PC_SET_ROSA_BODY</td></tr>
+        <tr><td>081</td><td>구르트루데</td><td>Gurtrude</td><td>🪨 지</td><td>Dealer</td><td>리볼도외</td><td>너클</td><td><code>Gurtrude</code></td><td>—</td></tr>
+        <tr><td>082</td><td>헤이란</td><td>Heyran</td><td>🌑 암</td><td>Dealer</td><td>브리스티아</td><td>특수 무기</td><td><code>Heyran</code></td><td>PC_SET_HEYRAN_BODY</td></tr>
+        <tr><td>083</td><td>로레타</td><td>Roreta</td><td>🔥 화</td><td>Dealer</td><td>코임브라</td><td>특수 무기</td><td><code>Roreta</code></td><td>PC_SET_RORETA_BODY</td></tr>
+        <tr><td>084</td><td>제이나</td><td>Jaina</td><td>💧 수</td><td>Support</td><td>리볼도외</td><td>특수 무기</td><td><code>Jaina</code></td><td>PC_SET_JAINA_BODY</td></tr>
+        <tr><td>085</td><td>니케</td><td>Nike</td><td>✨ 광</td><td>Tanker·Dealer</td><td>아르모니아</td><td>—</td><td><code>—</code></td><td>—</td></tr>
+      </table>
+    </div>
+
+    <!-- ─── ★5 C6 (5성 픽업) ─── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(255,180,0,0.15)">💎</div>
+        <h2>★★★★★ C6 (5성 픽업) — 25명 · 픽업 배너 한정</h2>
+      </div>
+      <p>카드 프레임: <strong>금색 + 보석 장식</strong></p>
+      <table>
+        <tr><th>ID</th><th>이름(KR)</th><th>이름(EN)</th><th>속성</th><th>역할</th><th>소속</th><th>무기</th><th>GE ClassName</th><th>GE Actor</th></tr>
+        <tr><td>086</td><td>까뜨린느(힘)</td><td>Catherine (STR)</td><td>✨ 광</td><td>Dealer</td><td>리볼도외</td><td>검, 레이피어 외 다수</td><td><code>CatherineSTR</code></td><td>PC_SET_CATHERINE_BODY</td></tr>
+        <tr><td>087</td><td>에밀리아</td><td>Emilia</td><td>💧 수</td><td>Healer·Support</td><td>리볼도외</td><td>로자리오, 로드</td><td><code>Emilia</code></td><td>PC_SET_ITEM_BODY</td></tr>
+        <tr><td>088</td><td>음보마</td><td>MBoma</td><td>🔥 화</td><td>Dealer</td><td>앱시니아</td><td>화염팔찌, 스태프</td><td><code>ShamanMBoma</code></td><td>PC_SET_PIOMBOMA_BODY</td></tr>
+        <tr><td>089</td><td>가르시아</td><td>Garcia</td><td>✨ 광</td><td>Dealer</td><td>브리스티아</td><td>레이피어, 세이버, 권총</td><td><code>Garcia</code></td><td>PC_SET_BROTHER02_BODY</td></tr>
+        <tr><td>090</td><td>발레리아</td><td>Valeria</td><td>💧 수</td><td>Healer</td><td>크로스</td><td>특수 무기</td><td><code>Valleria</code></td><td>PC_SET_VALLE_BODY</td></tr>
+        <tr><td>091</td><td>그랑마</td><td>Grandma</td><td>🪨 지</td><td>Tanker·Dealer</td><td>오슈</td><td>대검, 검</td><td><code>Grandma</code></td><td>PC_SET_GRANDMA_BODY</td></tr>
+        <tr><td>092</td><td>쿠르트</td><td>Kurt</td><td>🌑 암</td><td>Dealer</td><td>버론</td><td>특수 무기</td><td><code>Dietrich</code></td><td>PC_SET_DIETRICH_BODY</td></tr>
+        <tr><td>093</td><td>케스</td><td>Kess</td><td>🔥 화</td><td>Dealer·Support</td><td>브리스티아</td><td>장총, 권총</td><td><code>Kess</code></td><td>PC_SET_KESS_BODY</td></tr>
+        <tr><td>094</td><td>베르넬리</td><td>Grace</td><td>🌪️ 풍</td><td>Dealer</td><td>브리스티아</td><td>장총, 샷건, 권총</td><td><code>Grace</code></td><td>PC_SET_GUN2_BODY</td></tr>
+        <tr><td>095</td><td>셀바 보네스 (코슈마르)</td><td>Selva (Cauchemar)</td><td>🌑 암</td><td>Dealer</td><td>브리스티아</td><td>레이피어, 검</td><td><code>Selva</code></td><td>PC_SET_SELVABONES_BODY</td></tr>
+        <tr><td>096</td><td>아드리아나</td><td>Adriana</td><td>✨ 광</td><td>Dealer</td><td>베스파뇰라</td><td>검, 장총</td><td><code>Adriana</code></td><td>PC_SET_ADRIANA_BODY</td></tr>
+        <tr><td>097</td><td>사리엘</td><td>Sariel</td><td>🌑 암</td><td>Dealer</td><td>아르모니아</td><td>특수 무기</td><td><code>Sariel</code></td><td>PC_SET_SARIEL_BODY</td></tr>
+        <tr><td>098</td><td>반</td><td>Van</td><td>🌑 암</td><td>Dealer·Support</td><td>메멘토모리</td><td>특수 무기</td><td><code>Van</code></td><td>PC_SET_VAN_BODY</td></tr>
+        <tr><td>099</td><td>레이븐</td><td>Raven</td><td>🌑 암</td><td>Dealer</td><td>브리스티아</td><td>장총, 권총, 레이피어</td><td><code>Raven</code></td><td>PC_SET_RAVEN_BODY</td></tr>
+        <tr><td>100</td><td>에두아르도</td><td>Eduardo</td><td>🌑 암</td><td>Dealer</td><td>버론</td><td>특수 무기</td><td><code>Eduardo</code></td><td>PC_SET_BROTHER01_BODY</td></tr>
+        <tr><td>101</td><td>아이라완</td><td>Airawon</td><td>🔥 화</td><td>Dealer</td><td>오슈</td><td>격투 (각반, 너클)</td><td><code>Muathai</code></td><td>PC_SET_MUA_BODY</td></tr>
+        <tr><td>102</td><td>케이</td><td>Kei</td><td>💧 수</td><td>Dealer</td><td>고대</td><td>특수 무기</td><td><code>Kei</code></td><td>PC_SET_KEI_BODY</td></tr>
+        <tr><td>103</td><td>베일</td><td>Veil</td><td>🌪️ 풍</td><td>Dealer</td><td>브리스티아</td><td>특수 무기</td><td><code>Veil</code></td><td>PC_SET_VEIL_BODY</td></tr>
+        <tr><td>104</td><td>아클라</td><td>Aclla</td><td>💧 수</td><td>Dealer·Support</td><td>고대</td><td>특수 무기</td><td><code>Aclla</code></td><td>PC_SET_ACLLA_BODY</td></tr>
+        <tr><td>105</td><td>레오나</td><td>Leona</td><td>🌑 암</td><td>Dealer</td><td>일리에</td><td>특수 무기</td><td><code>Leona</code></td><td>PC_SET_LEONA_BODY</td></tr>
+        <tr><td>106</td><td>패트릭</td><td>Patrick</td><td>🪨 지</td><td>Dealer</td><td>아르모니아</td><td>대검, 검</td><td><code>Patrick</code></td><td>PC_SET_PATRICK_BODY</td></tr>
+        <tr><td>107</td><td>쥬디스</td><td>Judith</td><td>🪨 지</td><td>Dealer</td><td>아르모니아</td><td>폴암</td><td><code>Judith</code></td><td>PC_SET_JUDITH_BODY</td></tr>
+        <tr><td>108</td><td>디트리히</td><td>Diertrich</td><td>🌪️ 풍</td><td>Dealer</td><td>일리에</td><td>검</td><td><code>Diertrichherberthe</code></td><td>PC_SET_DIERTRICH_BODY</td></tr>
+        <tr><td>109</td><td>아니스</td><td>Anies</td><td>✨ 광</td><td>Healer·Support</td><td>아르모니아</td><td>특수 무기</td><td><code>Anies</code></td><td>PC_SET_ANIES_BODY</td></tr>
+        <tr><td>110</td><td>시에라 로스</td><td>Sierra Los</td><td>💧 수</td><td>Dealer·Support</td><td>로스</td><td>로자리오, 로드</td><td><code>SierraLosPC</code></td><td>PC_SET_SIERRAPC_BODY</td></tr>
+      </table>
+    </div>
+
+    <!-- ─── ★5 C7 (5성 시즌한정) ─── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(255,0,80,0.12)">👑</div>
+        <h2>★★★★★ C7 (5성 시즌한정) — 10명 · 최상위 한정</h2>
+      </div>
+      <p>카드 프레임: <strong>금색 + GE 문장</strong> — 원작 변신/각성 버전 캐릭터</p>
+      <table>
+        <tr><th>ID</th><th>이름(KR)</th><th>이름(EN)</th><th>속성</th><th>역할</th><th>소속</th><th>무기</th><th>GE ClassName</th><th>GE Actor</th></tr>
+        <tr><td>111</td><td>그라시엘로</td><td>Gracielo</td><td>🌪️ 풍</td><td>Dealer</td><td>크로스</td><td>격투 (각반)</td><td><code>Gracielo</code></td><td>PC_SET_GRACIELO_BODY</td></tr>
+        <tr><td>112</td><td>까뜨린느 토르쉐</td><td>Catherine Torsche</td><td>🌑 암</td><td>Dealer</td><td>리볼도외</td><td>단검</td><td><code>CatherineTorsche</code></td><td>PC_SET_CATOR_BODY</td></tr>
+        <tr><td>113</td><td>몬토로</td><td>Montoro</td><td>🌑 암</td><td>Dealer·Support</td><td>10인 귀족</td><td>스태프</td><td><code>MontoroPC</code></td><td>PC_SET_MONTOROPC_BODY</td></tr>
+        <tr><td>114</td><td>길티네</td><td>Giltine</td><td>🌑 암</td><td>Dealer</td><td>심연</td><td>특수 무기</td><td><code>—</code></td><td>—</td></tr>
+        <tr><td>115</td><td>프레야</td><td>Freya</td><td>🌪️ 풍</td><td>Dealer</td><td>고대</td><td>특수 무기</td><td><code>—</code></td><td>—</td></tr>
+        <tr><td>116</td><td>오르넬라</td><td>Ornella</td><td>✨ 광</td><td>Healer·Support</td><td>아르모니아</td><td>특수 무기</td><td><code>—</code></td><td>—</td></tr>
+        <tr><td>117</td><td>개척왕 그랑마</td><td>Pioneer Grandma</td><td>🪨 지</td><td>Tanker·Dealer</td><td>오슈</td><td>검, 대검, 로드</td><td><code>Grandies2</code></td><td>PC_SET_GRANDIES2_BODY</td></tr>
+        <tr><td>118</td><td>전격의 그라시엘로</td><td>Lightning Gracielo</td><td>🌪️ 풍</td><td>Dealer</td><td>크로스</td><td>격투 (각반)</td><td><code>GracieloHD</code></td><td>PC_SET_GRACIELOHD_BODY</td></tr>
+        <tr><td>119</td><td>현자 에밀리아</td><td>Sage Emilia</td><td>💧 수</td><td>Healer·Support</td><td>리볼도외</td><td>로자리오, 로드, 스태프</td><td><code>EmiliaSage</code></td><td>PC_SET_EMILIA_BODY</td></tr>
+        <tr><td>120</td><td>폭주 에밀리아</td><td>Lunatic Emilia</td><td>🌑 암</td><td>Dealer</td><td>리볼도외</td><td>스태프, 로드</td><td><code>EmiliaLunatic</code></td><td>PC_SET_MADEMILIA_BODY</td></tr>
+      </table>
+    </div>
+
+    <!-- ─── 에셋 ID 규칙 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(99,102,241,0.12)">📐</div>
+        <h2>에셋 ID 규칙 · 파일명 컨벤션</h2>
+      </div>
+      <table>
+        <tr><th>에셋 종류</th><th>ID 패턴</th><th>파일명 예시 (에밀리아 #087)</th></tr>
+        <tr><td>전신 일러스트</td><td>CHAR_{NNN}</td><td><code>char_087_emilia.png</code></td></tr>
+        <tr><td>미니 초상화</td><td>ICON_CHAR_{NNN}</td><td><code>icon_char_087.png</code></td></tr>
+        <tr><td>SD 전투 스프라이트</td><td>SD_{NNN}_{포즈}</td><td><code>sd_087_idle.png</code> / <code>sd_087_attack.png</code></td></tr>
+        <tr><td>스킬 아이콘</td><td>ICO_SKL_{시작}~{+2}</td><td><code>ico_skl_087_01.png</code> ~ <code>ico_skl_087_03.png</code></td></tr>
+        <tr><td>전용 무기 아이콘</td><td>ICO_EXW_{NNN}</td><td><code>ico_exw_087.png</code></td></tr>
+        <tr><td>전용 방어구 아이콘</td><td>ICO_EXA_{NNN}</td><td><code>ico_exa_087.png</code></td></tr>
+        <tr><td>스킨 일러스트</td><td>SKN_{NNN}_{SS}</td><td><code>skn_087_01_lunatic.png</code></td></tr>
+      </table>
+
+      <h3>📏 SD 캐릭터 포즈 사양</h3>
+      <table>
+        <tr><th>포즈</th><th>파일 접미사</th><th>프레임 수</th><th>설명</th></tr>
+        <tr><td>대기</td><td>_idle</td><td>4~8</td><td>루프 애니메이션</td></tr>
+        <tr><td>이동</td><td>_move</td><td>6~8</td><td>루프</td></tr>
+        <tr><td>일반 공격</td><td>_attack</td><td>4~6</td><td>1회 재생</td></tr>
+        <tr><td>스킬 시전</td><td>_skill</td><td>6~10</td><td>1회 재생, 이펙트 레이어 별도</td></tr>
+        <tr><td>피격</td><td>_hit</td><td>2~3</td><td>1회 재생</td></tr>
+        <tr><td>승리</td><td>_victory</td><td>4~6</td><td>1회 재생</td></tr>
+      </table>
+    </div>
+
+    <!-- ─── GE 원작 참조 가이드 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(234,88,12,0.12)">🎮</div>
+        <h2>GE 원작 참조 가이드</h2>
+      </div>
+      <p>각 캐릭터의 <strong>GE ClassName</strong>은 그라나도 에스파다 원작의 데이터 키입니다.<br>
+         원작 게임 내에서 해당 캐릭터를 직접 확인하는 방법:</p>
+      <ol>
+        <li>GE 클라이언트에서 배럭 → 캐릭터 생성 화면에서 해당 캐릭터 선택</li>
+        <li>또는 <code>datatable_npc.xml</code>에서 ClassName 검색 → 모델/텍스처 확인</li>
+        <li><strong>GE Actor</strong> (예: <code>PC_SET_RAVEN_BODY</code>)는 3D 모델 파일의 경로 키</li>
+      </ol>
+      <p style="margin-top:12px">⚠️ 다음 캐릭터는 GE 원작에 없는 <strong>오리지널 캐릭터</strong>이므로 신규 디자인이 필요합니다:</p>
+      <table>
+        <tr><th>ID</th><th>이름</th><th>비고</th></tr>
+        <tr><td>028</td><td>주안 (Juan)</td><td>코임브라 NPC 기반 창작</td></tr>
+        <tr><td>066</td><td>제라드 (Gerard)</td><td>오슈 NPC 기반 창작</td></tr>
+        <tr><td>085</td><td>니케 (Nike)</td><td>아르모니아 컨셉 창작</td></tr>
+        <tr><td>114</td><td>길티네 (Giltine)</td><td>심연 보스 기반 창작</td></tr>
+        <tr><td>115</td><td>프레야 (Freya)</td><td>고대 신 컨셉 창작</td></tr>
+        <tr><td>116</td><td>오르넬라 (Ornella)</td><td>아르모니아 NPC → 플레이어블 전환</td></tr>
+      </table>
+    </div>
+
+    <!-- ─── 제작 우선순위 ─── -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-icon" style="background:rgba(16,185,129,0.12)">📅</div>
+        <h2>제작 우선순위</h2>
+      </div>
+      <table>
+        <tr><th>우선순위</th><th>대상</th><th>수량</th><th>마감</th></tr>
+        <tr><td><strong>P1</strong></td><td>★2 전원 (튜토리얼) + 카드 프레임 6종 + 속성 아이콘 6종</td><td>5명 + 12종</td><td>알파</td></tr>
+        <tr><td><strong>P2</strong></td><td>★3 전원 + ★4 W03~W05 캐릭터</td><td>~25명</td><td>CBT</td></tr>
+        <tr><td><strong>P3</strong></td><td>★4 나머지 + ★5 C5 W04~W08</td><td>~30명</td><td>OBT</td></tr>
+        <tr><td><strong>P4</strong></td><td>★5 C5 나머지 + ★5 C6 W04~W12</td><td>~35명</td><td>런칭</td></tr>
+        <tr><td><strong>P5</strong></td><td>★5 C6 W13+ 및 ★5 C7 전원</td><td>~25명</td><td>런칭 후 시즌</td></tr>
+      </table>
+    </div>
+
   </div>
 </div>
 
