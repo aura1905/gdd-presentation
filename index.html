@@ -1112,44 +1112,33 @@
           <div class="section-icon" style="background:rgba(217,74,92,0.12)">⚔️</div>
           <h2>전투 시스템</h2>
           <span class="tag">서버 턴제 3v3</span>
+          <span class="tag" style="background:rgba(78,204,163,0.15);color:var(--accent-green)">2026-03-12 확정</span>
         </div>
 
-        <div class="card">
+        <!-- Sub-tabs -->
+        <div class="sub-tabs" data-group="combat">
+          <div class="sub-tab active" data-sub="cb-overview">🎮 전투 개요</div>
+          <div class="sub-tab" data-sub="cb-char-build">🧩 캐릭터 구성</div>
+          <div class="sub-tab" data-sub="cb-stats">📊 스탯 23종</div>
+          <div class="sub-tab" data-sub="cb-engine">⚙️ 전투 엔진</div>
+          <div class="sub-tab" data-sub="cb-cc">🔮 CC · 상태이상</div>
+        </div>
+
+        <!-- ═══ SUB: 전투 개요 ═══ -->
+        <div class="sub-content active" data-sub="cb-overview">
+
           <h3>🎮 전투 방식</h3>
           <table class="tbl">
-            <tr>
-              <th>항목</th>
-              <th>설정</th>
-            </tr>
-            <tr>
-              <td>전투 방식</td>
-              <td>턴 기반 시뮬레이션 (서버 계산 → 클라이언트 연출)</td>
-            </tr>
-            <tr>
-              <td>전투 규모</td>
-              <td><strong>3 vs 3</strong> (인간 대 인간 기본)</td>
-            </tr>
-            <tr>
-              <td>라운드</td>
-              <td><strong>최대 10턴</strong></td>
-            </tr>
-            <tr>
-              <td>승리 조건</td>
-              <td>적 3인 전멸</td>
-            </tr>
-            <tr>
-              <td>10턴 초과</td>
-              <td>잔여 HP 비교 판정</td>
-            </tr>
-            <tr>
-              <td>전투 시간</td>
-              <td>~2분 30초(1배속) / ~1분 15초(2배속)</td>
-            </tr>
+            <tr><th>항목</th><th>설정</th></tr>
+            <tr><td>전투 방식</td><td>턴 기반 시뮬레이션 (서버 계산 → 클라이언트 연출)</td></tr>
+            <tr><td>전투 규모</td><td><strong>3 vs 3</strong> (인간 대 인간 기본)</td></tr>
+            <tr><td>라운드</td><td><strong>최대 10턴</strong></td></tr>
+            <tr><td>승리 조건</td><td>적 3인 전멸</td></tr>
+            <tr><td>10턴 초과</td><td>잔여 HP 비교 판정</td></tr>
+            <tr><td>전투 시간</td><td>~2분 30초(1배속) / ~1분 15초(2배속)</td></tr>
           </table>
-        </div>
 
-        <div class="card">
-          <h3>📊 10턴 전개 — 3막 구조</h3>
+          <h3 style="margin-top:32px">📊 10턴 전개 — 3막 구조</h3>
           <div class="card-grid-3">
             <div class="highlight-box red">
               <p><strong style="color:var(--accent-red)">턴 1~3: 개전기</strong></p>
@@ -1167,10 +1156,8 @@
               <p>HP 위기 시 스킬 발동률 +10%. 지구전 조합의 진가 발휘.</p>
             </div>
           </div>
-        </div>
 
-        <div class="card">
-          <h3>🔄 역할 상성 — 가위바위보</h3>
+          <h3 style="margin-top:32px">🔄 역할 상성 — 가위바위보</h3>
           <div class="matchup">
             <div class="matchup-node burst">
               <div class="name">🚀 미사일</div>
@@ -1200,95 +1187,200 @@
           </div>
         </div>
 
-        <div class="card">
-          <h3>📈 7대 스탯</h3>
+        <!-- ═══ SUB: 캐릭터 구성 ═══ -->
+        <div class="sub-content" data-sub="cb-char-build">
+
+          <h3>🧩 캐릭터 전투력 구성</h3>
+          <p>전투력은 3개 층으로 나뉘며, <strong>비전스킬이 빌드의 핵심(~50%)</strong>입니다.</p>
+
+          <div class="card-grid-3">
+            <div class="highlight-box">
+              <p><strong style="color:var(--gold)">🔶 고유 (정체성)</strong></p>
+              <p>고유 스킬 2개<br>(액티브 1 + 패시브 1)</p>
+              <p style="color:var(--text-dim);font-size:13px">캐릭터의 역할과 개성을 결정.<br>변경 불가 — 캐릭터를 선택하는 이유.</p>
+            </div>
+            <div class="highlight-box green">
+              <p><strong style="color:var(--accent-green)">🟢 비전스킬 (~50%)</strong></p>
+              <p>자유 장착 2슬롯<br>(마스터 테이블에서 선택)</p>
+              <p style="color:var(--text-dim);font-size:13px">Tier 2 스탯 부여 + 추가 효과.<br>같은 캐릭터도 비전스킬에 따라 전혀 다른 빌드.</p>
+            </div>
+            <div class="highlight-box">
+              <p><strong style="color:var(--accent-cyan)">🔵 장비 (~20%)</strong></p>
+              <p>3슬롯<br>(무기 / 방어구 / 악세서리)</p>
+              <p style="color:var(--text-dim);font-size:13px">미세 보정 + 장비 특기.<br>스탯 미조정, 속성 저항, 세트 효과.</p>
+            </div>
+          </div>
+
+          <h3 style="margin-top:32px">📋 전투 시 사용 가능한 행동</h3>
           <table class="tbl">
-            <tr>
-              <th>스탯</th>
-              <th>약칭</th>
-              <th>역할</th>
-            </tr>
-            <tr>
-              <td>공격력</td>
-              <td>ATK</td>
-              <td>딜의 기본</td>
-            </tr>
-            <tr>
-              <td>방어력</td>
-              <td>DEF</td>
-              <td>피해 감소</td>
-            </tr>
-            <tr>
-              <td>체력</td>
-              <td>HP</td>
-              <td>생존력 (웨이브 간 유지)</td>
-            </tr>
-            <tr>
-              <td>속도</td>
-              <td>SPD</td>
-              <td>행동 순서 — 높을수록 먼저 행동</td>
-            </tr>
-            <tr>
-              <td>치명타</td>
-              <td>CRI/CRD</td>
-              <td>폭딜 잠재력</td>
-            </tr>
-            <tr>
-              <td>저항</td>
-              <td>RES</td>
-              <td>CC/디버프 저항</td>
-            </tr>
-            <tr>
-              <td>마력</td>
-              <td>MP</td>
-              <td>스킬 자원 관리</td>
-            </tr>
+            <tr><th>행동</th><th>소스</th><th>설명</th></tr>
+            <tr><td>기본 공격</td><td>무기 타입 자동</td><td>MP 소모 없음. 무기 종류에 따라 단일/범위 자동 결정</td></tr>
+            <tr><td>고유 액티브</td><td>캐릭터 고유</td><td>캐릭터 정체성. MP 소모. 강력한 단일 효과</td></tr>
+            <tr><td>고유 패시브</td><td>캐릭터 고유</td><td>상시 발동. 조건부 트리거로 자동 적용</td></tr>
+            <tr><td>비전스킬 A</td><td>자유 장착</td><td>빌드 핵심 1. Effect + Trigger 조합</td></tr>
+            <tr><td>비전스킬 B</td><td>자유 장착</td><td>빌드 핵심 2. Effect + Trigger 조합</td></tr>
+            <tr><td>장비 특기</td><td>무기 고유</td><td>장비에 부여된 추가 효과 (확률 발동)</td></tr>
           </table>
+
+          <h3 style="margin-top:32px">🎯 성장 기여도</h3>
+          <div style="display:flex;gap:4px;height:32px;border-radius:8px;overflow:hidden;margin-bottom:8px">
+            <div style="flex:3;background:var(--accent-orange);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#000">레벨 ~30%</div>
+            <div style="flex:5;background:var(--accent-green);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#000">비전스킬 ~50%</div>
+            <div style="flex:2;background:var(--accent-cyan);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#000">장비 ~20%</div>
+          </div>
+          <p style="color:var(--text-dim);font-size:13px">레벨만 올려서는 한계가 있고, 비전스킬 조합이 전투력 차이를 만드는 핵심 시스템.</p>
         </div>
 
-        <div class="card">
-          <h3>🎯 6대 스킬 카테고리</h3>
-          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
-            <span class="badge badge-red">🗡️ 딜 — 단일/범위 피해</span>
-            <span class="badge badge-purple">🔒 CC — 행동 불가/약화</span>
-            <span class="badge badge-green">💚 힐 — HP 회복</span>
-            <span class="badge badge-orange">🔺 버프 — 아군 강화</span>
-            <span class="badge badge-blue">🔻 디버프 — 적 약화</span>
-            <span class="badge badge-gold">🛡️ 보호 — 도발/보호막</span>
-          </div>
+        <!-- ═══ SUB: 스탯 23종 ═══ -->
+        <div class="sub-content" data-sub="cb-stats">
+
+          <h3>📊 스탯 체계 — 3-Tier 23종</h3>
+          <p>기존 7대 스탯에서 <strong>23종 3-Tier 구조</strong>로 확장. 비전스킬과 장비가 Tier 2·3을 결정합니다.</p>
+
+          <h4 style="margin-top:24px;color:var(--accent-orange)">Tier 1 — 기본 스탯 5종 (레벨 성장)</h4>
           <table class="tbl">
-            <tr>
-              <th>CC 종류</th>
-              <th>지속</th>
-              <th>효과</th>
-            </tr>
-            <tr>
-              <td>스턴</td>
-              <td>1턴</td>
-              <td>행동 불가</td>
-            </tr>
-            <tr>
-              <td>빙결</td>
-              <td>1~2턴</td>
-              <td>행동 불가 + DEF 감소</td>
-            </tr>
-            <tr>
-              <td>감전</td>
-              <td>2턴</td>
-              <td>매 턴 피해 + SPD 감소</td>
-            </tr>
-            <tr>
-              <td>침묵</td>
-              <td>2턴</td>
-              <td>스킬 사용 불가 (일반 공격만)</td>
-            </tr>
-            <tr>
-              <td>화상</td>
-              <td>3턴</td>
-              <td>매 턴 지속 피해 (DoT)</td>
-            </tr>
+            <tr><th>스탯</th><th>약칭</th><th>역할</th><th>성장</th></tr>
+            <tr><td>체력</td><td>HP</td><td>생존력 — 0이 되면 전투 불능</td><td>레벨 비례</td></tr>
+            <tr><td>공격력</td><td>ATK</td><td>물리/마법 피해의 기본값</td><td>레벨 비례</td></tr>
+            <tr><td>방어력</td><td>DEF</td><td>받는 피해 감소</td><td>레벨 비례</td></tr>
+            <tr><td>속도</td><td>SPD</td><td>행동 순서 결정 — 높을수록 먼저 행동</td><td>레벨 미비례 (고정 기반)</td></tr>
+            <tr><td>마력</td><td>MP</td><td>스킬 사용 자원 — 턴마다 일부 회복</td><td>레벨 비례</td></tr>
           </table>
+
+          <h4 style="margin-top:24px;color:var(--accent-green)">Tier 2 — 비전스킬 부여 스탯 12종 (조합)</h4>
+          <table class="tbl">
+            <tr><th>스탯</th><th>약칭</th><th>역할</th><th>소스</th></tr>
+            <tr><td>치명타 확률</td><td>CRI</td><td>크리티컬 히트 발동률</td><td>비전스킬, 장비</td></tr>
+            <tr><td>치명타 피해</td><td>CRD</td><td>크리티컬 시 추가 배율 (기본 150%)</td><td>비전스킬, 장비</td></tr>
+            <tr><td>명중률</td><td>ACC</td><td>공격 적중 확률</td><td>비전스킬</td></tr>
+            <tr><td>회피율</td><td>EVA</td><td>공격 회피 확률</td><td>비전스킬, 장비</td></tr>
+            <tr><td>효과 저항</td><td>RES</td><td>CC/디버프 저항 확률</td><td>비전스킬, 장비</td></tr>
+            <tr><td>효과 적중</td><td>EFF</td><td>CC/디버프 적용 확률</td><td>비전스킬</td></tr>
+            <tr><td>흡혈</td><td>VAMP</td><td>딜의 일부를 HP로 회복</td><td>비전스킬</td></tr>
+            <tr><td>보호막</td><td>SHD</td><td>HP 앞에 추가 방어층</td><td>비전스킬, 스킬</td></tr>
+            <tr><td>관통</td><td>PEN</td><td>적 DEF 일부 무시</td><td>비전스킬, 장비</td></tr>
+            <tr><td>피해 감소</td><td>DR</td><td>최종 피해에서 % 감소</td><td>비전스킬, 장비</td></tr>
+            <tr><td>MP 회복</td><td>MPR</td><td>턴당 추가 MP 회복량</td><td>비전스킬</td></tr>
+            <tr><td>쿨타임 감소</td><td>CDR</td><td>스킬 쿨타임 단축</td><td>비전스킬</td></tr>
+          </table>
+
+          <h4 style="margin-top:24px;color:var(--accent-cyan)">Tier 3 — 속성 저항 6종 (장비+비전스킬)</h4>
+          <table class="tbl">
+            <tr><th>속성</th><th>약칭</th><th>역할</th></tr>
+            <tr><td><span style="color:#FF4444">🔥 화 저항</span></td><td>FRES</td><td>화속성 피해 감소</td></tr>
+            <tr><td><span style="color:#4488FF">💧 수 저항</span></td><td>WRES</td><td>수속성 피해 감소</td></tr>
+            <tr><td><span style="color:#44CC44">🌪️ 풍 저항</span></td><td>ARES</td><td>풍속성 피해 감소</td></tr>
+            <tr><td><span style="color:#BB8844">🪨 지 저항</span></td><td>ERES</td><td>지속성 피해 감소</td></tr>
+            <tr><td><span style="color:#FFDD44">✨ 광 저항</span></td><td>LRES</td><td>광속성 피해 감소</td></tr>
+            <tr><td><span style="color:#9b6fd9">🌑 암 저항</span></td><td>DRES</td><td>암속성 피해 감소</td></tr>
+          </table>
+
+          <div class="highlight-box" style="margin-top:16px">
+            <p><strong>핵심 원칙:</strong> Tier 1은 레벨로 자동 성장 → Tier 2는 비전스킬 선택으로 "어떤 캐릭터로 만들 것인가" 결정 → Tier 3은 장비로 상대 속성에 대응</p>
+          </div>
         </div>
+
+        <!-- ═══ SUB: 전투 엔진 ═══ -->
+        <div class="sub-content" data-sub="cb-engine">
+
+          <h3>⚙️ 전투 엔진 — Effect + Trigger 데이터 구동</h3>
+          <p>모든 스킬(고유/비전/장비특기)은 <strong>Effect(14종) × Trigger(16종)</strong> 조합으로 정의됩니다.<br>
+             새로운 비전스킬이나 특기를 추가할 때 <strong>코드 수정 없이 데이터만으로</strong> 확장 가능합니다.</p>
+
+          <h4 style="margin-top:24px;color:var(--accent-red)">Effect 14종 — "무엇을 하는가"</h4>
+          <table class="tbl">
+            <tr><th>#</th><th>Effect</th><th>설명</th><th>예시</th></tr>
+            <tr><td>1</td><td>Damage</td><td>대상에게 피해</td><td>ATK×1.5 단일 피해</td></tr>
+            <tr><td>2</td><td>Heal</td><td>대상 HP 회복</td><td>ATK×0.8 회복</td></tr>
+            <tr><td>3</td><td>Shield</td><td>보호막 부여</td><td>HP×20% 보호막</td></tr>
+            <tr><td>4</td><td>Buff</td><td>아군 스탯 증가</td><td>ATK+30% 3턴</td></tr>
+            <tr><td>5</td><td>Debuff</td><td>적 스탯 감소</td><td>DEF-25% 2턴</td></tr>
+            <tr><td>6</td><td>DoT</td><td>매 턴 지속 피해</td><td>화상: ATK×10% 3턴</td></tr>
+            <tr><td>7</td><td>HoT</td><td>매 턴 지속 회복</td><td>HP×5% 3턴 회복</td></tr>
+            <tr><td>8</td><td>Stun</td><td>행동 불가</td><td>1턴 스턴</td></tr>
+            <tr><td>9</td><td>Silence</td><td>스킬 사용 불가</td><td>2턴 침묵</td></tr>
+            <tr><td>10</td><td>Taunt</td><td>자신에게 공격 집중</td><td>2턴 도발</td></tr>
+            <tr><td>11</td><td>Dispel</td><td>버프/디버프 제거</td><td>적 버프 2개 제거</td></tr>
+            <tr><td>12</td><td>Revive</td><td>전투불능 부활</td><td>HP 30%로 부활</td></tr>
+            <tr><td>13</td><td>MP_Modify</td><td>MP 증감</td><td>적 MP -30</td></tr>
+            <tr><td>14</td><td>Summon</td><td>소환수 생성</td><td>보조 유닛 1체 소환</td></tr>
+          </table>
+
+          <h4 style="margin-top:32px;color:var(--accent-blue)">Trigger 16종 — "언제 발동하는가"</h4>
+          <table class="tbl">
+            <tr><th>#</th><th>Trigger</th><th>발동 조건</th><th>예시</th></tr>
+            <tr><td>1</td><td>OnActive</td><td>액티브 스킬 사용 시</td><td>기본 — 턴에 직접 선택</td></tr>
+            <tr><td>2</td><td>OnTurnStart</td><td>자기 턴 시작 시</td><td>턴 시작 시 ATK+10%</td></tr>
+            <tr><td>3</td><td>OnTurnEnd</td><td>자기 턴 종료 시</td><td>턴 종료 시 HP 5% 회복</td></tr>
+            <tr><td>4</td><td>OnAttack</td><td>공격 명중 시</td><td>명중 시 30% 확률 추가 피해</td></tr>
+            <tr><td>5</td><td>OnCrit</td><td>크리티컬 발생 시</td><td>크리 시 MP +10 회복</td></tr>
+            <tr><td>6</td><td>OnKill</td><td>적 처치 시</td><td>처치 시 ATK+20% 영구</td></tr>
+            <tr><td>7</td><td>OnHit</td><td>피격 시</td><td>피격 시 반격 30%</td></tr>
+            <tr><td>8</td><td>OnDodge</td><td>회피 성공 시</td><td>회피 시 SPD+15% 1턴</td></tr>
+            <tr><td>9</td><td>OnAllyDeath</td><td>아군 전투불능 시</td><td>아군 사망 시 ATK+50%</td></tr>
+            <tr><td>10</td><td>OnHPBelow</td><td>HP 임계값 이하 시</td><td>HP 30% 이하 시 DEF+40%</td></tr>
+            <tr><td>11</td><td>OnBattleStart</td><td>전투 시작 시 (1회)</td><td>전투 시작 시 전체 버프</td></tr>
+            <tr><td>12</td><td>OnDebuffApplied</td><td>디버프 걸렸을 때</td><td>디버프 시 RES+20%</td></tr>
+            <tr><td>13</td><td>OnHeal</td><td>회복 받았을 때</td><td>회복 시 보호막 추가</td></tr>
+            <tr><td>14</td><td>OnShieldBreak</td><td>보호막 파괴 시</td><td>보호막 깨지면 반격</td></tr>
+            <tr><td>15</td><td>OnElementMatch</td><td>속성 유리 시</td><td>유리 속성 공격 시 +20%</td></tr>
+            <tr><td>16</td><td>OnConsecutive</td><td>연속 행동 시</td><td>2연속 공격 시 범위화</td></tr>
+          </table>
+
+          <div class="highlight-box green" style="margin-top:16px">
+            <p><strong>데이터 구동의 핵심:</strong> 비전스킬 하나 = <code>{ effect: "Damage", trigger: "OnCrit", params: { ratio: 0.5 } }</code> 형태의 데이터 한 줄.<br>
+            기획자가 Effect+Trigger 조합만 정의하면 프로그래머의 코드 수정 없이 새로운 스킬이 완성됩니다.</p>
+          </div>
+        </div>
+
+        <!-- ═══ SUB: CC · 상태이상 ═══ -->
+        <div class="sub-content" data-sub="cb-cc">
+
+          <h3>🔮 CC · 상태이상 체계</h3>
+
+          <h4 style="margin-top:16px">경직형 CC (행동 제한)</h4>
+          <table class="tbl">
+            <tr><th>CC</th><th>지속</th><th>효과</th><th>저항</th></tr>
+            <tr><td>스턴</td><td>1턴</td><td>행동 불가</td><td>RES로 저항 가능</td></tr>
+            <tr><td>빙결</td><td>1~2턴</td><td>행동 불가 + DEF -20%</td><td>RES + WRES</td></tr>
+            <tr><td>침묵</td><td>2턴</td><td>스킬 사용 불가 (기본 공격만)</td><td>RES로 저항 가능</td></tr>
+            <tr><td>도발</td><td>2턴</td><td>도발자만 공격 가능</td><td>저항 불가</td></tr>
+          </table>
+
+          <h4 style="margin-top:24px">지속형 상태이상 (DoT / 약화)</h4>
+          <table class="tbl">
+            <tr><th>상태</th><th>지속</th><th>효과</th><th>속성</th></tr>
+            <tr><td>화상</td><td>3턴</td><td>매 턴 ATK×10% 피해</td><td><span style="color:#FF4444">🔥 화</span></td></tr>
+            <tr><td>감전</td><td>2턴</td><td>매 턴 피해 + SPD -15%</td><td><span style="color:#44CC44">🌪️ 풍</span></td></tr>
+            <tr><td>중독</td><td>3턴</td><td>매 턴 HP×5% 피해 (방무)</td><td><span style="color:#9b6fd9">🌑 암</span></td></tr>
+            <tr><td>출혈</td><td>2턴</td><td>매 턴 피해 + 회복량 -50%</td><td>물리</td></tr>
+            <tr><td>약화</td><td>2턴</td><td>ATK -25%</td><td>—</td></tr>
+            <tr><td>노출</td><td>2턴</td><td>DEF -25%</td><td>—</td></tr>
+          </table>
+
+          <h4 style="margin-top:24px">속성 상성표</h4>
+          <table class="tbl">
+            <tr><th>공격 속성</th><th>유리 (+25%)</th><th>불리 (-25%)</th></tr>
+            <tr><td><span style="color:#FF4444">🔥 화</span></td><td><span style="color:#44CC44">🌪️ 풍</span></td><td><span style="color:#4488FF">💧 수</span></td></tr>
+            <tr><td><span style="color:#4488FF">💧 수</span></td><td><span style="color:#FF4444">🔥 화</span></td><td><span style="color:#44CC44">🌪️ 풍</span></td></tr>
+            <tr><td><span style="color:#44CC44">🌪️ 풍</span></td><td><span style="color:#4488FF">💧 수</span></td><td><span style="color:#FF4444">🔥 화</span></td></tr>
+            <tr><td><span style="color:#BB8844">🪨 지</span></td><td><span style="color:#FFDD44">✨ 광</span></td><td><span style="color:#9b6fd9">🌑 암</span></td></tr>
+            <tr><td><span style="color:#FFDD44">✨ 광</span></td><td><span style="color:#9b6fd9">🌑 암</span></td><td><span style="color:#BB8844">🪨 지</span></td></tr>
+            <tr><td><span style="color:#9b6fd9">🌑 암</span></td><td><span style="color:#BB8844">🪨 지</span></td><td><span style="color:#FFDD44">✨ 광</span></td></tr>
+          </table>
+          <p style="color:var(--text-dim);font-size:13px;margin-top:8px">화↔수↔풍 삼각 + 지↔광↔암 삼각. 유리 시 피해 +25%, 불리 시 -25%.</p>
+
+          <div class="highlight-box red" style="margin-top:16px">
+            <p><strong>§23 TODO — 추후 작업 필요</strong></p>
+            <ul style="margin:8px 0 0 20px;color:var(--text)">
+              <li>비전스킬 마스터 테이블 실제 데이터 작성</li>
+              <li>장비 특기 마스터 테이블</li>
+              <li>MP/피로도 밸런싱</li>
+              <li>나머지 ~375명 캐릭터 스킬 데이터</li>
+            </ul>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
