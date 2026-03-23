@@ -371,6 +371,7 @@
       <a class="nav-item" onclick="showTab('reset')">적 상태 리셋</a>
       <a class="nav-item" onclick="showTab('route')">공략 루트</a>
       <a class="nav-item" onclick="showTab('movement')">이동/피로도</a>
+      <a class="nav-item" onclick="showTab('resource')">자원/점령</a>
     </div>
 
     <!-- TAB: 개요 -->
@@ -1156,6 +1157,187 @@
             <div class="highlight-box red">
               <p><strong>Ch.4~5에서 벙커가 필수인 이유:</strong> 이동 피로만 30%+, 전투 포함 60%+ → 거점 도달 전 ATK 절반 이하. 벙커 없이 원정 시 피로 악순환으로 고립 위험.</p>
             </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- TAB: 자원/점령 -->
+      <div id="tab-resource" class="tab-content">
+        <div class="container">
+
+          <!-- 점령 슬롯 시스템 -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(212,168,67,0.12);">&#128300;</div>
+              <h2>점령 슬롯 시스템</h2>
+              <span class="tag">§12</span>
+            </div>
+
+            <div class="highlight-box">
+              <p><strong>핵심:</strong> 모든 헥스를 무한히 점령할 수 없음. <strong>슬롯 한도 내 선택적 점령</strong>이 전략의 핵심.</p>
+              <p>불필요한 저급 헥스를 포기하고 고급 헥스로 교체하는 <strong>슬롯 관리</strong>가 중후반 핵심 플레이.</p>
+            </div>
+
+            <h3 class="sub-header">가문 레벨별 슬롯 상한</h3>
+            <table class="tbl">
+              <tr><th>가문 Lv</th><th class="center">점령 슬롯</th><th>해금 시점</th></tr>
+              <tr><td>1~5</td><td class="center">10</td><td>튜토리얼 (Ch.1 시작)</td></tr>
+              <tr><td>6~10</td><td class="center">15</td><td>Ch.1 후반</td></tr>
+              <tr><td>11~15</td><td class="center">20</td><td>Ch.2 초반</td></tr>
+              <tr><td>16~20</td><td class="center">25</td><td>Ch.2 중반</td></tr>
+              <tr><td>21~25</td><td class="center">30</td><td>Ch.2~3 전환기</td></tr>
+              <tr><td>26~30</td><td class="center">35</td><td>Ch.3 중반</td></tr>
+              <tr><td>31~35</td><td class="center">40</td><td>Ch.3~4 전환기</td></tr>
+              <tr><td>36~40</td><td class="center">45</td><td>Ch.4 중반</td></tr>
+              <tr><td>40+</td><td class="center" style="color:var(--gold-bright);font-weight:700">50 (캡)</td><td>Ch.4 후반~</td></tr>
+            </table>
+
+            <h3 class="sub-header">헥스별 슬롯 비용</h3>
+            <table class="tbl">
+              <tr><th>헥스 Lv</th><th class="center">슬롯 비용</th><th>비고</th></tr>
+              <tr><td>Lv1~3</td><td class="center">1</td><td>기본</td></tr>
+              <tr><td>Lv4~5</td><td class="center" style="color:var(--accent-orange);font-weight:700">2</td><td>고급 — 기회비용 부여</td></tr>
+              <tr><td>구조물</td><td class="center" style="color:var(--accent-green)">0</td><td>거점/관문/도시는 슬롯 비소모</td></tr>
+              <tr><td>벙커</td><td class="center">1</td><td>임시 구조물 (§13 참조)</td></tr>
+            </table>
+
+            <h3 class="sub-header">슬롯 관리 규칙</h3>
+            <table class="tbl">
+              <tr><th>상황</th><th>규칙</th></tr>
+              <tr><td>슬롯 가득 참</td><td>새 헥스 점령 불가 — 기존 헥스 <strong>포기</strong> 필요</td></tr>
+              <tr><td>헥스 포기</td><td>수동 포기 시 <strong>5분 대기</strong> 후 완료</td></tr>
+              <tr><td>적에게 빼앗김</td><td>슬롯 즉시 반환 (재점령 시 다시 소모)</td></tr>
+              <tr><td>포기 후 상태</td><td>미점령 복귀 → 적 리스폰 시작</td></tr>
+            </table>
+          </div>
+
+          <!-- 자원 등급 시스템 -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(78,204,163,0.12);">&#9935;</div>
+              <h2>자원 등급 시스템</h2>
+              <span class="tag">§14</span>
+            </div>
+
+            <div class="highlight-box blue">
+              <p>같은 물자(예: 철광석)라도 헥스 레벨에 따라 <strong>등급이 다름</strong>. 고등급 자원은 고급 제작/강화에 필수 — 저등급으로 <strong>대체 불가</strong>.</p>
+            </div>
+
+            <h3 class="sub-header">등급별 생산 및 가치</h3>
+            <table class="tbl">
+              <tr><th>등급</th><th>헥스 Lv</th><th>접두어</th><th class="center">기본 생산</th><th class="center">가치 배수</th><th class="center">정제 비율</th></tr>
+              <tr>
+                <td><span class="badge badge-green">★1 일반</span></td>
+                <td>Lv1</td><td>(없음)</td>
+                <td class="center">3/분</td><td class="center">×1.0</td><td class="center">—</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-green">★2 양질</span></td>
+                <td>Lv2</td><td>양질의~</td>
+                <td class="center">3/분</td><td class="center">×1.5</td><td class="center">★1 ×3 → ★2 ×1</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-cyan">★3 정제</span></td>
+                <td>Lv3</td><td>정제된~</td>
+                <td class="center">3/분</td><td class="center">×2.0</td><td class="center">★2 ×3 → ★3 ×1</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-orange">★4 고순도</span></td>
+                <td>Lv4</td><td>고순도~</td>
+                <td class="center">3/분</td><td class="center">×3.0</td><td class="center">★3 ×3 → ★4 ×1</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-red">★5 극상</span></td>
+                <td>Lv5</td><td>극상의~</td>
+                <td class="center">3/분</td><td class="center" style="color:var(--gold-bright);font-weight:700">×5.0</td><td class="center">★4 ×3 → ★5 ×1</td>
+              </tr>
+            </table>
+
+            <div class="highlight-box">
+              <p><strong>정제 비율 3:1</strong> → ★1에서 ★5까지 올리려면 81개 필요. <strong>직접 채취가 압도적으로 효율적</strong> → 고레벨 헥스 점령 동기.</p>
+            </div>
+
+            <h3 class="sub-header">등급별 사용처</h3>
+            <table class="tbl">
+              <tr><th>시스템</th><th class="center">★1</th><th class="center">★2</th><th class="center">★3</th><th class="center">★4</th><th class="center">★5</th></tr>
+              <tr><td>기본 장비</td><td class="center" style="color:var(--accent-green)">O</td><td class="center">—</td><td class="center">—</td><td class="center">—</td><td class="center">—</td></tr>
+              <tr><td>중급 장비</td><td class="center" style="color:var(--accent-green)">O</td><td class="center" style="color:var(--accent-green)">O</td><td class="center">—</td><td class="center">—</td><td class="center">—</td></tr>
+              <tr><td>상급 장비</td><td class="center">—</td><td class="center" style="color:var(--accent-green)">O</td><td class="center" style="color:var(--accent-cyan)">O</td><td class="center">—</td><td class="center">—</td></tr>
+              <tr><td>희귀 장비</td><td class="center">—</td><td class="center">—</td><td class="center" style="color:var(--accent-cyan)">O</td><td class="center" style="color:var(--accent-orange)">O</td><td class="center">—</td></tr>
+              <tr><td>전설 장비</td><td class="center">—</td><td class="center">—</td><td class="center">—</td><td class="center" style="color:var(--accent-orange)">O</td><td class="center" style="color:var(--accent-red)">O</td></tr>
+              <tr><td>거점 Lv1~3</td><td class="center" style="color:var(--accent-green)">O</td><td class="center" style="color:var(--accent-green)">O</td><td class="center">—</td><td class="center">—</td><td class="center">—</td></tr>
+              <tr><td>관문 Lv5~7</td><td class="center">—</td><td class="center">—</td><td class="center" style="color:var(--accent-cyan)">O</td><td class="center" style="color:var(--accent-orange)">O</td><td class="center">—</td></tr>
+              <tr><td>캐릭터 각성</td><td class="center">—</td><td class="center">—</td><td class="center">—</td><td class="center">—</td><td class="center" style="color:var(--gold-bright);font-weight:700">O</td></tr>
+              <tr><td>유지비 (곡물)</td><td class="center" style="color:var(--accent-green)">O</td><td class="center">—</td><td class="center">—</td><td class="center">—</td><td class="center">—</td></tr>
+              <tr><td>벙커 건설</td><td class="center" style="color:var(--accent-green)">O</td><td class="center">—</td><td class="center">—</td><td class="center">—</td><td class="center">—</td></tr>
+            </table>
+          </div>
+
+          <!-- 전략적 교체 -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(155,111,217,0.12);">&#9878;</div>
+              <h2>전략적 슬롯 교체</h2>
+              <span class="tag">중후반 핵심</span>
+            </div>
+
+            <div class="flow-box">[Ch.1~2] 가문 Lv 낮음, 슬롯 10~20
+  → Lv1~2 헥스 위주 점령, 슬롯 부족 없음
+  → 자원 수입은 적지만 소비도 적음
+
+[Ch.3~4] 가문 Lv 중간, 슬롯 30~45
+  → Lv3~4 헥스 등장 → 슬롯 2칸 소모
+  → Lv1 헥스 포기 → Lv4 헥스로 교체 (자원 3배)
+  → "어디를 포기할까?"가 전략적 의사결정
+
+[Ch.4~5] 가문 Lv 40+, 슬롯 50 캡
+  → 최적화: Lv5 25개 (50슬롯) vs Lv3 50개 (50슬롯)
+  → Lv5 25개가 자원 총량 2.5배 높음
+  → 고급 헥스 쟁탈이 엔드게임 핵심</div>
+
+            <div class="card-grid">
+              <div class="card" style="text-align:center">
+                <h3 style="justify-content:center"><span class="badge badge-green">초반</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-green)">Lv1~2</div>
+                <p style="color:var(--text-dim);font-size:12px;margin-top:8px">슬롯 여유, 전부 점령</p>
+              </div>
+              <div class="card" style="text-align:center">
+                <h3 style="justify-content:center"><span class="badge badge-orange">중반</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-orange)">Lv3~4</div>
+                <p style="color:var(--text-dim);font-size:12px;margin-top:8px">포기 vs 교체 판단</p>
+              </div>
+              <div class="card" style="text-align:center">
+                <h3 style="justify-content:center"><span class="badge badge-red">후반</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-red)">Lv5 집중</div>
+                <p style="color:var(--text-dim);font-size:12px;margin-top:8px">50슬롯 최적화 경쟁</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 벙커 연동 -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(74,204,217,0.12);">&#127959;</div>
+              <h2>벙커와 자원의 시너지</h2>
+              <span class="tag">§13 연동</span>
+            </div>
+
+            <div class="highlight-box blue">
+              <p>벙커는 <strong>피로 회복(50%)</strong> + <strong>주변 3칸 물자 임시 저장</strong>. 자원 밀집 지역에 벙커를 배치하면 수거 효율 극대화.</p>
+              <p>단, 벙커도 슬롯 1 소모 + 곡물 유지비(10/h) → 무한 건설 불가.</p>
+            </div>
+
+            <table class="tbl">
+              <tr><th>항목</th><th>거점</th><th>벙커</th></tr>
+              <tr><td>피로 회복</td><td style="color:var(--accent-green);font-weight:700">100%</td><td style="color:var(--accent-cyan)">50%</td></tr>
+              <tr><td>물자 저장</td><td>무제한</td><td>6시간분 임시</td></tr>
+              <tr><td>방어 파티 주둔</td><td style="color:var(--accent-green)">가능</td><td style="color:var(--accent-red)">불가</td></tr>
+              <tr><td>시야</td><td>주변 3칸</td><td>주변 2칸</td></tr>
+              <tr><td>슬롯 비용</td><td>0</td><td>1</td></tr>
+              <tr><td>유지비</td><td>없음</td><td>곡물 10/h</td></tr>
+              <tr><td>내구도/파괴</td><td>견고</td><td>파괴 가능</td></tr>
+            </table>
           </div>
 
         </div>
