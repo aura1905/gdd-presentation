@@ -1076,7 +1076,7 @@
               <tr><td>이동 시간</td><td>정상 이동과 동일 (칸당 2~4분)</td></tr>
               <tr><td>피로도 변화</td><td><span class="badge badge-green">추가 없음</span> 현재 수치 유지</td></tr>
               <tr><td>전투 발생</td><td><span class="badge badge-green">없음</span> 안전 복귀</td></tr>
-              <tr><td>중단</td><td>퇴각 중 취소하면 현재 위치에 정지</td></tr>
+              <tr><td>중단</td><td><span class="badge badge-red">불가</span> 퇴각 명령은 취소 불가 — 거점 도착까지 자동 진행</td></tr>
             </table>
           </div>
 
@@ -1085,10 +1085,15 @@
             <div class="section-header">
               <div class="section-icon" style="background:rgba(78,204,163,0.12);">&#9829;</div>
               <h2>피로도 회복</h2>
-              <span class="tag">5가지 방법</span>
+              <span class="tag">구조물 전용</span>
             </div>
 
-            <div class="card-grid-3">
+            <div class="highlight-box">
+              <p><strong>피로도는 구조물(거점/도시/벙커)에서만 회복 가능.</strong></p>
+              <p>음식·야영·과금 등으로 피로도를 회복할 수 없음. 거점 확보와 벙커 건설이 진격의 핵심 전략.</p>
+            </div>
+
+            <div class="card-grid">
               <div class="card">
                 <h3><span class="badge badge-green">거점 / 도시</span></h3>
                 <div style="font-size:28px;font-weight:900;color:var(--accent-green)">100%</div>
@@ -1098,21 +1103,6 @@
                 <h3><span class="badge badge-cyan">벙커</span></h3>
                 <div style="font-size:28px;font-weight:900;color:var(--accent-cyan)">50%</div>
                 <p>즉시 회복. 자원 소모하여 건설 필요 (목재 500 + 석재 300 + 식량 200).</p>
-              </div>
-              <div class="card">
-                <h3><span class="badge badge-orange">음식 사용</span></h3>
-                <div style="font-size:28px;font-weight:900;color:var(--accent-orange)">15~50%</div>
-                <p>곡물 소비 아이템. 즉시 사용, 등급별 회복량 상이.</p>
-              </div>
-              <div class="card">
-                <h3><span class="badge badge-blue">현지 야영</span></h3>
-                <div style="font-size:28px;font-weight:900;color:var(--accent-blue)">분당 0.5%</div>
-                <p>무료지만 느림. 야간 습격 20% 위험. 피로 60% → 0% = 약 2시간.</p>
-              </div>
-              <div class="card">
-                <h3><span class="badge badge-purple">활력수 (과금)</span></h3>
-                <div style="font-size:28px;font-weight:900;color:var(--accent-purple)">100%</div>
-                <p>프리미엄 아이템. 즉시 전회복.</p>
               </div>
             </div>
           </div>
