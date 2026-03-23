@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GE: 개척시대 — 필드 전투 시스템 GDD</title>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import { getAuth, signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCx9Et77K4bWe8Gt2EaFFs4x1-qgYXn4d4",
+      authDomain: "gdd-presentation-ddb3c.firebaseapp.com",
+      projectId: "gdd-presentation-ddb3c",
+      storageBucket: "gdd-presentation-ddb3c.firebasestorage.app",
+      messagingSenderId: "276123425066",
+      appId: "1:276123425066:web:390e40bb764d78fb976653"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const ALLOWED_DOMAINS = ["imc.co.kr"];
+    const ALLOWED_EMAILS = ["hanaura@gmail.com"];
+
+    function checkAccess(user) {
+      if (ALLOWED_EMAILS.includes(user.email)) return true;
+      const domain = user.email.split('@')[1];
+      return ALLOWED_DOMAINS.includes(domain);
+    }
+
+    window.fbSignIn = function() {
+      signInWithPopup(auth, provider).catch(err => {
+        document.getElementById('auth-error').textContent = '로그인 실패: ' + err.message;
+      });
+    };
+
+    window.fbSignOut = function() {
+      signOut(auth);
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      const overlay = document.getElementById('auth-overlay');
+      const mainContent = document.getElementById('main-content');
+      const userInfo = document.getElementById('user-info');
+      if (!overlay || !mainContent) return;
+
+      if (user && checkAccess(user)) {
+        overlay.style.display = 'none';
+        mainContent.style.display = '';
+        if (userInfo) {
+          userInfo.innerHTML = `<img src="${user.photoURL}" style="width:24px;height:24px;border-radius:50%;vertical-align:middle;margin-right:6px"><span>${user.displayName}</span><button onclick="fbSignOut()" style="margin-left:10px;background:#d94a5c;color:#fff;border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:12px">로그아웃</button>`;
+        }
+      } else {
+        overlay.style.display = 'flex';
+        mainContent.style.display = 'none';
+        if (user && !checkAccess(user)) {
+          document.getElementById('auth-error').textContent = '접근 권한이 없는 계정입니다: ' + user.email;
+          signOut(auth);
+        }
+      }
+    });
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-card-hover: #1a1a26;
+      --border: #2a2a3a;
+      --gold: #d4a843;
+      --gold-dim: #a07830;
+      --gold-bright: #f0c850;
+      --text: #e0ddd5;
+      --text-dim: #8a8780;
+      --text-bright: #ffffff;
+      --accent-green: #4ecca3;
+      --accent-blue: #4a90d9;
+      --accent-red: #d94a5c;
+      --accent-purple: #9b6fd9;
+      --accent-orange: #d98a4a;
+      --accent-cyan: #4accd9;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* Auth overlay */
+    #auth-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.95);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; flex-direction: column; gap: 20px;
+    }
+    #auth-overlay h2 { color: var(--gold); font-size: 24px; }
+    #auth-overlay button {
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg-dark); border: none; padding: 12px 32px;
+      border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer;
+    }
+    #auth-error { color: var(--accent-red); font-size: 14px; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1028 40%, #0f1a2a 70%, #0a0a0f 100%);
+      border-bottom: 1px solid var(--gold-dim);
+      padding: 50px 40px 40px;
+      text-align: center;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(212,168,67,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg-dark);
+      padding: 4px 16px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+    .hero h1 { font-size: 32px; font-weight: 900; color: var(--text-bright); margin-bottom: 8px; }
+    .hero h1 span { color: var(--gold); }
+    .hero .subtitle { font-size: 15px; color: var(--text-dim); font-weight: 300; }
+    .hero .date { font-size: 13px; color: var(--text-dim); margin-top: 10px; }
+
+    .summary-bar {
+      display: flex; justify-content: center; gap: 0;
+      margin-top: 28px; flex-wrap: wrap;
+    }
+    .summary-item {
+      padding: 14px 24px;
+      border-right: 1px solid rgba(212,168,67,0.2);
+      text-align: center;
+    }
+    .summary-item:last-child { border-right: none; }
+    .summary-item .num {
+      font-size: 26px; font-weight: 900; color: var(--gold-bright);
+      display: block; line-height: 1;
+    }
+    .summary-item .label {
+      font-size: 11px; color: var(--text-dim); margin-top: 4px; letter-spacing: 1px;
+    }
+
+    /* Nav */
+    .nav-bar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0; display: flex; justify-content: center;
+      overflow-x: auto;
+    }
+    .nav-item {
+      padding: 14px 16px; font-size: 12px; font-weight: 600;
+      color: var(--text-dim); cursor: pointer;
+      transition: all 0.2s; border-bottom: 2px solid transparent;
+      white-space: nowrap; text-decoration: none;
+    }
+    .nav-item:hover, .nav-item.active {
+      color: var(--gold); border-bottom-color: var(--gold);
+    }
+
+    /* Tabs */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Container */
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+    .section { margin-bottom: 56px; scroll-margin-top: 60px; }
+    .section-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 24px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .section-header h2 { font-size: 22px; font-weight: 700; color: var(--text-bright); }
+    .section-header .tag {
+      margin-left: auto;
+      background: rgba(212,168,67,0.12); color: var(--gold);
+      padding: 4px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 700;
+    }
+
+    .sub-header {
+      font-size: 17px; font-weight: 700; color: var(--text-bright);
+      margin: 28px 0 12px; padding-left: 12px;
+      border-left: 3px solid var(--gold);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px; margin-bottom: 16px;
+      transition: all 0.15s ease;
+    }
+    .card:hover { border-color: rgba(212,168,67,0.3); }
+    .card h3 {
+      font-size: 16px; font-weight: 700; color: var(--text-bright);
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .card p { font-size: 14px; color: var(--text); margin-bottom: 10px; }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .card-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    /* Tables */
+    .tbl {
+      width: 100%; border-collapse: collapse;
+      margin: 16px 0; font-size: 13px;
+    }
+    .tbl th {
+      background: rgba(212,168,67,0.08); color: var(--gold);
+      font-weight: 700; padding: 10px 14px; text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px; letter-spacing: 0.5px;
+    }
+    .tbl td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--text);
+    }
+    .tbl tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .tbl td.center, .tbl th.center { text-align: center; }
+
+    /* Flow box */
+    .flow-box {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 24px;
+      font-family: 'Noto Sans KR', monospace;
+      font-size: 13px; line-height: 1.8;
+      color: var(--text); white-space: pre-wrap;
+      margin: 16px 0;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 700;
+    }
+    .badge-gold { background: rgba(212,168,67,0.15); color: var(--gold); border: 1px solid rgba(212,168,67,0.3); }
+    .badge-green { background: rgba(78,204,163,0.15); color: var(--accent-green); border: 1px solid rgba(78,204,163,0.3); }
+    .badge-red { background: rgba(217,74,92,0.15); color: var(--accent-red); border: 1px solid rgba(217,74,92,0.3); }
+    .badge-blue { background: rgba(74,144,217,0.15); color: var(--accent-blue); border: 1px solid rgba(74,144,217,0.3); }
+    .badge-purple { background: rgba(155,111,217,0.15); color: var(--accent-purple); border: 1px solid rgba(155,111,217,0.3); }
+    .badge-orange { background: rgba(217,138,74,0.15); color: var(--accent-orange); border: 1px solid rgba(217,138,74,0.3); }
+    .badge-cyan { background: rgba(74,204,217,0.15); color: var(--accent-cyan); border: 1px solid rgba(74,204,217,0.3); }
+
+    /* Highlight box */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(212,168,67,0.06), rgba(155,111,217,0.06));
+      border: 1px solid rgba(212,168,67,0.2);
+      border-radius: 12px; padding: 20px 24px; margin: 16px 0;
+    }
+    .highlight-box.red {
+      background: linear-gradient(135deg, rgba(217,74,92,0.06), rgba(217,138,74,0.06));
+      border-color: rgba(217,74,92,0.2);
+    }
+    .highlight-box.green {
+      background: linear-gradient(135deg, rgba(78,204,163,0.06), rgba(74,144,217,0.06));
+      border-color: rgba(78,204,163,0.2);
+    }
+    .highlight-box.blue {
+      background: linear-gradient(135deg, rgba(74,144,217,0.06), rgba(155,111,217,0.06));
+      border-color: rgba(74,144,217,0.2);
+    }
+    .highlight-box strong { color: var(--gold); }
+    .highlight-box p { font-size: 14px; margin-bottom: 6px; }
+
+    /* User info bar */
+    .top-bar {
+      display: flex; justify-content: flex-end; align-items: center;
+      padding: 8px 24px; font-size: 13px;
+      background: rgba(0,0,0,0.3);
+    }
+    .back-link {
+      margin-right: auto; color: var(--text-dim);
+      text-decoration: none; font-size: 13px;
+    }
+    .back-link:hover { color: var(--gold); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero { padding: 30px 20px; }
+      .hero h1 { font-size: 24px; }
+      .container { padding: 24px 16px; }
+      .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
+      .summary-bar { flex-direction: column; align-items: center; }
+      .summary-item { border-right: none; border-bottom: 1px solid rgba(212,168,67,0.1); }
+      .tbl { font-size: 11px; }
+      .tbl th, .tbl td { padding: 8px 8px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Auth Overlay -->
+  <div id="auth-overlay">
+    <h2>GE: 개척시대</h2>
+    <p style="color:#8a8780;">기획 문서 열람을 위해 로그인이 필요합니다</p>
+    <button onclick="fbSignIn()">Google 로그인</button>
+    <p id="auth-error"></p>
+  </div>
+
+  <!-- Main Content -->
+  <div id="main-content" style="display:none;">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+      <a href="../" class="back-link">< GDD 메인</a>
+      <div id="user-info"></div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-badge">GAME DESIGN DOCUMENT</div>
+      <h1><span>필드 전투</span> 시스템</h1>
+      <div class="subtitle">월드맵 헥스 기반 전투 유형 / 구조물 점령 / 실패 처리 / 적 상태 리셋</div>
+      <div class="date">v0.1 | 2026.03.23 | 선행 문서: gdd_worldmap_field_system.md</div>
+
+      <div class="summary-bar">
+        <div class="summary-item"><span class="num">16</span><span class="label">전투 유형</span></div>
+        <div class="summary-item"><span class="num">3</span><span class="label">대분류</span></div>
+        <div class="summary-item"><span class="num">42</span><span class="label">레기온</span></div>
+        <div class="summary-item"><span class="num">5</span><span class="label">챕터</span></div>
+        <div class="summary-item"><span class="num">5</span><span class="label">대 물자</span></div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="nav-bar">
+      <a class="nav-item active" onclick="showTab('overview')">개요</a>
+      <a class="nav-item" onclick="showTab('hex')">헥스 분류</a>
+      <a class="nav-item" onclick="showTab('encounter')">조우전</a>
+      <a class="nav-item" onclick="showTab('attack')">공격전</a>
+      <a class="nav-item" onclick="showTab('defense')">방어전</a>
+      <a class="nav-item" onclick="showTab('structure')">구조물 점령</a>
+      <a class="nav-item" onclick="showTab('failure')">실패 처리</a>
+      <a class="nav-item" onclick="showTab('reset')">적 상태 리셋</a>
+      <a class="nav-item" onclick="showTab('route')">공략 루트</a>
+      <a class="nav-item" onclick="showTab('movement')">이동/피로도</a>
+    </div>
+
+    <!-- TAB: 개요 -->
+    <div class="tab-content active" id="tab-overview">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(212,168,67,0.12);">&#9876;</div>
+            <h2>필드 전투 시스템 개요</h2>
+            <span class="tag">Core Loop</span>
+          </div>
+
+          <div class="highlight-box">
+            <p><strong>핵심 루프:</strong> 필드 진입 → 적 조우/토벌 → 헥스 점령 → 물자 생산 → 가문 성장 → 다음 레기온 진출</p>
+          </div>
+
+          <div class="flow-box">필드 이동 (자유)
+  ├─ 조우전: 이동 중 확률/조건으로 만남 (수동적)
+  ├─ 공격전: 플레이어가 직접 개시 (능동적)
+  └─ 방어전: NPC 세력이 쳐들어옴 (반응적)
+
+점령 구조:
+  이동만 (통과) → 물자 생산 없음
+  조우전 승리 → EXP, 소량 보상
+  점령 토벌 승리 → 헥스 점령, 물자 생산 개시
+  구조물 공성 승리 → 거점/관문/도시 확보</div>
+
+          <h3 class="sub-header">3대 전투 분류</h3>
+          <table class="tbl">
+            <tr><th>대분류</th><th>성격</th><th>개시 주체</th><th>종류</th></tr>
+            <tr><td><span class="badge badge-green">조우전</span></td><td>이동 중 만나는 전투</td><td>필드 시스템</td><td>야생, 도적, 세력 순찰대, 호송대, 네임드 보스, 함정</td></tr>
+            <tr><td><span class="badge badge-blue">공격전</span></td><td>플레이어가 직접 가는 전투</td><td>플레이어</td><td>점령 토벌, 공성전, 던전 공략, 일반 토벌</td></tr>
+            <tr><td><span class="badge badge-red">방어전</span></td><td>적이 쳐들어오는 전투</td><td>NPC 세력</td><td>소규모 습격, 대규모 침공, 야간 급습, 동시다발</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: 헥스 분류 -->
+    <div class="tab-content" id="tab-hex">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(74,204,217,0.12);">&#11043;</div>
+            <h2>헥스 분류 및 5대 물자</h2>
+            <span class="tag">~9,983 Hex</span>
+          </div>
+
+          <h3 class="sub-header">전체 헥스 분류</h3>
+          <table class="tbl">
+            <tr><th>분류</th><th>설명</th><th class="center">비율</th><th class="center">수량</th></tr>
+            <tr><td><span class="badge badge-purple">이동불가</span></td><td>산지/수역/성벽 — 통과 불가</td><td class="center">~25%</td><td class="center">~2,500</td></tr>
+            <tr><td><span class="badge badge-gold">빈 필드</span></td><td>이동/전투만 가능, 물자 생산 없음</td><td class="center">~45%</td><td class="center">~3,370</td></tr>
+            <tr><td><span class="badge badge-green">생산 필드</span></td><td>점령 시 해당 물자 자동 생산</td><td class="center">~25%</td><td class="center">~1,870</td></tr>
+            <tr><td><span class="badge badge-orange">구조물</span></td><td>도시/거점/관문/던전</td><td class="center">~5%</td><td class="center">~240</td></tr>
+          </table>
+
+          <h3 class="sub-header">5대 물자</h3>
+          <table class="tbl">
+            <tr><th>물자</th><th>주요 용도</th><th>주요 지형</th></tr>
+            <tr><td>목재 (Wood)</td><td>건설, 수리, 기본 제작</td><td>숲, 해안</td></tr>
+            <tr><td>철광석 (Iron)</td><td>무기/방어구 제작</td><td>동굴, 화산</td></tr>
+            <tr><td>석재 (Stone)</td><td>거점 건설/강화, 성벽</td><td>사막, 동굴</td></tr>
+            <tr><td>곡물 (Grain)</td><td>부대 유지비, 피로 회복</td><td>초원, 평원, 해안</td></tr>
+            <tr><td>약재 (Herbs)</td><td>포션, 버프, 각성 소재</td><td>늪지, 빙설, 숲</td></tr>
+          </table>
+
+          <h3 class="sub-header">헥스 레벨과 생산 배수</h3>
+          <table class="tbl">
+            <tr><th class="center">헥스 Lv</th><th class="center">생산 배수</th><th class="center">적 Lv 범위</th><th class="center">적 규모</th><th>대응 챕터</th></tr>
+            <tr><td class="center">1</td><td class="center">x1.0</td><td class="center">1~20</td><td class="center">1파티 (3인)</td><td>Ch.1 리볼도외</td></tr>
+            <tr><td class="center">2</td><td class="center">x1.5</td><td class="center">20~60</td><td class="center">1파티 (3인)</td><td>Ch.2 코임브라</td></tr>
+            <tr><td class="center">3</td><td class="center">x2.0</td><td class="center">60~80</td><td class="center">2파티 (6인)</td><td>Ch.3 중앙 평원~오슈</td></tr>
+            <tr><td class="center">4</td><td class="center">x3.0</td><td class="center">80~100</td><td class="center">2파티 (6인)</td><td>Ch.4 자캥~갈라진 땅</td></tr>
+            <tr><td class="center">5</td><td class="center">x5.0</td><td class="center">100+</td><td class="center">3파티 (9인)</td><td>Ch.5 빙마탑</td></tr>
+          </table>
+
+          <h3 class="sub-header">레기온별 자원 배정 규칙</h3>
+          <div class="card">
+            <table class="tbl">
+              <tr><th>규칙</th><th>설명</th></tr>
+              <tr><td>주력 물자 1종</td><td>레기온당 1종이 생산 필드의 40%+ 차지 (3+ 헥스)</td></tr>
+              <tr><td>보조 물자 1~2종</td><td>나머지 생산 필드에 1~2종 배치</td></tr>
+              <tr><td>부재 물자 1종+</td><td>5대 물자 중 최소 1종은 해당 레기온에 없음</td></tr>
+              <tr><td>지형-물자 친화도</td><td>숲=목재, 초원=곡물 등 지형과 어울리는 물자 배정</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: 조우전 -->
+    <div class="tab-content" id="tab-encounter">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(78,204,163,0.12);">&#9888;</div>
+            <h2>조우전 (필드 이동 중 발생)</h2>
+            <span class="tag">6종</span>
+          </div>
+
+          <div class="highlight-box">
+            <p>헥스 이동 시 <strong>확률 또는 조건</strong>에 의해 자동 발생하는 전투. 플레이어가 의도하지 않아도 만남. 회피/도주 선택지 있음.</p>
+          </div>
+
+          <h3 class="sub-header">조우전 6종</h3>
+          <table class="tbl">
+            <tr><th>유형</th><th>발생 조건</th><th>적 구성</th><th class="center">반복</th><th>보상</th></tr>
+            <tr><td><strong>야생 몬스터</strong></td><td>빈 필드 이동 시 확률</td><td>지형/레기온 몬스터 3인</td><td class="center">무제한</td><td>EXP, 기본 소재</td></tr>
+            <tr><td><strong>도적/산적/해적</strong></td><td>도로/해안/숲 헥스 확률</td><td>인간형 적 3인 (지역 테마)</td><td class="center">무제한</td><td>골드, 소모품</td></tr>
+            <tr><td><strong>세력 순찰대</strong></td><td>세력 영토 경계 헥스</td><td>해당 세력 편성 3인</td><td class="center">6~12h 리스폰</td><td>세력 화폐, 정보</td></tr>
+            <tr><td><strong>물자 호송대</strong></td><td>도로 헥스에 주기적 출현</td><td>호위병 3인 (중간 난이도)</td><td class="center">6h마다</td><td>대량 물자 (3배)</td></tr>
+            <tr><td><strong>네임드 보스</strong></td><td>레기온 내 고정 위치</td><td>보스 1체(2슬롯) + 부하 1</td><td class="center">24h 리스폰</td><td>희귀 장비 도면</td></tr>
+            <tr><td><strong>함정</strong></td><td>숨겨진 헥스 진입 시 강제</td><td>기습 (적 선공)</td><td class="center">1회</td><td>생존 보상 or 피로</td></tr>
+          </table>
+
+          <h3 class="sub-header">조우 확률</h3>
+          <table class="tbl">
+            <tr><th>헥스 상태</th><th class="center">기본 조우율</th><th>비고</th></tr>
+            <tr><td>빈 필드 (미점령)</td><td class="center">30% / 이동</td><td>적이 장악 중</td></tr>
+            <tr><td>빈 필드 (점령 완료)</td><td class="center">10% / 이동</td><td>아군 영토, 안전</td></tr>
+            <tr><td>생산 필드 (미점령)</td><td class="center">40% / 이동</td><td>자원지 방어가 강함</td></tr>
+            <tr><td>생산 필드 (점령 완료)</td><td class="center">5% / 이동</td><td>거의 안전</td></tr>
+            <tr><td>도로 헥스</td><td class="center">+10%</td><td>도적 전용 보정</td></tr>
+            <tr><td>세력 경계 헥스</td><td class="center">+15%</td><td>순찰대 전용 보정</td></tr>
+          </table>
+
+          <h3 class="sub-header">도주/회피</h3>
+          <table class="tbl">
+            <tr><th>상황</th><th class="center">도주</th><th>비용</th><th class="center">성공률</th></tr>
+            <tr><td>야생/도적</td><td class="center">O</td><td>피로 +5%</td><td class="center">SPD 기반 (70~95%)</td></tr>
+            <tr><td>세력 순찰대</td><td class="center">O</td><td>피로 +10%</td><td class="center">SPD 기반 (60~85%)</td></tr>
+            <tr><td>물자 호송대</td><td class="center">O (무시)</td><td>없음</td><td class="center">100%</td></tr>
+            <tr><td>네임드 보스</td><td class="center">O (무시)</td><td>없음</td><td class="center">100%</td></tr>
+            <tr><td>함정</td><td class="center">1턴 후</td><td>피로 +15%</td><td class="center">SPD 기반 (50~80%)</td></tr>
+          </table>
+
+          <h3 class="sub-header">지역별 조우 테마</h3>
+          <table class="tbl">
+            <tr><th>권역</th><th>야생 테마</th><th>도적 테마</th><th>세력 순찰대</th></tr>
+            <tr><td>Ch.1 리볼도외</td><td>야수, 곤충</td><td>소규모 도적단</td><td>- (무소속)</td></tr>
+            <tr><td>Ch.2 코임브라</td><td>언데드, 마수</td><td>산적, 밀수업자</td><td>NOCC</td></tr>
+            <tr><td>Ch.3 중앙 평원~오슈</td><td>기수, 원소형</td><td>노상강도</td><td>오슈 학파 / 십인 귀족</td></tr>
+            <tr><td>Ch.4 자캥~갈라진 땅</td><td>화염형, 독충</td><td>버론 무법자</td><td>버론</td></tr>
+            <tr><td>Ch.5 빙마탑</td><td>빙결형, 고대종</td><td>- (도적 없음)</td><td>브리스티아 원정군</td></tr>
+          </table>
+
+          <h3 class="sub-header">미처치 성장 (방치 패널티)</h3>
+          <table class="tbl">
+            <tr><th>방치 기간</th><th class="center">적 강화</th><th>비고</th></tr>
+            <tr><td>1주</td><td class="center">+5%</td><td>미미한 변화</td></tr>
+            <tr><td>2주</td><td class="center">+10%</td><td>체감 시작</td></tr>
+            <tr><td>4주</td><td class="center">+20%</td><td>상당히 강해짐</td></tr>
+            <tr><td>8주+</td><td class="center">+30% (캡)</td><td>최대 강화</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: 공격전 -->
+    <div class="tab-content" id="tab-attack">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(74,144,217,0.12);">&#9876;</div>
+            <h2>공격전 (플레이어가 개시)</h2>
+            <span class="tag">6종</span>
+          </div>
+
+          <div class="highlight-box">
+            <p>플레이어가 <strong>직접 선택하여 시작</strong>하는 전투. 점령, 공성, 던전, 파밍 등.</p>
+          </div>
+
+          <h3 class="sub-header">공격전 유형</h3>
+          <table class="tbl">
+            <tr><th>유형</th><th>대상</th><th class="center">반복</th><th>적 규모</th><th>보상</th></tr>
+            <tr><td><strong>일반 토벌</strong></td><td>점령 완료 헥스</td><td class="center">무제한</td><td>헥스 Lv 기준 1파티</td><td>EXP, 골드, 기본 소재</td></tr>
+            <tr><td><strong>점령 토벌</strong></td><td>미점령/적 헥스</td><td class="center">1회</td><td>헥스 Lv 기준</td><td>헥스 점령 (물자 생산)</td></tr>
+            <tr><td><strong>거점 공성</strong></td><td>적 거점</td><td class="center">1회</td><td>최대 6파티</td><td>거점 확보 (휴식/수거)</td></tr>
+            <tr><td><strong>관문 공성</strong></td><td>적 관문</td><td class="center">1회</td><td>최대 9파티 + 관문 HP</td><td>다음 권역 개방</td></tr>
+            <tr><td><strong>도시 공성</strong></td><td>적 도시</td><td class="center">1회</td><td>최대 12파티 + 성벽 HP</td><td>도시 시설 확보</td></tr>
+            <tr><td><strong>던전 공략</strong></td><td>던전 입구</td><td class="center">일일 제한</td><td>던전별 설계</td><td>특수 장비, 각성 소재</td></tr>
+          </table>
+
+          <h3 class="sub-header">점령 토벌 - 헥스 레벨별 적 출현</h3>
+          <table class="tbl">
+            <tr><th class="center">헥스 Lv</th><th class="center">적 Lv 범위</th><th class="center">적 파티 수</th><th class="center">웨이브</th></tr>
+            <tr><td class="center">1</td><td class="center">1~20</td><td class="center">1파티 (3인)</td><td class="center">1</td></tr>
+            <tr><td class="center">2</td><td class="center">20~60</td><td class="center">1파티 (3인)</td><td class="center">1~2</td></tr>
+            <tr><td class="center">3</td><td class="center">60~80</td><td class="center">2파티 (6인)</td><td class="center">2</td></tr>
+            <tr><td class="center">4</td><td class="center">80~100</td><td class="center">2파티 (6인)</td><td class="center">2~3</td></tr>
+            <tr><td class="center">5</td><td class="center">100+</td><td class="center">3파티 (9인)</td><td class="center">3</td></tr>
+          </table>
+
+          <h3 class="sub-header">공성전 특수 규칙</h3>
+          <div class="card">
+            <p><strong>2단계 전투:</strong> 방어병력 처치 → 배치 파티 순서로 전투</p>
+            <p><strong>릴레이:</strong> 1파티가 쓰러지면 다음 파티 투입 (피로/HP 이어짐)</p>
+            <p><strong>성벽 보정:</strong> 관문 DEF +20%, 도시 DEF +30%</p>
+            <p><strong>구조물 HP:</strong> 관문은 관문 HP, 도시는 성벽 HP를 별도로 깎아야 함</p>
+            <p><strong>함락 조건:</strong> 방어병력 전멸 + 배치 파티 전멸 + 구조물 HP 0</p>
+            <p><strong>철수:</strong> 공성 도중 철수 가능, 피로 +20%</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: 방어전 -->
+    <div class="tab-content" id="tab-defense">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(217,74,92,0.12);">&#128737;</div>
+            <h2>방어전 (적이 개시)</h2>
+            <span class="tag">4종</span>
+          </div>
+
+          <div class="highlight-box red">
+            <p>NPC 세력이 <strong>플레이어 영토를 공격</strong>해오는 전투. 적대도(hostility)가 높을수록 빈번하고 강력.</p>
+          </div>
+
+          <h3 class="sub-header">방어전 유형</h3>
+          <table class="tbl">
+            <tr><th>유형</th><th>발생 조건</th><th>규모</th><th>실패 시</th></tr>
+            <tr><td><strong>소규모 습격</strong></td><td>4~8시간마다</td><td>1파티 (3인), 1웨이브</td><td>헥스 1개 상실</td></tr>
+            <tr><td><strong>대규모 침공</strong></td><td>적대도 높을 때</td><td>2~3파티, 3웨이브 (사령관)</td><td>거점 + 인접 헥스 상실</td></tr>
+            <tr><td><strong>야간 급습</strong></td><td>야영 중 20% 확률</td><td>1파티, 기습 (적 선공)</td><td>야영 실패 + 피로 미회복</td></tr>
+            <tr><td><strong>동시다발 공격</strong></td><td>세력 대규모 이벤트</td><td>복수 헥스 동시 공격</td><td>방어 못한 헥스 전부 상실</td></tr>
+          </table>
+
+          <h3 class="sub-header">방어 방식</h3>
+          <div class="card-grid">
+            <div class="card">
+              <h3><span class="badge badge-blue">직접 방어</span></h3>
+              <p>플레이어가 파티 투입하여 전투</p>
+            </div>
+            <div class="card">
+              <h3><span class="badge badge-green">주둔군 자동 방어</span></h3>
+              <p>거점에 배치한 주둔 파티가 AI로 자동 전투</p>
+            </div>
+            <div class="card">
+              <h3><span class="badge badge-red">방치</span></h3>
+              <p>주둔군도 없으면 무조건 상실</p>
+            </div>
+          </div>
+
+          <h3 class="sub-header">적대도 시스템</h3>
+          <table class="tbl">
+            <tr><th>적대도</th><th>트리거</th><th class="center">습격 빈도</th><th class="center">적 강화</th></tr>
+            <tr><td><span class="badge badge-green">낮음 (0~30%)</span></td><td>경계 헥스 1~3개 점령</td><td class="center">8시간마다</td><td class="center">x1.0</td></tr>
+            <tr><td><span class="badge badge-gold">보통 (31~60%)</span></td><td>영토 10%+ 점령</td><td class="center">6시간마다</td><td class="center">x1.1</td></tr>
+            <tr><td><span class="badge badge-orange">높음 (61~80%)</span></td><td>영토 30%+ 점령</td><td class="center">4시간마다</td><td class="center">x1.2</td></tr>
+            <tr><td><span class="badge badge-red">극도 (81~100%)</span></td><td>거점/도시 함락</td><td class="center">2시간 + 대규모</td><td class="center">x1.3</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: 구조물 점령 -->
+    <div class="tab-content" id="tab-structure">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(155,111,217,0.12);">&#127984;</div>
+            <h2>구조물 점령 — 2단계 전투</h2>
+            <span class="tag">거점 / 관문 / 도시</span>
+          </div>
+
+          <div class="flow-box">[방어병력 처치] → [배치 파티 1] → [배치 파티 2] → ... → 점령 완료
+
+방어병력: 구조물이 자체 보유하는 수비대 (성장 가능)
+배치 파티: 세력/NPC가 주둔시킨 전투 파티</div>
+
+          <h3 class="sub-header">구조물별 전투 규모</h3>
+          <table class="tbl">
+            <tr><th></th><th>거점 (Outpost)</th><th>관문 (Gate)</th><th>도시 (City)</th></tr>
+            <tr><td><strong>방어병력 (기본)</strong></td><td>1파티 (3인)</td><td>2파티 (6인)</td><td>3파티 (9인)</td></tr>
+            <tr><td><strong>방어병력 (최대)</strong></td><td>3파티 (9인)</td><td>5파티 (15인)</td><td>7파티 (21인)</td></tr>
+            <tr><td><strong>배치 파티</strong></td><td>1~3파티</td><td>2~4파티</td><td>3~5파티</td></tr>
+            <tr><td><strong>성벽 보정</strong></td><td>없음</td><td>DEF +20% + 관문 HP</td><td>DEF +30% + 성벽 HP</td></tr>
+            <tr><td><strong>구조물 라이프 최대</strong></td><td>Lv5</td><td>Lv7</td><td>Lv10</td></tr>
+            <tr><td><strong>최대 전투</strong></td><td>6파티 격파</td><td>9파티 + 관문 HP</td><td>12파티 + 성벽 HP</td></tr>
+          </table>
+
+          <h3 class="sub-header">첫 점령 시 수비 유형 (거점 기준)</h3>
+          <table class="tbl">
+            <tr><th>수비 유형</th><th>방어병력</th><th class="center">배치 파티</th><th class="center">난이도</th><th>예시</th></tr>
+            <tr><td>야생 보스</td><td>없음</td><td class="center">1파티</td><td class="center"><span class="badge badge-green">낮음</span></td><td>야수 보스 1 + 부하 2</td></tr>
+            <tr><td>도적단 점거</td><td>없음</td><td class="center">1~2파티</td><td class="center"><span class="badge badge-gold">중간</span></td><td>두목 파티 + 부하 파티</td></tr>
+            <tr><td>NPC 세력 주둔</td><td>1~2파티</td><td class="center">2~3파티</td><td class="center"><span class="badge badge-orange">높음</span></td><td>사령관 + 정예 수비대</td></tr>
+            <tr><td>강화 거점</td><td>2~3파티 + 성벽</td><td class="center">3파티</td><td class="center"><span class="badge badge-red">최고</span></td><td>사령관 + 수비대 + 증원대</td></tr>
+          </table>
+
+          <h3 class="sub-header">구조물 라이프 (성장 시스템)</h3>
+          <div class="highlight-box green">
+            <p>점령 후 물자 투자로 구조물을 강화하면 방어병력이 성장.</p>
+            <p>적 세력도 동일한 성장 시스템을 가짐 (<strong>방치하면 적 거점도 강해짐</strong>).</p>
+            <p>강화 필요 물자: <strong>석재</strong> (건축) + <strong>목재</strong> (보수) + <strong>곡물</strong> (병력 유지).</p>
+          </div>
+
+          <table class="tbl">
+            <tr><th>라이프 Lv</th><th>방어병력 (거점)</th><th>방어병력 (관문)</th><th>방어병력 (도시)</th></tr>
+            <tr><td>Lv1 (방금 점령)</td><td>경비병 3인 (1파티)</td><td>수비대 6인 (2파티)</td><td>수비대 9인 (3파티)</td></tr>
+            <tr><td>Lv2</td><td>경비 + 궁수 (1파티)</td><td>수비대 + 궁수 (2파티)</td><td>수비대 + 궁수 (3파티)</td></tr>
+            <tr><td>Lv3</td><td>경비대 2파티 (6인)</td><td>수비대 3파티 (9인)</td><td>수비대 4파티 (12인)</td></tr>
+            <tr><td>Lv4</td><td>경비대 2파티 + 방어탑</td><td>수비대 4파티 + 관문 강화</td><td>수비대 5파티 + 성벽 강화</td></tr>
+            <tr><td>Lv5 (거점 최대)</td><td>정예 수비대 3파티</td><td>수비대 4파티 + 정예 1</td><td>수비대 6파티 + 정예 1</td></tr>
+            <tr><td>Lv7 (관문 최대)</td><td>-</td><td>정예 수비대 5파티</td><td>수비대 6파티 + 정예 2</td></tr>
+            <tr><td>Lv10 (도시 최대)</td><td>-</td><td>-</td><td>정예 수비대 7파티</td></tr>
+          </table>
+
+          <h3 class="sub-header">구조물 기능</h3>
+          <div class="card-grid-3">
+            <div class="card">
+              <h3>거점 (Outpost) <span class="badge badge-gold">1헥스</span></h3>
+              <p>파티 휴식 (피로 리셋)</p>
+              <p>물자 수거 (주변 헥스)</p>
+              <p>라이프 최대 Lv5</p>
+            </div>
+            <div class="card">
+              <h3>관문 (Gate) <span class="badge badge-purple">1헥스</span></h3>
+              <p>권역 간 병목 통로</p>
+              <p>돌파하지 않으면 다음 권역 진입 불가</p>
+              <p>라이프 최대 Lv7</p>
+            </div>
+            <div class="card">
+              <h3>도시 (City) <span class="badge badge-orange">7헥스</span></h3>
+              <p>상점/제작/강화 + 피로 완전 리셋</p>
+              <p>의무관 (치료, HP 회복)</p>
+              <p>라이프 최대 Lv10</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: 실패 처리 -->
+    <div class="tab-content" id="tab-failure">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(217,74,92,0.12);">&#128148;</div>
+            <h2>실패 처리 및 부상 시스템</h2>
+            <span class="tag">영구 사망 없음</span>
+          </div>
+
+          <h3 class="sub-header">전투 결과 5단계</h3>
+          <table class="tbl">
+            <tr><th>결과</th><th>조건</th><th class="center">피로</th><th>위치</th><th>부상</th></tr>
+            <tr><td><span class="badge badge-green">완승</span></td><td>아군 피해 30% 미만</td><td class="center">+5%</td><td>현재 헥스 유지</td><td>없음</td></tr>
+            <tr><td><span class="badge badge-gold">신승</span></td><td>승리, 피해 70%+</td><td class="center">+10%</td><td>현재 헥스 유지</td><td>HP 0 → 경상</td></tr>
+            <tr><td><span class="badge badge-blue">철수</span></td><td>플레이어가 퇴각</td><td class="center">+10~20%</td><td>현재 헥스 유지</td><td>HP 0 → 경상</td></tr>
+            <tr><td><span class="badge badge-orange">패배</span></td><td>아군 전멸</td><td class="center">+15%</td><td>1헥스 후퇴</td><td>HP 0 → 중상</td></tr>
+            <tr><td><span class="badge badge-red">대패</span></td><td>다파티 릴레이 전멸</td><td class="center">+25%</td><td>가까운 거점 복귀</td><td>HP 0 → 중태</td></tr>
+          </table>
+
+          <h3 class="sub-header">캐릭터 부상 시스템</h3>
+          <div class="highlight-box red">
+            <p>가챠 획득 캐릭터는 <strong>절대 영구 사망하지 않음</strong>.</p>
+            <p>부상은 일시적 디버프이며, 시간 또는 자원으로 치료 가능.</p>
+          </div>
+
+          <table class="tbl">
+            <tr><th>부상 등급</th><th>발생 조건</th><th class="center">스탯 감소</th><th class="center">출전</th><th>치료 방법</th></tr>
+            <tr><td><span class="badge badge-gold">경상</span></td><td>신승/철수 시 HP 0</td><td class="center">-10%</td><td class="center">가능</td><td>1시간 자연회복 or 약재 즉시</td></tr>
+            <tr><td><span class="badge badge-orange">중상</span></td><td>패배 시 HP 0</td><td class="center">-30%</td><td class="center">가능 (약화)</td><td>거점에서 약재+곡물 (3시간)</td></tr>
+            <tr><td><span class="badge badge-red">중태</span></td><td>대패 시 HP 0</td><td class="center">-</td><td class="center">불가</td><td>도시에서 치료 (6시간) or 과금</td></tr>
+          </table>
+
+          <h3 class="sub-header">방어전 실패 시</h3>
+          <table class="tbl">
+            <tr><th>상황</th><th>결과</th></tr>
+            <tr><td>방어 성공</td><td>적 퇴각, 아군 주둔군 피해 유지 (거점 휴식으로 회복)</td></tr>
+            <tr><td>방어 실패 (헥스)</td><td>헥스 상실 → 적 점령 → 탈환 시 점령 토벌 필요</td></tr>
+            <tr><td>방어 실패 (구조물)</td><td>구조물 상실 → 적이 새 수비대 배치 → 탈환 시 공성전 필요</td></tr>
+          </table>
+
+          <h3 class="sub-header">좌절 방지 장치</h3>
+          <div class="card-grid-3">
+            <div class="card">
+              <h3>정보 보상</h3>
+              <p>패배할 때마다 적 편성/패턴 정보 공개 → 다음 시도에 유리</p>
+            </div>
+            <div class="card">
+              <h3>연패 보정</h3>
+              <p>같은 전투 3회 연속 패배 → 적 스탯 -5% (최대 -15%, 풀 리셋 시 초기화)</p>
+            </div>
+            <div class="card">
+              <h3>공성 진행도 유지</h3>
+              <p>공성 철수/패배 시 처치한 파티 유지 (풀 리셋 전까지)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: 적 상태 리셋 -->
+    <div class="tab-content" id="tab-reset">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(74,144,217,0.12);">&#8635;</div>
+            <h2>적 상태 유지 및 리셋</h2>
+            <span class="tag">시간 제한 유지 + 회복</span>
+          </div>
+
+          <div class="highlight-box blue">
+            <p>전투 실패/철수 시 <strong>적도 피해를 입은 상태로 유지</strong>됨.</p>
+            <p>일정 시간 내에 재공격하면 약해진 상태로 상대 가능.</p>
+            <p>처치된 적 파티는 풀 리셋 전까지 <strong>부활하지 않음</strong> — 회복은 생존 유닛 HP만.</p>
+          </div>
+
+          <h3 class="sub-header">전투 유형별 리셋 타이밍</h3>
+          <table class="tbl">
+            <tr><th>전투 유형</th><th class="center">유지 시간</th><th class="center">동결 구간</th><th>회복 속도</th><th class="center">풀 리셋</th></tr>
+            <tr><td>조우전 (야생/도적)</td><td class="center">5분</td><td class="center">5분 전체</td><td>없음 (동결 후 풀 리셋)</td><td class="center">5분</td></tr>
+            <tr><td>점령 토벌 Lv1~2</td><td class="center">5분</td><td class="center">5분 전체</td><td>없음</td><td class="center">5분</td></tr>
+            <tr><td>점령 토벌 Lv3~5</td><td class="center">10분</td><td class="center">10분 전체</td><td>없음</td><td class="center">10분</td></tr>
+            <tr><td><strong>거점 공성</strong></td><td class="center">1시간</td><td class="center">10분</td><td>분당 ~2% HP</td><td class="center">1시간</td></tr>
+            <tr><td><strong>관문 공성</strong></td><td class="center">1시간</td><td class="center">10분</td><td>분당 ~1.5% HP</td><td class="center">1시간</td></tr>
+            <tr><td><strong>도시 공성</strong></td><td class="center">1시간</td><td class="center">15분</td><td>분당 ~1% HP</td><td class="center">1시간</td></tr>
+            <tr><td>던전</td><td class="center">10분</td><td class="center">10분 전체</td><td>없음</td><td class="center">10분</td></tr>
+          </table>
+
+          <h3 class="sub-header">상태 유지 규칙</h3>
+          <div class="card">
+            <p><strong>처치된 파티:</strong> 풀 리셋 전까지 부활 안 함 (가장 중요한 규칙)</p>
+            <p><strong>생존 파티:</strong> 동결 구간 후 HP만 서서히 회복</p>
+            <p><strong>구조물 HP:</strong> 관문/성벽은 동결 구간 후 서서히 회복</p>
+          </div>
+
+          <h3 class="sub-header">공성전 예시 — 도시 공성 (수비 7파티)</h3>
+          <div class="flow-box">[1차 공격] 내 3파티 투입 → 적 4파티 처치, 내 전멸
+  적 상태: 파티 1~4 처치됨, 파티 5~7 생존 (HP 깎인 상태)
+  성벽 HP: 60% 남음
+
+[0~15분: 동결]
+  적 변화 없음. 바로 재공격 시:
+  → 파티 5~7 (깎인 HP) + 성벽 60%만 상대
+
+[15분~1시간: 회복 중]
+  파티 5~7의 HP가 분당 1%씩 회복
+  성벽 HP도 분당 1%씩 회복
+  파티 1~4는 여전히 처치 상태
+  → 30분 후 재공격: 파티 5~7 HP ~15% 회복
+
+[1시간 경과: 풀 리셋]
+  파티 1~7 전부 원래 편성/HP로 복귀
+  성벽 HP 100%
+  → 처음부터 다시 공략해야 함</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: 공략 루트 -->
+    <div class="tab-content" id="tab-route">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(217,138,74,0.12);">&#127759;</div>
+            <h2>싱글 플레이 공략 루트</h2>
+            <span class="tag">42 레기온</span>
+          </div>
+
+          <h3 class="sub-header">챕터 구성</h3>
+          <table class="tbl">
+            <tr><th>챕터</th><th>권역</th><th class="center">Lv 범위</th><th>적 세력</th><th>레기온 수</th></tr>
+            <tr><td><span class="badge badge-green">Ch.1</span></td><td>리볼도외</td><td class="center">1~20</td><td>무소속 (야생)</td><td class="center">4</td></tr>
+            <tr><td><span class="badge badge-blue">Ch.2</span></td><td>코임브라</td><td class="center">20~60</td><td>NOCC</td><td class="center">12</td></tr>
+            <tr><td><span class="badge badge-purple">Ch.3</span></td><td>중앙 평원~오슈</td><td class="center">60~80</td><td>오슈 학파 / 십인 귀족</td><td class="center">10</td></tr>
+            <tr><td><span class="badge badge-orange">Ch.4</span></td><td>자캥~갈라진 땅</td><td class="center">80~100</td><td>버론</td><td class="center">9</td></tr>
+            <tr><td><span class="badge badge-red">Ch.5</span></td><td>빙마탑</td><td class="center">100+</td><td>브리스티아</td><td class="center">5</td></tr>
+          </table>
+
+          <!-- Ch.1 -->
+          <h3 class="sub-header">Ch.1 리볼도외 (Lv1~20, 무소속/야생)</h3>
+          <table class="tbl">
+            <tr><th class="center">#</th><th>레기온</th><th class="center">GE 참고 Lv</th><th>비고</th></tr>
+            <tr><td class="center">1</td><td>퀸즈게이트</td><td class="center">~12</td><td>시작 지점</td></tr>
+            <tr><td class="center">2</td><td>채석장</td><td class="center">~12</td><td></td></tr>
+            <tr><td class="center">3</td><td>페루초삼거리</td><td class="center">~15</td><td>거점</td></tr>
+            <tr><td class="center">4</td><td>알쿠엘트모레자</td><td class="center">~18</td><td>던전</td></tr>
+          </table>
+
+          <!-- Ch.2 -->
+          <h3 class="sub-header">Ch.2 코임브라 (Lv20~60, NOCC)</h3>
+          <table class="tbl">
+            <tr><th class="center">#</th><th>레기온</th><th class="center">GE 참고 Lv</th><th>비고</th></tr>
+            <tr><td class="center">5</td><td>알비강</td><td class="center">~31</td><td></td></tr>
+            <tr><td class="center">6</td><td>카타리폭포</td><td class="center">~31</td><td></td></tr>
+            <tr><td class="center">7</td><td>세레스테 호수</td><td class="center">~35</td><td></td></tr>
+            <tr><td class="center">8</td><td>왕들의 정원</td><td class="center">~38</td><td>거점</td></tr>
+            <tr><td class="center">9</td><td>님로드 다리</td><td class="center">~40</td><td>분기점</td></tr>
+            <tr><td class="center">10</td><td>테트라언덕</td><td class="center">~42</td><td>거점</td></tr>
+            <tr><td class="center">11</td><td>테트라대유적</td><td class="center">~45</td><td>던전</td></tr>
+            <tr><td class="center">12</td><td>구 코임브라 항구</td><td class="center">~48</td><td>거점</td></tr>
+            <tr><td class="center">13</td><td>토플로 두르가</td><td class="center">~50</td><td></td></tr>
+            <tr><td class="center">14</td><td>포르토벨로 황량한 절벽</td><td class="center">~52</td><td></td></tr>
+            <tr><td class="center">15</td><td>포르토벨로 버려진 부두</td><td class="center">~55</td><td>거점</td></tr>
+            <tr><td class="center">16</td><td>포르토벨로 던전</td><td class="center">~58</td><td>던전</td></tr>
+          </table>
+
+          <!-- Ch.3 -->
+          <h3 class="sub-header">Ch.3 중앙 평원~오슈 (Lv60~80, 오슈 학파 / 십인 귀족)</h3>
+          <table class="tbl">
+            <tr><th class="center">#</th><th>레기온</th><th class="center">GE 참고 Lv</th><th>비고</th></tr>
+            <tr><td class="center">17</td><td>하비에로 초원</td><td class="center">~60</td><td></td></tr>
+            <tr><td class="center">18</td><td>비아 플루비알</td><td class="center">~62</td><td></td></tr>
+            <tr><td class="center">19</td><td>리온 평원</td><td class="center">~64</td><td>거점</td></tr>
+            <tr><td class="center">20</td><td>보나비스타 지류</td><td class="center">~66</td><td>거점</td></tr>
+            <tr><td class="center">21</td><td>지저벨협곡</td><td class="center">~68</td><td>거점</td></tr>
+            <tr><td class="center">22</td><td>테하도 베르테</td><td class="center">~70</td><td>거점</td></tr>
+            <tr><td class="center">23</td><td>튜링엔 숲</td><td class="center">~72</td><td></td></tr>
+            <tr><td class="center">24</td><td>세자매의 호수</td><td class="center">~74</td><td>거점</td></tr>
+            <tr><td class="center">25</td><td>토르쉐 저택</td><td class="center">~76</td><td>십인 귀족 거점</td></tr>
+            <tr><td class="center">26</td><td>티에라 데 라 시드</td><td class="center">~78</td><td></td></tr>
+          </table>
+
+          <!-- Ch.4 -->
+          <h3 class="sub-header">Ch.4 자캥~갈라진 땅 (Lv80~100, 버론)</h3>
+          <table class="tbl">
+            <tr><th class="center">#</th><th>레기온</th><th class="center">GE 참고 Lv</th><th>비고</th></tr>
+            <tr><td class="center">27</td><td>자캥분화구</td><td class="center">~80</td><td></td></tr>
+            <tr><td class="center">28</td><td>자캥수용소</td><td class="center">~83</td><td>던전</td></tr>
+            <tr><td class="center">29</td><td>마의 계곡</td><td class="center">~85</td><td></td></tr>
+            <tr><td class="center">30</td><td>쎄니싸 고원</td><td class="center">~88</td><td>거점</td></tr>
+            <tr><td class="center">31</td><td>잊혀진 폐허</td><td class="center">~90</td><td></td></tr>
+            <tr><td class="center">32</td><td>작열의 고원</td><td class="center">~93</td><td></td></tr>
+            <tr><td class="center">33</td><td>갈라진 땅</td><td class="center">~95</td><td>캐피바라 진입로</td></tr>
+            <tr><td class="center">34</td><td>캐피바라</td><td class="center">~97</td><td></td></tr>
+            <tr><td class="center">35</td><td>캐피바라 지하농장</td><td class="center">~100</td><td>던전</td></tr>
+          </table>
+
+          <!-- Ch.5 -->
+          <h3 class="sub-header">Ch.5 빙마탑 (Lv100+, 브리스티아)</h3>
+          <table class="tbl">
+            <tr><th class="center">#</th><th>레기온</th><th class="center">GE 참고 Lv</th><th>비고</th></tr>
+            <tr><td class="center">36</td><td>페루초 방벽</td><td class="center">~105</td><td></td></tr>
+            <tr><td class="center">37</td><td>순백의 대지</td><td class="center">~110</td><td>거점</td></tr>
+            <tr><td class="center">38</td><td>얼어붙은 평원</td><td class="center">~115</td><td></td></tr>
+            <tr><td class="center">39</td><td>빙마의 설원</td><td class="center">~120</td><td></td></tr>
+            <tr><td class="center">40</td><td>빙마탑</td><td class="center">~125</td><td>최종 던전</td></tr>
+          </table>
+
+          <!-- 확장 -->
+          <h3 class="sub-header">확장 콘텐츠</h3>
+          <table class="tbl">
+            <tr><th class="center">#</th><th>레기온</th><th class="center">GE 참고 Lv</th><th>비고</th></tr>
+            <tr><td class="center">41</td><td>기간떼</td><td class="center">~130</td><td>최고난이도</td></tr>
+            <tr><td class="center">42</td><td>불의 섬</td><td class="center">~130</td><td>화산 특화</td></tr>
+          </table>
+
+          <h3 class="sub-header">진행 흐름</h3>
+          <div class="flow-box">[Ch.1 리볼도외] — 무소속 (야생), Lv1~20
+  리볼도외 도시에서 출발
+  → 퀸즈게이트 → 채석장
+  → 페루초삼거리 (첫 거점 확보)
+  → 알쿠엘트모레자 (첫 던전 경험)
+  → ── 관문 ──▶
+
+[Ch.2 코임브라] — NOCC 세력, Lv20~60
+  → 알비강 → 카타리폭포 → 세레스테 호수
+  → 왕들의 정원 (거점) → 님로드 다리 (분기점)
+  → 테트라언덕 (거점) → 테트라대유적 (던전)
+  → 구 코임브라 항구 (거점) → 토플로 두르가
+  → 포르토벨로 절벽 → 포르토벨로 부두 (거점) → 포르토벨로 던전
+  → ── 관문 ──▶
+
+[Ch.3 중앙 평원~오슈] — 오슈 학파 / 십인 귀족, Lv60~80
+  → 하비에로 초원 → 비아 플루비알
+  → 리온 평원 (거점) → 보나비스타 지류 (거점)
+  → 지저벨 (거점) → 테하도 베르테 (거점)
+  → 튜링엔 숲 → 세자매의 호수 (거점)
+  → 토르쉐 저택 (십인 귀족) → 티에라 데 라 시드
+  → ── 관문 ──▶
+
+[Ch.4 자캥~갈라진 땅] — 버론 (무법자), Lv80~100
+  → 자캥분화구 → 자캥수용소 (던전) → 마의 계곡
+  → 쎄니싸 (거점) → 잊혀진 폐허 → 작열의 고원
+  → 갈라진 땅 → 캐피바라 → 캐피바라 지하농장 (던전)
+  → ── 관문 ──▶
+
+[Ch.5 빙마탑] — 브리스티아 원정군, Lv100+
+  → 페루초 방벽 → 순백의 대지 (거점)
+  → 얼어붙은 평원 → 빙마의 설원
+  → 빙마탑 최종 공략 → 엔딩</div>
+        </div>
+      </div>
+    </div>
+
+      <!-- 이동/피로도 탭 -->
+      <div id="tab-movement" class="tab-content">
+        <div class="section">
+          <h2 class="section-title"><span class="section-num">§6</span> 이동 및 피로도 시스템</h2>
+          <p style="color:var(--text-dim);margin-bottom:20px">삼국지전략판(삼전) 사기 시스템 참조. 피로도 = ATK 직결 감소, DEF 유지. 거점 관리가 전략의 핵심.</p>
+
+          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-1. 지형별 이동 시간 / 피로 소모</h3>
+          <table>
+            <thead><tr><th>지형</th><th>이동 시간 (1칸)</th><th>피로 소모</th><th>전투 보정</th></tr></thead>
+            <tbody>
+              <tr><td>초원 / 평원 / 해안</td><td style="color:var(--accent-green)">2분</td><td>1%</td><td>없음 (해안: 수+10%)</td></tr>
+              <tr><td>숲 / 늪지 / 사막</td><td style="color:var(--accent-orange)">3분</td><td>2%</td><td>숲: 근접+5% 원거리-10%<br>늪: SPD-1 독+10%<br>사막: SPD-1 화+15%</td></tr>
+              <tr><td>동굴 / 화산 / 빙설</td><td style="color:var(--accent-red)">4분</td><td>3%</td><td>동굴: 암+15% 원거리-10%<br>화산: 화+20% DOT<br>빙설: SPD-2 수+15%</td></tr>
+              <tr><td>산지 / 수역</td><td>—</td><td>—</td><td>이동 불가</td></tr>
+              <tr><td>관문 / 도시 / 거점</td><td style="color:var(--accent-cyan)">1분</td><td>0%</td><td>방어 보정 (DEF +15~30%)</td></tr>
+            </tbody>
+          </table>
+
+          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-2. 피로도 규칙</h3>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:20px">
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center">
+              <div style="font-size:28px;font-weight:900;color:var(--gold-bright)">100%</div>
+              <div style="font-size:11px;color:var(--text-dim)">최대 피로도</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center">
+              <div style="font-size:28px;font-weight:900;color:var(--accent-red)">1:1</div>
+              <div style="font-size:11px;color:var(--text-dim)">피로 1% = ATK 1% 감소</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center">
+              <div style="font-size:28px;font-weight:900;color:var(--accent-cyan)">턴당 1%</div>
+              <div style="font-size:11px;color:var(--text-dim)">전투 피로 (종료 시 정산)</div>
+            </div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center">
+              <div style="font-size:28px;font-weight:900;color:var(--accent-green)">DEF 유지</div>
+              <div style="font-size:11px;color:var(--text-dim)">방어력은 피로 영향 없음</div>
+            </div>
+          </div>
+
+          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-3. 피로도 → 전투력 영향</h3>
+          <table>
+            <thead><tr><th>피로도</th><th>ATK 잔여</th><th>전투 상태</th></tr></thead>
+            <tbody>
+              <tr><td>0%</td><td style="color:var(--accent-green);font-weight:700">100%</td><td>최상 — 풀 전투력</td></tr>
+              <tr><td>20%</td><td style="color:var(--accent-green)">80%</td><td>양호 — 약간 약해짐</td></tr>
+              <tr><td>40%</td><td style="color:var(--accent-orange)">60%</td><td>주의 — 체감 시작, 벙커 고려</td></tr>
+              <tr><td>60%</td><td style="color:var(--accent-orange);font-weight:700">40%</td><td>위험 — 확실히 약함, 퇴각 고려</td></tr>
+              <tr><td>80%</td><td style="color:var(--accent-red)">20%</td><td>심각 — 거의 못 싸움</td></tr>
+              <tr><td>100%</td><td style="color:var(--accent-red);font-weight:700">0%</td><td>전투 불가 + 이동 불가</td></tr>
+            </tbody>
+          </table>
+          <p style="color:var(--text-dim);font-size:13px;margin-top:8px">※ 전투 중에는 피로가 변하지 않음 — 전투 종료 시 턴수만큼 합산 후, 다음 전투에 적용</p>
+
+          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-4. 퇴각</h3>
+          <table>
+            <thead><tr><th>항목</th><th>규칙</th></tr></thead>
+            <tbody>
+              <tr><td>발동 조건</td><td>전투 밖에서 언제든 가능</td></tr>
+              <tr><td>목적지</td><td>마지막으로 휴식한 거점/도시/벙커</td></tr>
+              <tr><td>이동 시간</td><td>정상 이동과 동일 (칸당 2~4분)</td></tr>
+              <tr><td>피로도 변화</td><td>추가 누적 없음 (현재 수치 유지)</td></tr>
+              <tr><td>전투 발생</td><td>없음 (안전 복귀)</td></tr>
+            </tbody>
+          </table>
+
+          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-5. 피로도 회복</h3>
+          <table>
+            <thead><tr><th>방법</th><th>회복량</th><th>소요 시간</th><th>조건</th></tr></thead>
+            <tbody>
+              <tr><td style="color:var(--accent-green);font-weight:600">거점/도시 휴식</td><td>100% (전회복)</td><td>즉시</td><td>거점/도시에 도착</td></tr>
+              <tr><td style="color:var(--accent-cyan);font-weight:600">벙커 휴식</td><td>50%</td><td>즉시</td><td>벙커에 도착</td></tr>
+              <tr><td>음식 사용</td><td>15~50%</td><td>즉시</td><td>곡물 소비 아이템</td></tr>
+              <tr><td>현지 야영</td><td>분당 0.5%</td><td>장시간</td><td>무료, 야간 습격(20%) 위험</td></tr>
+              <tr><td style="color:var(--accent-purple)">활력수 (과금)</td><td>100%</td><td>즉시</td><td>프리미엄</td></tr>
+            </tbody>
+          </table>
+
+          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-6. 실전 시뮬레이션</h3>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:monospace;font-size:13px;line-height:2;color:var(--text)">
+            <div style="color:var(--accent-green)">거점 출발 (피로 0%, ATK 100%)</div>
+            <div>→ 초원 8칸 이동 (피로 8%) + 전투×3 (15턴, +15%) = <span style="color:var(--accent-green)">피로 23%, ATK 77%</span></div>
+            <div style="color:var(--text-dim)">  "아직 괜찮다" → 계속 전진</div>
+            <div>→ 숲 5칸 이동 (+10%) + 전투×2 (12턴, +12%) = <span style="color:var(--accent-orange)">피로 45%, ATK 55%</span></div>
+            <div style="color:var(--text-dim)">  "위험해지기 시작" → 벙커 or 퇴각 판단</div>
+            <br>
+            <div style="color:var(--accent-cyan)">[분기 A: 벙커 건설]</div>
+            <div>→ 벙커 휴식 (50% 회복) = <span style="color:var(--accent-green)">피로 0%, ATK 100%</span></div>
+            <div style="color:var(--text-dim)">  자원 소모하지만 전진 유지</div>
+            <br>
+            <div style="color:var(--accent-blue)">[분기 B: 퇴각]</div>
+            <div>→ 13칸 복귀 (26~39분, 피로 추가 없음) → 거점 도착</div>
+            <div>→ <span style="color:var(--accent-green)">피로 0%, ATK 100%</span> — 시간 손실</div>
+            <br>
+            <div style="color:var(--accent-red)">[분기 C: 무리하게 전진]</div>
+            <div>→ 빙설 4칸 (+12%) + 전투 (+10%) = <span style="color:var(--accent-red)">피로 67%, ATK 33%</span></div>
+            <div>→ 공성에서 ATK 33%로 싸움 → 턴수↑ → 피로↑ → 악순환</div>
+            <div>→ 패배 시 피로+15% = <span style="color:var(--accent-red);font-weight:700">피로 82%, ATK 18% → 사실상 고립</span></div>
+          </div>
+
+          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-7. 챕터별 이동/피로 밸런스</h3>
+          <table>
+            <thead><tr><th>챕터</th><th>주 지형</th><th>거점 간 거리</th><th>이동 피로</th><th>이동 시간</th><th>전투 포함 예상</th></tr></thead>
+            <tbody>
+              <tr><td>Ch.1</td><td>초원/평원</td><td>5~6칸</td><td>5~6%</td><td>10~12분</td><td style="color:var(--accent-green)">15~25%</td></tr>
+              <tr><td>Ch.2</td><td>초원+숲</td><td>6~8칸</td><td>8~12%</td><td>14~20분</td><td style="color:var(--accent-green)">25~40%</td></tr>
+              <tr><td>Ch.3</td><td>숲+초원</td><td>7~10칸</td><td>10~16%</td><td>18~26분</td><td style="color:var(--accent-orange)">35~55%</td></tr>
+              <tr><td>Ch.4</td><td>사막+화산</td><td>8~12칸</td><td>16~30%</td><td>24~40분</td><td style="color:var(--accent-red)">45~70%</td></tr>
+              <tr><td>Ch.5</td><td>빙설</td><td>8~10칸</td><td>24~30%</td><td>32~40분</td><td style="color:var(--accent-red);font-weight:700">55~80%</td></tr>
+            </tbody>
+          </table>
+          <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Ch.4~5에서 벙커가 필수인 이유: 이동 피로만 30%+, 전투 포함 60%+ → 거점 도달 전 ATK 절반 이하</p>
+        </div>
+      </div>
+
+    </div>
+
+  </div><!-- /main-content -->
+
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('tab-' + id).classList.add('active');
+      event.target.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+  </script>
+</body>
+</html>
