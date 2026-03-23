@@ -963,114 +963,211 @@
 
       <!-- 이동/피로도 탭 -->
       <div id="tab-movement" class="tab-content">
-        <div class="section">
-          <h2 class="section-title"><span class="section-num">§6</span> 이동 및 피로도 시스템</h2>
-          <p style="color:var(--text-dim);margin-bottom:20px">삼국지전략판(삼전) 사기 시스템 참조. 피로도 = ATK 직결 감소, DEF 유지. 거점 관리가 전략의 핵심.</p>
+        <div class="container">
 
-          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-1. 지형별 이동 시간 / 피로 소모</h3>
-          <table>
-            <thead><tr><th>지형</th><th>이동 시간 (1칸)</th><th>피로 소모</th><th>전투 보정</th></tr></thead>
-            <tbody>
-              <tr><td>초원 / 평원 / 해안</td><td style="color:var(--accent-green)">2분</td><td>1%</td><td>없음 (해안: 수+10%)</td></tr>
-              <tr><td>숲 / 늪지 / 사막</td><td style="color:var(--accent-orange)">3분</td><td>2%</td><td>숲: 근접+5% 원거리-10%<br>늪: SPD-1 독+10%<br>사막: SPD-1 화+15%</td></tr>
-              <tr><td>동굴 / 화산 / 빙설</td><td style="color:var(--accent-red)">4분</td><td>3%</td><td>동굴: 암+15% 원거리-10%<br>화산: 화+20% DOT<br>빙설: SPD-2 수+15%</td></tr>
-              <tr><td>산지 / 수역</td><td>—</td><td>—</td><td>이동 불가</td></tr>
-              <tr><td>관문 / 도시 / 거점</td><td style="color:var(--accent-cyan)">1분</td><td>0%</td><td>방어 보정 (DEF +15~30%)</td></tr>
-            </tbody>
-          </table>
+          <!-- 이동 시스템 -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(74,204,217,0.12);">&#128694;</div>
+              <h2>이동 및 피로도 시스템</h2>
+              <span class="tag">삼전 참조</span>
+            </div>
 
-          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-2. 피로도 규칙</h3>
-          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:20px">
-            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center">
-              <div style="font-size:28px;font-weight:900;color:var(--gold-bright)">100%</div>
-              <div style="font-size:11px;color:var(--text-dim)">최대 피로도</div>
+            <div class="highlight-box">
+              <p><strong>핵심 원칙:</strong> 피로도 = ATK 직결 감소 (DEF 유지). 거점 관리와 퇴각 판단이 전략의 핵심.</p>
+              <p>모든 이동은 <strong>실시간 소요</strong>. 이동 명령은 경로 지정 후 자동 진행.</p>
             </div>
-            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center">
-              <div style="font-size:28px;font-weight:900;color:var(--accent-red)">1:1</div>
-              <div style="font-size:11px;color:var(--text-dim)">피로 1% = ATK 1% 감소</div>
+
+            <h3 class="sub-header">지형별 이동 시간 / 피로 소모</h3>
+            <table class="tbl">
+              <tr><th>지형</th><th class="center">이동 시간</th><th class="center">피로 소모</th><th>전투 보정</th></tr>
+              <tr>
+                <td><span class="badge badge-green">초원 / 평원 / 해안</span></td>
+                <td class="center">2분</td><td class="center">1%</td>
+                <td>없음 (해안: 수 속성 +10%)</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-orange">숲 / 늪지 / 사막</span></td>
+                <td class="center">3분</td><td class="center">2%</td>
+                <td>숲: 근접 ATK +5%, 원거리 명중 -10%<br>늪지: SPD -1, 독 +10% | 사막: SPD -1, 화 +15%</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-red">동굴 / 화산 / 빙설</span></td>
+                <td class="center">4분</td><td class="center">3%</td>
+                <td>동굴: 암 +15%, 원거리 -10%<br>화산: 화 +20%, 지속 피해 | 빙설: SPD -2, 수 +15%</td>
+              </tr>
+              <tr>
+                <td style="color:var(--text-dim)">산지 / 수역</td>
+                <td class="center" style="color:var(--text-dim)">—</td><td class="center" style="color:var(--text-dim)">—</td>
+                <td style="color:var(--text-dim)">이동 불가</td>
+              </tr>
+              <tr>
+                <td><span class="badge badge-cyan">관문 / 도시 / 거점</span></td>
+                <td class="center">1분</td><td class="center">0%</td>
+                <td>방어 보정: 거점 DEF +15%, 관문 +20%, 도시 +30%</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- 피로도 핵심 규칙 -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(217,74,92,0.12);">&#9889;</div>
+              <h2>피로도 규칙</h2>
+              <span class="tag">ATK 직결</span>
             </div>
-            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center">
-              <div style="font-size:28px;font-weight:900;color:var(--accent-cyan)">턴당 1%</div>
-              <div style="font-size:11px;color:var(--text-dim)">전투 피로 (종료 시 정산)</div>
+
+            <div class="card-grid">
+              <div class="card" style="text-align:center">
+                <h3 style="justify-content:center"><span class="badge badge-gold">MAX</span></h3>
+                <div style="font-size:36px;font-weight:900;color:var(--gold-bright);line-height:1">100%</div>
+                <p style="color:var(--text-dim);font-size:12px;margin-top:8px">최대 피로도</p>
+              </div>
+              <div class="card" style="text-align:center">
+                <h3 style="justify-content:center"><span class="badge badge-red">PENALTY</span></h3>
+                <div style="font-size:36px;font-weight:900;color:var(--accent-red);line-height:1">1 : 1</div>
+                <p style="color:var(--text-dim);font-size:12px;margin-top:8px">피로 1% = ATK 1% 감소</p>
+              </div>
+              <div class="card" style="text-align:center">
+                <h3 style="justify-content:center"><span class="badge badge-cyan">COMBAT</span></h3>
+                <div style="font-size:36px;font-weight:900;color:var(--accent-cyan);line-height:1">턴당 1%</div>
+                <p style="color:var(--text-dim);font-size:12px;margin-top:8px">전투 피로 (종료 시 정산)</p>
+              </div>
+              <div class="card" style="text-align:center">
+                <h3 style="justify-content:center"><span class="badge badge-green">SAFE</span></h3>
+                <div style="font-size:36px;font-weight:900;color:var(--accent-green);line-height:1">DEF 유지</div>
+                <p style="color:var(--text-dim);font-size:12px;margin-top:8px">방어력은 피로 영향 없음</p>
+              </div>
             </div>
-            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center">
-              <div style="font-size:28px;font-weight:900;color:var(--accent-green)">DEF 유지</div>
-              <div style="font-size:11px;color:var(--text-dim)">방어력은 피로 영향 없음</div>
+
+            <h3 class="sub-header">피로도 → 전투력 영향</h3>
+            <table class="tbl">
+              <tr><th class="center">피로도</th><th class="center">ATK 잔여</th><th>전투 상태</th></tr>
+              <tr><td class="center">0%</td><td class="center" style="color:var(--accent-green);font-weight:700">100%</td><td><span class="badge badge-green">최상</span> 풀 전투력</td></tr>
+              <tr><td class="center">20%</td><td class="center" style="color:var(--accent-green)">80%</td><td><span class="badge badge-green">양호</span> 약간 약해짐</td></tr>
+              <tr><td class="center">40%</td><td class="center" style="color:var(--accent-orange)">60%</td><td><span class="badge badge-orange">주의</span> 체감 시작 — 벙커 고려</td></tr>
+              <tr><td class="center">60%</td><td class="center" style="color:var(--accent-orange);font-weight:700">40%</td><td><span class="badge badge-orange">위험</span> 확실히 약함 — 퇴각 고려</td></tr>
+              <tr><td class="center">80%</td><td class="center" style="color:var(--accent-red)">20%</td><td><span class="badge badge-red">심각</span> 거의 못 싸움</td></tr>
+              <tr><td class="center">100%</td><td class="center" style="color:var(--accent-red);font-weight:700">0%</td><td><span class="badge badge-red">불가</span> 전투 불가 + 이동 불가</td></tr>
+            </table>
+
+            <div class="highlight-box blue">
+              <p><strong>전투 중 피로 타이밍:</strong> 전투 중에는 피로가 변하지 않음. 전투 종료 시 턴수만큼 합산 후, <strong>다음 전투</strong> 진입 시 감소된 ATK 적용.</p>
             </div>
           </div>
 
-          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-3. 피로도 → 전투력 영향</h3>
-          <table>
-            <thead><tr><th>피로도</th><th>ATK 잔여</th><th>전투 상태</th></tr></thead>
-            <tbody>
-              <tr><td>0%</td><td style="color:var(--accent-green);font-weight:700">100%</td><td>최상 — 풀 전투력</td></tr>
-              <tr><td>20%</td><td style="color:var(--accent-green)">80%</td><td>양호 — 약간 약해짐</td></tr>
-              <tr><td>40%</td><td style="color:var(--accent-orange)">60%</td><td>주의 — 체감 시작, 벙커 고려</td></tr>
-              <tr><td>60%</td><td style="color:var(--accent-orange);font-weight:700">40%</td><td>위험 — 확실히 약함, 퇴각 고려</td></tr>
-              <tr><td>80%</td><td style="color:var(--accent-red)">20%</td><td>심각 — 거의 못 싸움</td></tr>
-              <tr><td>100%</td><td style="color:var(--accent-red);font-weight:700">0%</td><td>전투 불가 + 이동 불가</td></tr>
-            </tbody>
-          </table>
-          <p style="color:var(--text-dim);font-size:13px;margin-top:8px">※ 전투 중에는 피로가 변하지 않음 — 전투 종료 시 턴수만큼 합산 후, 다음 전투에 적용</p>
+          <!-- 퇴각 -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(74,144,217,0.12);">&#128682;</div>
+              <h2>퇴각 시스템</h2>
+              <span class="tag">안전 복귀</span>
+            </div>
 
-          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-4. 퇴각</h3>
-          <table>
-            <thead><tr><th>항목</th><th>규칙</th></tr></thead>
-            <tbody>
+            <div class="highlight-box green">
+              <p><strong>퇴각</strong> = 전투 없이 출발 거점으로 안전 복귀. 왔던 경로를 역순 이동.</p>
+              <p>이동 시간은 동일하게 소요되지만, <strong>피로도 추가 누적 없음</strong>.</p>
+            </div>
+
+            <table class="tbl">
+              <tr><th>항목</th><th>규칙</th></tr>
               <tr><td>발동 조건</td><td>전투 밖에서 언제든 가능</td></tr>
-              <tr><td>목적지</td><td>마지막으로 휴식한 거점/도시/벙커</td></tr>
+              <tr><td>목적지</td><td>마지막으로 휴식한 <strong>거점 / 도시 / 벙커</strong></td></tr>
               <tr><td>이동 시간</td><td>정상 이동과 동일 (칸당 2~4분)</td></tr>
-              <tr><td>피로도 변화</td><td>추가 누적 없음 (현재 수치 유지)</td></tr>
-              <tr><td>전투 발생</td><td>없음 (안전 복귀)</td></tr>
-            </tbody>
-          </table>
-
-          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-5. 피로도 회복</h3>
-          <table>
-            <thead><tr><th>방법</th><th>회복량</th><th>소요 시간</th><th>조건</th></tr></thead>
-            <tbody>
-              <tr><td style="color:var(--accent-green);font-weight:600">거점/도시 휴식</td><td>100% (전회복)</td><td>즉시</td><td>거점/도시에 도착</td></tr>
-              <tr><td style="color:var(--accent-cyan);font-weight:600">벙커 휴식</td><td>50%</td><td>즉시</td><td>벙커에 도착</td></tr>
-              <tr><td>음식 사용</td><td>15~50%</td><td>즉시</td><td>곡물 소비 아이템</td></tr>
-              <tr><td>현지 야영</td><td>분당 0.5%</td><td>장시간</td><td>무료, 야간 습격(20%) 위험</td></tr>
-              <tr><td style="color:var(--accent-purple)">활력수 (과금)</td><td>100%</td><td>즉시</td><td>프리미엄</td></tr>
-            </tbody>
-          </table>
-
-          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-6. 실전 시뮬레이션</h3>
-          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:monospace;font-size:13px;line-height:2;color:var(--text)">
-            <div style="color:var(--accent-green)">거점 출발 (피로 0%, ATK 100%)</div>
-            <div>→ 초원 8칸 이동 (피로 8%) + 전투×3 (15턴, +15%) = <span style="color:var(--accent-green)">피로 23%, ATK 77%</span></div>
-            <div style="color:var(--text-dim)">  "아직 괜찮다" → 계속 전진</div>
-            <div>→ 숲 5칸 이동 (+10%) + 전투×2 (12턴, +12%) = <span style="color:var(--accent-orange)">피로 45%, ATK 55%</span></div>
-            <div style="color:var(--text-dim)">  "위험해지기 시작" → 벙커 or 퇴각 판단</div>
-            <br>
-            <div style="color:var(--accent-cyan)">[분기 A: 벙커 건설]</div>
-            <div>→ 벙커 휴식 (50% 회복) = <span style="color:var(--accent-green)">피로 0%, ATK 100%</span></div>
-            <div style="color:var(--text-dim)">  자원 소모하지만 전진 유지</div>
-            <br>
-            <div style="color:var(--accent-blue)">[분기 B: 퇴각]</div>
-            <div>→ 13칸 복귀 (26~39분, 피로 추가 없음) → 거점 도착</div>
-            <div>→ <span style="color:var(--accent-green)">피로 0%, ATK 100%</span> — 시간 손실</div>
-            <br>
-            <div style="color:var(--accent-red)">[분기 C: 무리하게 전진]</div>
-            <div>→ 빙설 4칸 (+12%) + 전투 (+10%) = <span style="color:var(--accent-red)">피로 67%, ATK 33%</span></div>
-            <div>→ 공성에서 ATK 33%로 싸움 → 턴수↑ → 피로↑ → 악순환</div>
-            <div>→ 패배 시 피로+15% = <span style="color:var(--accent-red);font-weight:700">피로 82%, ATK 18% → 사실상 고립</span></div>
+              <tr><td>피로도 변화</td><td><span class="badge badge-green">추가 없음</span> 현재 수치 유지</td></tr>
+              <tr><td>전투 발생</td><td><span class="badge badge-green">없음</span> 안전 복귀</td></tr>
+              <tr><td>중단</td><td>퇴각 중 취소하면 현재 위치에 정지</td></tr>
+            </table>
           </div>
 
-          <h3 style="color:var(--gold);margin:24px 0 12px;font-size:16px">6-7. 챕터별 이동/피로 밸런스</h3>
-          <table>
-            <thead><tr><th>챕터</th><th>주 지형</th><th>거점 간 거리</th><th>이동 피로</th><th>이동 시간</th><th>전투 포함 예상</th></tr></thead>
-            <tbody>
-              <tr><td>Ch.1</td><td>초원/평원</td><td>5~6칸</td><td>5~6%</td><td>10~12분</td><td style="color:var(--accent-green)">15~25%</td></tr>
-              <tr><td>Ch.2</td><td>초원+숲</td><td>6~8칸</td><td>8~12%</td><td>14~20분</td><td style="color:var(--accent-green)">25~40%</td></tr>
-              <tr><td>Ch.3</td><td>숲+초원</td><td>7~10칸</td><td>10~16%</td><td>18~26분</td><td style="color:var(--accent-orange)">35~55%</td></tr>
-              <tr><td>Ch.4</td><td>사막+화산</td><td>8~12칸</td><td>16~30%</td><td>24~40분</td><td style="color:var(--accent-red)">45~70%</td></tr>
-              <tr><td>Ch.5</td><td>빙설</td><td>8~10칸</td><td>24~30%</td><td>32~40분</td><td style="color:var(--accent-red);font-weight:700">55~80%</td></tr>
-            </tbody>
-          </table>
-          <p style="color:var(--text-dim);font-size:13px;margin-top:8px">Ch.4~5에서 벙커가 필수인 이유: 이동 피로만 30%+, 전투 포함 60%+ → 거점 도달 전 ATK 절반 이하</p>
+          <!-- 피로도 회복 -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(78,204,163,0.12);">&#9829;</div>
+              <h2>피로도 회복</h2>
+              <span class="tag">5가지 방법</span>
+            </div>
+
+            <div class="card-grid-3">
+              <div class="card">
+                <h3><span class="badge badge-green">거점 / 도시</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-green)">100%</div>
+                <p>즉시 전회복. 가장 안전하고 확실한 방법.</p>
+              </div>
+              <div class="card">
+                <h3><span class="badge badge-cyan">벙커</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-cyan)">50%</div>
+                <p>즉시 회복. 자원 소모하여 건설 필요 (목재 500 + 석재 300 + 식량 200).</p>
+              </div>
+              <div class="card">
+                <h3><span class="badge badge-orange">음식 사용</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-orange)">15~50%</div>
+                <p>곡물 소비 아이템. 즉시 사용, 등급별 회복량 상이.</p>
+              </div>
+              <div class="card">
+                <h3><span class="badge badge-blue">현지 야영</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-blue)">분당 0.5%</div>
+                <p>무료지만 느림. 야간 습격 20% 위험. 피로 60% → 0% = 약 2시간.</p>
+              </div>
+              <div class="card">
+                <h3><span class="badge badge-purple">활력수 (과금)</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-purple)">100%</div>
+                <p>프리미엄 아이템. 즉시 전회복.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 실전 시뮬레이션 -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(212,168,67,0.12);">&#9881;</div>
+              <h2>실전 시뮬레이션</h2>
+              <span class="tag">전략 분기</span>
+            </div>
+
+            <div class="flow-box">거점 출발 (피로 0%, ATK 100%)
+  → 초원 8칸 이동 (피로 8%) + 전투×3 (15턴, +15%) = 피로 23%, ATK 77%
+    "아직 괜찮다" → 계속 전진
+
+  → 숲 5칸 이동 (+10%) + 전투×2 (12턴, +12%) = 피로 45%, ATK 55%
+    "위험해지기 시작" → 판단 필요
+
+  [분기 A: 벙커 건설] ━━━━━━━━━━━━━━━━━
+    → 벙커 휴식 (50% 회복) = 피로 0%, ATK 100%
+    → 자원 소모하지만 전진 유지
+
+  [분기 B: 퇴각] ━━━━━━━━━━━━━━━━━━━━
+    → 13칸 복귀 (26~39분, 피로 추가 없음)
+    → 거점 도착 = 피로 0%, ATK 100% — 시간 손실
+
+  [분기 C: 무리하게 전진] ━━━━━━━━━━━━━━
+    → 빙설 4칸 (+12%) + 전투 (+10%) = 피로 67%, ATK 33%
+    → 공성에서 ATK 33% → 턴수↑ → 피로↑ → 악순환
+    → 패배 시 피로+15% = 피로 82%, ATK 18% → 사실상 고립</div>
+          </div>
+
+          <!-- 챕터별 밸런스 -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(155,111,217,0.12);">&#9878;</div>
+              <h2>챕터별 이동/피로 밸런스</h2>
+              <span class="tag">난이도 곡선</span>
+            </div>
+
+            <table class="tbl">
+              <tr><th>챕터</th><th>주 지형</th><th class="center">거점 간 거리</th><th class="center">이동 피로</th><th class="center">이동 시간</th><th class="center">전투 포함 예상</th></tr>
+              <tr><td>Ch.1</td><td>초원/평원</td><td class="center">5~6칸</td><td class="center">5~6%</td><td class="center">10~12분</td><td class="center"><span class="badge badge-green">15~25%</span></td></tr>
+              <tr><td>Ch.2</td><td>초원+숲</td><td class="center">6~8칸</td><td class="center">8~12%</td><td class="center">14~20분</td><td class="center"><span class="badge badge-green">25~40%</span></td></tr>
+              <tr><td>Ch.3</td><td>숲+초원</td><td class="center">7~10칸</td><td class="center">10~16%</td><td class="center">18~26분</td><td class="center"><span class="badge badge-orange">35~55%</span></td></tr>
+              <tr><td>Ch.4</td><td>사막+화산</td><td class="center">8~12칸</td><td class="center">16~30%</td><td class="center">24~40분</td><td class="center"><span class="badge badge-red">45~70%</span></td></tr>
+              <tr><td>Ch.5</td><td>빙설</td><td class="center">8~10칸</td><td class="center">24~30%</td><td class="center">32~40분</td><td class="center"><span class="badge badge-red">55~80%</span></td></tr>
+            </table>
+
+            <div class="highlight-box red">
+              <p><strong>Ch.4~5에서 벙커가 필수인 이유:</strong> 이동 피로만 30%+, 전투 포함 60%+ → 거점 도달 전 ATK 절반 이하. 벙커 없이 원정 시 피로 악순환으로 고립 위험.</p>
+            </div>
+          </div>
+
         </div>
       </div>
 
