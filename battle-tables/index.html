@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GE: 개척시대 — 전투 데이터테이블 GDD</title>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+    import { getAuth, signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCx9Et77K4bWe8Gt2EaFFs4x1-qgYXn4d4",
+      authDomain: "gdd-presentation-ddb3c.firebaseapp.com",
+      projectId: "gdd-presentation-ddb3c",
+      storageBucket: "gdd-presentation-ddb3c.firebasestorage.app",
+      messagingSenderId: "276123425066",
+      appId: "1:276123425066:web:390e40bb764d78fb976653"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    const ALLOWED_DOMAINS = ["imc.co.kr"];
+    const ALLOWED_EMAILS = ["hanaura@gmail.com"];
+
+    function checkAccess(user) {
+      if (ALLOWED_EMAILS.includes(user.email)) return true;
+      const domain = user.email.split('@')[1];
+      return ALLOWED_DOMAINS.includes(domain);
+    }
+
+    window.fbSignIn = function() {
+      signInWithPopup(auth, provider).catch(err => {
+        document.getElementById('auth-error').textContent = '로그인 실패: ' + err.message;
+      });
+    };
+
+    window.fbSignOut = function() {
+      signOut(auth);
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      const overlay = document.getElementById('auth-overlay');
+      const mainContent = document.getElementById('main-content');
+      const userInfo = document.getElementById('user-info');
+      if (!overlay || !mainContent) return;
+
+      if (user && checkAccess(user)) {
+        overlay.style.display = 'none';
+        mainContent.style.display = '';
+        if (userInfo) {
+          userInfo.innerHTML = `<img src="${user.photoURL}" style="width:24px;height:24px;border-radius:50%;vertical-align:middle;margin-right:6px"><span>${user.displayName}</span><button onclick="fbSignOut()" style="margin-left:10px;background:#d94a5c;color:#fff;border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:12px">로그아웃</button>`;
+        }
+      } else {
+        overlay.style.display = 'flex';
+        mainContent.style.display = 'none';
+        if (user && !checkAccess(user)) {
+          document.getElementById('auth-error').textContent = '접근 권한이 없는 계정입니다: ' + user.email;
+          signOut(auth);
+        }
+      }
+    });
+  </script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap');
+
+    :root {
+      --bg-dark: #0a0a0f;
+      --bg-card: #12121a;
+      --bg-card-hover: #1a1a26;
+      --border: #2a2a3a;
+      --gold: #d4a843;
+      --gold-dim: #a07830;
+      --gold-bright: #f0c850;
+      --text: #e0ddd5;
+      --text-dim: #8a8780;
+      --text-bright: #ffffff;
+      --accent-green: #4ecca3;
+      --accent-blue: #4a90d9;
+      --accent-red: #d94a5c;
+      --accent-purple: #9b6fd9;
+      --accent-orange: #d98a4a;
+      --accent-cyan: #4accd9;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, sans-serif;
+      background: var(--bg-dark);
+      color: var(--text);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* Auth overlay */
+    #auth-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.95);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; flex-direction: column; gap: 20px;
+    }
+    #auth-overlay h2 { color: var(--gold); font-size: 24px; }
+    #auth-overlay button {
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg-dark); border: none; padding: 12px 32px;
+      border-radius: 8px; font-size: 16px; font-weight: 700; cursor: pointer;
+    }
+    #auth-error { color: var(--accent-red); font-size: 14px; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(135deg, #0a0a0f 0%, #1a1028 40%, #0f1a2a 70%, #0a0a0f 100%);
+      border-bottom: 1px solid var(--gold-dim);
+      padding: 50px 40px 40px;
+      text-align: center;
+      position: relative;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(212,168,67,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg-dark);
+      padding: 4px 16px; border-radius: 20px;
+      font-size: 12px; font-weight: 700; letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+    .hero h1 { font-size: 32px; font-weight: 900; color: var(--text-bright); margin-bottom: 8px; }
+    .hero h1 span { color: var(--gold); }
+    .hero .subtitle { font-size: 15px; color: var(--text-dim); font-weight: 300; }
+    .hero .date { font-size: 13px; color: var(--text-dim); margin-top: 10px; }
+
+    .summary-bar {
+      display: flex; justify-content: center; gap: 0;
+      margin-top: 28px; flex-wrap: wrap;
+    }
+    .summary-item {
+      padding: 14px 24px;
+      border-right: 1px solid rgba(212,168,67,0.2);
+      text-align: center;
+    }
+    .summary-item:last-child { border-right: none; }
+    .summary-item .num {
+      font-size: 26px; font-weight: 900; color: var(--gold-bright);
+      display: block; line-height: 1;
+    }
+    .summary-item .label {
+      font-size: 11px; color: var(--text-dim); margin-top: 4px; letter-spacing: 1px;
+    }
+
+    /* Nav */
+    .nav-bar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,10,15,0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+      padding: 0; display: flex; justify-content: center;
+      overflow-x: auto;
+    }
+    .nav-item {
+      padding: 14px 16px; font-size: 12px; font-weight: 600;
+      color: var(--text-dim); cursor: pointer;
+      transition: all 0.2s; border-bottom: 2px solid transparent;
+      white-space: nowrap; text-decoration: none;
+    }
+    .nav-item:hover, .nav-item.active {
+      color: var(--gold); border-bottom-color: var(--gold);
+    }
+
+    /* Tabs */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Container */
+    .container { max-width: 1100px; margin: 0 auto; padding: 40px 24px; }
+
+    .section { margin-bottom: 56px; scroll-margin-top: 60px; }
+    .section-header {
+      display: flex; align-items: center; gap: 14px;
+      margin-bottom: 24px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; flex-shrink: 0;
+    }
+    .section-header h2 { font-size: 22px; font-weight: 700; color: var(--text-bright); }
+    .section-header .tag {
+      margin-left: auto;
+      background: rgba(212,168,67,0.12); color: var(--gold);
+      padding: 4px 14px; border-radius: 20px;
+      font-size: 13px; font-weight: 700;
+    }
+
+    .sub-header {
+      font-size: 17px; font-weight: 700; color: var(--text-bright);
+      margin: 28px 0 12px; padding-left: 12px;
+      border-left: 3px solid var(--gold);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px; padding: 24px; margin-bottom: 16px;
+      transition: all 0.15s ease;
+    }
+    .card:hover { border-color: rgba(212,168,67,0.3); }
+    .card h3 {
+      font-size: 16px; font-weight: 700; color: var(--text-bright);
+      margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+    }
+    .card p { font-size: 14px; color: var(--text); margin-bottom: 10px; }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+    }
+    .card-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    /* Tables */
+    .tbl {
+      width: 100%; border-collapse: collapse;
+      margin: 16px 0; font-size: 13px;
+    }
+    .tbl th {
+      background: rgba(212,168,67,0.08); color: var(--gold);
+      font-weight: 700; padding: 10px 14px; text-align: left;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px; letter-spacing: 0.5px;
+    }
+    .tbl td {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      color: var(--text);
+    }
+    .tbl tr:hover td { background: rgba(255,255,255,0.02); }
+    .tbl td.center, .tbl th.center { text-align: center; }
+
+    /* Flow box */
+    .flow-box {
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px 24px;
+      font-family: 'Noto Sans KR', monospace;
+      font-size: 13px; line-height: 1.8;
+      color: var(--text); white-space: pre-wrap;
+      margin: 16px 0;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 6px;
+      font-size: 11px; font-weight: 700;
+    }
+    .badge-gold { background: rgba(212,168,67,0.15); color: var(--gold); border: 1px solid rgba(212,168,67,0.3); }
+    .badge-green { background: rgba(78,204,163,0.15); color: var(--accent-green); border: 1px solid rgba(78,204,163,0.3); }
+    .badge-red { background: rgba(217,74,92,0.15); color: var(--accent-red); border: 1px solid rgba(217,74,92,0.3); }
+    .badge-blue { background: rgba(74,144,217,0.15); color: var(--accent-blue); border: 1px solid rgba(74,144,217,0.3); }
+    .badge-purple { background: rgba(155,111,217,0.15); color: var(--accent-purple); border: 1px solid rgba(155,111,217,0.3); }
+    .badge-orange { background: rgba(217,138,74,0.15); color: var(--accent-orange); border: 1px solid rgba(217,138,74,0.3); }
+    .badge-cyan { background: rgba(74,204,217,0.15); color: var(--accent-cyan); border: 1px solid rgba(74,204,217,0.3); }
+
+    /* Highlight box */
+    .highlight-box {
+      background: linear-gradient(135deg, rgba(212,168,67,0.06), rgba(155,111,217,0.06));
+      border: 1px solid rgba(212,168,67,0.2);
+      border-radius: 12px; padding: 20px 24px; margin: 16px 0;
+    }
+    .highlight-box.red {
+      background: linear-gradient(135deg, rgba(217,74,92,0.06), rgba(217,138,74,0.06));
+      border-color: rgba(217,74,92,0.2);
+    }
+    .highlight-box.green {
+      background: linear-gradient(135deg, rgba(78,204,163,0.06), rgba(74,144,217,0.06));
+      border-color: rgba(78,204,163,0.2);
+    }
+    .highlight-box.blue {
+      background: linear-gradient(135deg, rgba(74,144,217,0.06), rgba(155,111,217,0.06));
+      border-color: rgba(74,144,217,0.2);
+    }
+    .highlight-box strong { color: var(--gold); }
+    .highlight-box p { font-size: 14px; margin-bottom: 6px; }
+
+    /* User info bar */
+    .top-bar {
+      display: flex; justify-content: flex-end; align-items: center;
+      padding: 8px 24px; font-size: 13px;
+      background: rgba(0,0,0,0.3);
+    }
+    .back-link {
+      margin-right: auto; color: var(--text-dim);
+      text-decoration: none; font-size: 13px;
+    }
+    .back-link:hover { color: var(--gold); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .hero { padding: 30px 20px; }
+      .hero h1 { font-size: 24px; }
+      .container { padding: 24px 16px; }
+      .card-grid, .card-grid-3 { grid-template-columns: 1fr; }
+      .summary-bar { flex-direction: column; align-items: center; }
+      .summary-item { border-right: none; border-bottom: 1px solid rgba(212,168,67,0.1); }
+      .tbl { font-size: 11px; }
+      .tbl th, .tbl td { padding: 8px 8px; }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Auth Overlay -->
+  <div id="auth-overlay">
+    <h2>GE: 개척시대</h2>
+    <p style="color:#8a8780;">기획 문서 열람을 위해 로그인이 필요합니다</p>
+    <button onclick="fbSignIn()">Google 로그인</button>
+    <p id="auth-error"></p>
+  </div>
+
+  <!-- Main Content -->
+  <div id="main-content" style="display:none;">
+
+    <!-- Top bar -->
+    <div class="top-bar">
+      <a href="../" class="back-link">&lt; GDD 메인</a>
+      <div id="user-info"></div>
+    </div>
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="hero-badge">DATA TABLE REFERENCE</div>
+      <h1><span>전투</span> 데이터테이블</h1>
+      <div class="subtitle">캐릭터 · 적 · 스킬 · 파티 편성 — 전투 시스템의 모든 XML 테이블</div>
+      <div class="date">v1.0 | 2026.03.24</div>
+
+      <div class="summary-bar">
+        <div class="summary-item"><span class="num">4</span><span class="label">테이블</span></div>
+        <div class="summary-item"><span class="num">123</span><span class="label">캐릭터</span></div>
+        <div class="summary-item"><span class="num">108</span><span class="label">적 템플릿</span></div>
+        <div class="summary-item"><span class="num">617</span><span class="label">스킬</span></div>
+        <div class="summary-item"><span class="num">154+</span><span class="label">적 파티</span></div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="nav-bar">
+      <a class="nav-item active" onclick="showTab('overview')">총괄</a>
+      <a class="nav-item" onclick="showTab('player')">PlayerTable</a>
+      <a class="nav-item" onclick="showTab('skill')">SkillTable</a>
+      <a class="nav-item" onclick="showTab('enemy')">EnemyTemplateTable</a>
+      <a class="nav-item" onclick="showTab('party')">EnemyPartyTable</a>
+    </div>
+
+    <!-- TAB: 총괄 -->
+    <div class="tab-content active" id="tab-overview">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(212,168,67,0.12);">&#9876;</div>
+            <h2>전투 데이터테이블 총괄</h2>
+            <span class="tag">4개 테이블</span>
+          </div>
+
+          <div class="highlight-box">
+            <p><strong>경로:</strong> <code>Assets/ClientCore/Resources/Datatables/</code></p>
+            <p><strong>원칙:</strong> 전투에 관여하는 모든 유닛(아군/적/보스)과 스킬을 4개 테이블로 정의. 월드맵/필드 테이블은 <a href="../field-battle/" style="color:var(--accent-cyan)">필드 전투 시스템</a> 문서 참조.</p>
+          </div>
+
+          <h3 class="sub-header">테이블 관계도</h3>
+          <div class="flow-box">PlayerTable (123행) ──── SkillID → SkillTable (SKL 401종)
+      │                              ↑
+      │                    SkillList → SkillTable (SKM 207종)
+      │                              ↑
+      └── vs ── EnemyPartyTable (154+행) → EnemyTemplateTable (108행)
+                                           ↑
+                                  보스 전투 → SkillTable (SKB 9종)</div>
+
+          <h3 class="sub-header">테이블 목록</h3>
+          <table class="tbl">
+            <tr><th>파일</th><th class="center">행 수</th><th>PK</th><th>역할</th></tr>
+            <tr style="background:rgba(74,144,217,0.06)"><td><strong>PlayerTable</strong></td><td class="center">123</td><td>ID</td><td>플레이어 캐릭터 123명의 기본 스탯·직업·역할·성장률·소속. 전투 시 아군 유닛의 원형 데이터.</td></tr>
+            <tr style="background:rgba(217,138,74,0.06)"><td><strong>SkillTable</strong></td><td class="center">617</td><td>SkillID</td><td>플레이어(SKL) + 적(SKM) + 보스(SKB) 스킬 통합. 배율·발동률·쿨타임·효과를 한 테이블에서 관리.</td></tr>
+            <tr style="background:rgba(217,74,92,0.06)"><td><strong>EnemyTemplateTable</strong></td><td class="center">108</td><td>ID</td><td>10종족 × 최대 16종 적 유닛 원형. 기본 스탯 + SKM 스킬 참조. 헥스 레벨로 스케일링.</td></tr>
+            <tr style="background:rgba(217,74,92,0.06)"><td><strong>EnemyPartyTable</strong></td><td class="center">154+</td><td>PartyID</td><td>리전×헥스레벨 조합별 적 3인 파티 편성표. A/B/C 랜덤 선택.</td></tr>
+          </table>
+
+          <div class="highlight-box green">
+            <p><strong>전투 배경:</strong> 별도 테이블 없음. <code>bg_field_{OutpostID:02d}{지형코드}</code> 네이밍 규칙으로 런타임 매핑.</p>
+            <p><strong>StringTable 키:</strong> 캐릭터명(CHAR), 적 이름(ENEMY), 스킬명(SKL/SKM/SKB) 등 전투 관련 표시 텍스트는 StringTable_KR.xml에서 관리.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: PlayerTable -->
+    <div class="tab-content" id="tab-player">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(74,144,217,0.12);">&#128100;</div>
+            <h2>PlayerTable</h2>
+            <span class="tag">123행</span>
+          </div>
+
+          <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+            게임에 등장하는 <strong>123명 플레이어 캐릭터의 원형(템플릿)</strong>을 정의하는 마스터 테이블.
+            각 캐릭터는 직업(F/S/M/W/L), 역할(Dealer/Tanker/Healer/Support), 소속 진영, 기본 스탯과 레벨당 성장률을 가진다.
+            전투 시 이 테이블의 Base 스탯에 레벨 성장률을 곱해 실전 스탯을 계산하며,
+            SkillTable에서 해당 캐릭터 ID로 귀속된 고유 스킬(Slot 1~3)과 비전스킬(Slot 4~5)을 조회한다.
+          </p>
+
+          <table class="tbl">
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr><td>ID</td><td>int (PK)</td><td>캐릭터 고유 ID (1~123)</td></tr>
+            <tr><td>NameKey</td><td>string</td><td>StringTable 키 (CHAR_{NNN}_NAME)</td></tr>
+            <tr><td>Rarity</td><td>int</td><td>희귀도 (1~4: ★~★★★★)</td></tr>
+            <tr><td>JobClass</td><td>char</td><td>직업 — F(Fighter) / S(Scout) / M(Musketeer) / W(Wizard) / L(Leader)</td></tr>
+            <tr><td>Element</td><td>enum</td><td>속성 — Fire / Ice / Wind / Lightning / Dark / Light / Nature / Water / None</td></tr>
+            <tr><td>Role</td><td>enum</td><td>역할 — Dealer / Tanker / Healer / Support</td></tr>
+            <tr><td>Affiliation</td><td>string</td><td>소속 진영 (Reboldoeux, Coimbra, Auch, Opoluto, Bristia 등)</td></tr>
+            <tr><td>Placement</td><td>enum</td><td>배치 — front(전열) / back(후열)</td></tr>
+            <tr><td>BaseHP</td><td>int</td><td>기본 체력</td></tr>
+            <tr><td>BaseATK</td><td>int</td><td>기본 공격력</td></tr>
+            <tr><td>BaseDEF</td><td>int</td><td>기본 방어력</td></tr>
+            <tr><td>BaseSPD</td><td>float</td><td>기본 속도 (행동 순서 결정)</td></tr>
+            <tr><td>BaseCRI</td><td>int</td><td>기본 치명타율 (%)</td></tr>
+            <tr><td>BaseCRD</td><td>int</td><td>기본 치명타 피해 (%)</td></tr>
+            <tr><td>BaseRES</td><td>int</td><td>기본 CC 저항 (%)</td></tr>
+            <tr><td>GrowthHP</td><td>int</td><td>레벨당 HP 성장</td></tr>
+            <tr><td>GrowthATK</td><td>float</td><td>레벨당 ATK 성장</td></tr>
+            <tr><td>GrowthDEF</td><td>float</td><td>레벨당 DEF 성장</td></tr>
+            <tr><td>OpenWeek</td><td>string</td><td>해금 주차 (W01=출시, W02=2주차, ...)</td></tr>
+            <tr><td>PrefabPath</td><td>string</td><td>Unity 프리팹 경로</td></tr>
+          </table>
+
+          <h3 class="sub-header">직업별 분포</h3>
+          <div class="card-grid-3" style="grid-template-columns: repeat(5, 1fr);">
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-red">F Fighter</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-red)">33</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">근접 물리<br>전열 중심</p>
+            </div>
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-green">S Scout</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-green)">24</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">단검/활<br>고속·회피</p>
+            </div>
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-blue">M Musketeer</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-blue)">22</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">원거리 물리<br>후열 딜러</p>
+            </div>
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-purple">W Wizard</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-purple)">22</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">마법/힐<br>원소 특화</p>
+            </div>
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-orange">L Leader</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-orange)">22</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">지휘/소환<br>버프·시너지</p>
+            </div>
+          </div>
+
+          <h3 class="sub-header">역할별 분포</h3>
+          <table class="tbl">
+            <tr><th>역할</th><th>설명</th><th class="center">배치</th><th>핵심 스탯</th></tr>
+            <tr><td><span class="badge badge-red">Dealer</span></td><td>적에게 피해를 집중하는 공격형</td><td class="center">전열/후열</td><td>ATK, CRI, CRD</td></tr>
+            <tr><td><span class="badge badge-blue">Tanker</span></td><td>아군을 보호하고 피해를 흡수</td><td class="center">전열</td><td>HP, DEF, BLK, DR</td></tr>
+            <tr><td><span class="badge badge-green">Healer</span></td><td>아군 HP 회복 및 상태이상 해제</td><td class="center">후열</td><td>ATK(힐량), SPD</td></tr>
+            <tr><td><span class="badge badge-purple">Support</span></td><td>버프/디버프/CC로 전투 흐름 제어</td><td class="center">후열</td><td>SPD, RES, ACC</td></tr>
+          </table>
+
+          <div class="highlight-box blue">
+            <p><strong>스탯 공식:</strong> <code>실전 스탯 = Base + Growth × (Lv - 1)</code></p>
+            <p><strong>SPD:</strong> 레벨 성장 없음 (기본값 고정). 비전스킬/장비로만 변동.</p>
+            <p><strong>Tier 2 스탯:</strong> CRI/CRD/RES 외 나머지(BLK, EVD, PEN, DR 등)는 기본값 0. 비전스킬로만 획득.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: SkillTable -->
+    <div class="tab-content" id="tab-skill">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(217,138,74,0.12);">&#9889;</div>
+            <h2>SkillTable</h2>
+            <span class="tag">617행 (통합)</span>
+          </div>
+
+          <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+            플레이어·적·보스의 <strong>모든 스킬을 하나의 테이블에서 관리</strong>하는 통합 스킬 마스터 테이블.
+            세 계열(SKL/SKM/SKB)이 SkillID 접두어로 구분되며, <code>OwnerCharID=0</code>과 <code>Slot=0</code>인 스킬은
+            특정 캐릭터에 귀속되지 않는 <strong>공유 스킬</strong>(적/보스)이다.
+            EnemyTemplateTable의 SkillList 필드가 SKM ID를 참조하고, 보스 전투에서는 SKB ID를 직접 호출한다.
+          </p>
+
+          <table class="tbl">
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr><td>SkillID</td><td>string (PK)</td><td>SKL_001~401 (플레이어) / SKM_001~260 (적) / SKB_001~009 (보스)</td></tr>
+            <tr><td>NameKey</td><td>string</td><td>StringTable 키 (SKL/SKM/SKB_NNN_NAME)</td></tr>
+            <tr><td>OwnerCharID</td><td>int</td><td>소유 캐릭터 ID (0 = 공유 스킬)</td></tr>
+            <tr><td>Slot</td><td>int</td><td>스킬 슬롯 (0 = 공유, 1~5 = 캐릭터 고유)</td></tr>
+            <tr><td>Category</td><td>enum</td><td>Damage / Buff / Debuff / Heal / Passive / Summon / Special</td></tr>
+            <tr><td>TargetType</td><td>enum</td><td>SingleEnemy / AllEnemy / Self / SingleAlly / AllAlly / RandomEnemy</td></tr>
+            <tr><td>Multiplier</td><td>float</td><td>스킬 배율 (1.0 = 100% ATK)</td></tr>
+            <tr><td>Hits</td><td>int</td><td>타격 횟수 (1~5)</td></tr>
+            <tr><td>Rate</td><td>int</td><td>발동률 % (30~65)</td></tr>
+            <tr><td>Cooldown</td><td>int</td><td>쿨타임 (턴)</td></tr>
+            <tr><td>Effect</td><td>string</td><td>부가 효과 (출혈, 스턴, 버프 등)</td></tr>
+            <tr><td>Confirmed</td><td>bool</td><td>기획 확정 여부</td></tr>
+          </table>
+
+          <h3 class="sub-header">3계열 스킬 분포</h3>
+          <div class="card-grid-3">
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-blue">SKL 플레이어</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-blue)">401</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">123명 캐릭터<br>고유 스킬 + 비전스킬</p>
+            </div>
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-red">SKM 적 공유</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-red)">207</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">10종족 공통<br>물기/돌진/브레스 등</p>
+            </div>
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-purple">SKB 보스</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-purple)">9</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">던전 보스 전용<br>전멸기/광역 CC</p>
+            </div>
+          </div>
+
+          <h3 class="sub-header">SKL — 플레이어 스킬 슬롯 구조</h3>
+          <table class="tbl">
+            <tr><th>슬롯</th><th>종류</th><th>해금 조건</th><th>설명</th></tr>
+            <tr><td>Slot 1</td><td>고유 주력기</td><td>기본</td><td>캐릭터 정체성. 변경 불가.</td></tr>
+            <tr><td>Slot 2</td><td>고유 상황기</td><td>★3 강화</td><td>조건부/보조 스킬.</td></tr>
+            <tr><td>Slot 3</td><td>고유 궁극기</td><td>★5 해금</td><td>강력한 필살기.</td></tr>
+            <tr><td>Slot 4</td><td>비전스킬 1</td><td>★3 각성</td><td>자유 장착. 빌드 핵심.</td></tr>
+            <tr><td>Slot 5</td><td>비전스킬 2</td><td>★5 각성</td><td>자유 장착. 조합 다양성.</td></tr>
+          </table>
+
+          <h3 class="sub-header">SKM — 적 스킬 번호대 카테고리</h3>
+          <table class="tbl">
+            <tr><th>번호대</th><th>카테고리</th><th>대표 스킬</th></tr>
+            <tr><td>001~039</td><td>근접 기본</td><td>물기, 할퀴기, 찌르기</td></tr>
+            <tr><td>040~069</td><td>원거리 기본</td><td>던지기, 독침 발사, 거미줄</td></tr>
+            <tr><td>070~099</td><td>브레스/원소</td><td>화염 브레스, 냉기 브레스, 독안개</td></tr>
+            <tr><td>100~129</td><td>디버프</td><td>공포의 포효, 마비 독, 저주</td></tr>
+            <tr><td>130~159</td><td>방어/버프</td><td>껍질 강화, 군체 결속, 전투 지휘</td></tr>
+            <tr><td>160~179</td><td>회복</td><td>재생, 흡혈, 포자 치유</td></tr>
+            <tr><td>180~199</td><td>소환</td><td>유충 소환, 해골 소환, 분열</td></tr>
+            <tr><td>200~229</td><td>광역/지형</td><td>지진, 낙석, 용암 분출</td></tr>
+            <tr><td>230~260</td><td>특수</td><td>은신, 자폭, 용의 위엄</td></tr>
+          </table>
+
+          <h3 class="sub-header">SKB — 보스 스킬 목록</h3>
+          <table class="tbl">
+            <tr><th>ID</th><th>스킬명</th><th>카테고리</th><th>대상</th><th>효과</th></tr>
+            <tr><td>SKB_001</td><td>공포의 포효</td><td>Debuff</td><td>적 전체</td><td>ATK 30% 감소 2턴</td></tr>
+            <tr><td>SKB_002</td><td>대지 분쇄</td><td>Damage</td><td>적 전체</td><td>ATK 200% + 스턴 1턴</td></tr>
+            <tr><td>SKB_003</td><td>생명력 흡수</td><td>Heal</td><td>자신</td><td>피해량 50% HP 회복</td></tr>
+            <tr><td>SKB_004</td><td>광폭화</td><td>Buff</td><td>자신</td><td>ATK/SPD 50% 증가 3턴</td></tr>
+            <tr><td>SKB_005</td><td>독안개</td><td>Debuff</td><td>적 전체</td><td>턴당 최대HP 8% 독</td></tr>
+            <tr><td>SKB_006</td><td>빙결 감옥</td><td>Debuff</td><td>적 단일</td><td>행동 불가 2턴</td></tr>
+            <tr><td>SKB_007</td><td>소환: 부하</td><td>Summon</td><td>자신</td><td>Tier 3~4 적 1체 소환</td></tr>
+            <tr><td>SKB_008</td><td>페이즈 전환</td><td>Special</td><td>자신</td><td>HP 50% 이하 시 형태 변화</td></tr>
+            <tr><td>SKB_009</td><td>최후의 일격</td><td>Damage</td><td>적 전체</td><td>HP 50%피해, 자신 전투불능</td></tr>
+          </table>
+
+          <div class="highlight-box blue">
+            <p><strong>통합 원칙:</strong> 적 스킬도 플레이어 스킬과 동일한 스키마를 사용. <code>OwnerCharID=0</code>이면 공유 스킬, <code>Slot=0</code>이면 특정 슬롯에 귀속되지 않음.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: EnemyTemplateTable -->
+    <div class="tab-content" id="tab-enemy">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(217,74,92,0.12);">&#128126;</div>
+            <h2>EnemyTemplateTable</h2>
+            <span class="tag">108행</span>
+          </div>
+
+          <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+            게임에 등장하는 <strong>108종 적 유닛의 원형(템플릿)</strong>을 정의하는 테이블. 10개 종족(야수·곤충·언데드 등) × 최대 16종으로 구성되며,
+            각 템플릿은 기본 스탯(HP/ATK/DEF/SPD)·스킬 목록·역할(Dealer/Tanker/Support/Leader)·최소 등장 강도를 가진다.
+            이 테이블 자체는 "설계도"이며, 실전 스탯은 <strong>헥스 레벨에 따른 스케일링 공식</strong>과 <strong>접두어(Dire/Alpha/Elder/King) 배수</strong>를 곱해 결정된다.
+            EnemyPartyTable이 이 ID를 참조해 3인 파티를 편성한다.
+          </p>
+
+          <table class="tbl">
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr><td>ID</td><td>string (PK)</td><td>종족코드+번호 (B01, I03, X08 등)</td></tr>
+            <tr><td>NameKey</td><td>string</td><td>StringTable 키 (ENEMY_{ID}_NAME)</td></tr>
+            <tr><td>Family</td><td>char</td><td>B(야수)/I(곤충)/U(언데드)/H(인간)/D(악마)/E(정령)/C(구조물)/P(식물)/A(수생)/X(용족)</td></tr>
+            <tr><td>Tier</td><td>int</td><td>1~7 (강도 단계)</td></tr>
+            <tr><td>Role</td><td>enum</td><td>Dealer / Tanker / Support / Leader</td></tr>
+            <tr><td>BaseHP/ATK/DEF/SPD</td><td>int</td><td>기본 스탯 (스케일링 전)</td></tr>
+            <tr><td>SkillList</td><td>string</td><td>SKM ID 콤마 구분 (SKM_007,SKM_100,...) — SkillTable 참조</td></tr>
+            <tr><td>MinStrength</td><td>int</td><td>최소 등장 리전 강도</td></tr>
+            <tr><td>Element</td><td>enum</td><td>None/Fire/Ice/Dark/Light/Nature/Water</td></tr>
+            <tr><td>AIValue</td><td>int</td><td>파티 편성 예산 단위</td></tr>
+          </table>
+
+          <div class="highlight-box">
+            <p><strong>스탯 스케일링 공식:</strong> <code>실제스탯 = Base × (1 + (Lv-1) × Growth) × PrefixMult</code></p>
+            <p>SPD는 레벨 무관 고정. 성장률은 챕터별 감소 (Ch.1: 0.04 → Ch.5: 0.02).</p>
+          </div>
+
+          <h3 class="sub-header">접두어 배수 (PrefixMult)</h3>
+          <table class="tbl">
+            <tr><th>접두어</th><th>HP</th><th>ATK/DEF</th><th>최소 등급</th></tr>
+            <tr><td>(없음)</td><td>×1.0</td><td>×1.0</td><td>★1+</td></tr>
+            <tr><td>Dire</td><td>×1.5</td><td>×1.3</td><td>★2+</td></tr>
+            <tr><td>Alpha</td><td>×2.0</td><td>×1.6</td><td>★3+</td></tr>
+            <tr><td>Elder</td><td>×3.0</td><td>×2.0</td><td>★4+</td></tr>
+            <tr><td>King</td><td>×5.0</td><td>×2.5</td><td>★5</td></tr>
+          </table>
+
+          <h3 class="sub-header">10대 종족 분포</h3>
+          <div class="card-grid-3">
+            <div class="card"><h3>B 야수</h3><p>16종 — 늑대, 멧돼지, 그리폰</p></div>
+            <div class="card"><h3>I 곤충</h3><p>10종 — 거미, 전갈, 여왕벌</p></div>
+            <div class="card"><h3>U 언데드</h3><p>12종 — 해골, 좀비, 리치</p></div>
+            <div class="card"><h3>H 인간</h3><p>14종 — 도적, 해적, 기사</p></div>
+            <div class="card"><h3>D 악마</h3><p>10종 — 임프, 사역마, 아크데몬</p></div>
+            <div class="card"><h3>E 정령</h3><p>12종 — 화염/빙결/폭풍 정령</p></div>
+            <div class="card"><h3>C 구조물</h3><p>10종 — 골렘, 가디언, 석상</p></div>
+            <div class="card"><h3>P 식물</h3><p>8종 — 트렌트, 독버섯, 고대수</p></div>
+            <div class="card"><h3>A 수생</h3><p>8종 — 크랩, 시서펜트, 크라켄</p></div>
+            <div class="card"><h3>X 용족</h3><p>8종 — 드레이크, 와이번, 드래곤</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: EnemyPartyTable -->
+    <div class="tab-content" id="tab-party">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(217,74,92,0.12);">&#9876;</div>
+            <h2>EnemyPartyTable</h2>
+            <span class="tag">154+행</span>
+          </div>
+
+          <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+            플레이어가 헥스에서 조우하는 <strong>적 파티의 실제 편성표</strong>. 리전(RegionID) × 헥스 레벨(1~5) 조합마다 A/B/C 세 종류의 파티가 정의되어 있고,
+            전투 진입 시 이 중 하나가 랜덤 선택된다. 각 파티는 Slot1~3에 EnemyTemplateTable의 ID를 배치하며, 역할 조합(Balanced/Offensive/Defensive 등)에 따라
+            전투 체감 난이도가 달라진다. 리전의 주 적 종족이 우선 배치되고, 부 종족이 보조로 섞이는 구조.
+          </p>
+
+          <table class="tbl">
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr><td>PartyID</td><td>int (PK)</td><td>파티 고유 ID (1001~)</td></tr>
+            <tr><td>RegionID</td><td>int (FK)</td><td>RegionTable 참조</td></tr>
+            <tr><td>HexLevel</td><td>int</td><td>헥스 레벨 (1~5)</td></tr>
+            <tr><td>PartyIndex</td><td>int</td><td>같은 Region+HexLevel 내 순번 (1=A, 2=B, 3=C)</td></tr>
+            <tr><td>PartyCount</td><td>int</td><td>해당 헥스레벨에서 등장하는 총 파티 수</td></tr>
+            <tr><td>Slot1~3</td><td>string (FK)</td><td>EnemyTemplateTable ID 참조</td></tr>
+            <tr><td>Slot1~3Role</td><td>enum</td><td>Dealer / Tanker / Support / Leader</td></tr>
+            <tr><td>FormationType</td><td>enum</td><td>Balanced / Offensive / Defensive / Leader / SingleRace</td></tr>
+          </table>
+
+          <h3 class="sub-header">편성 유형</h3>
+          <table class="tbl">
+            <tr><th>FormationType</th><th>슬롯 구성</th><th>특징</th></tr>
+            <tr><td><span class="badge badge-gold">Balanced</span></td><td>Tanker + Dealer + Support</td><td>안정적 구성. 가장 흔함.</td></tr>
+            <tr><td><span class="badge badge-red">Offensive</span></td><td>Dealer + Dealer + Support</td><td>높은 화력, 낮은 생존력.</td></tr>
+            <tr><td><span class="badge badge-blue">Defensive</span></td><td>Tanker + Tanker + Healer</td><td>장기전 유도. 지구전 조합 필요.</td></tr>
+            <tr><td><span class="badge badge-purple">Leader</span></td><td>Leader + Dealer + Dealer</td><td>리더 버프로 화력 극대화.</td></tr>
+            <tr><td><span class="badge badge-cyan">SingleRace</span></td><td>동일 종족 3체</td><td>종족 시너지 보너스 발동.</td></tr>
+          </table>
+
+          <h3 class="sub-header">파티 생성 규칙</h3>
+          <div class="highlight-box">
+            <p><strong>1. 종족 우선:</strong> 리전의 EnemyFamilyMain이 Slot1~2에 배치, EnemyFamilySub가 Slot3에 배치.</p>
+            <p><strong>2. 티어 필터:</strong> 해당 리전 Strength 이하의 MinStrength를 가진 템플릿만 후보군.</p>
+            <p><strong>3. 역할 조합:</strong> FormationType에 맞는 Role 조합으로 슬롯 배정.</p>
+            <p><strong>4. 다양성:</strong> 같은 Region+HexLevel에 A/B/C 3종을 두어 전투마다 다른 조합과 만남.</p>
+          </div>
+
+          <h3 class="sub-header">파티 ID 체계</h3>
+          <div class="flow-box">PartyID = RegionID × 100 + HexLevel × 10 + PartyIndex
+
+예: Region 5, HexLevel 3, 파티 B
+  → PartyID = 5 × 100 + 3 × 10 + 2 = 532
+
+범위: 1001 (R1-Lv1-A) ~ 42053 (R42-Lv5-C)</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main-content -->
+
+  <script>
+    function showTab(id) {
+      document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('tab-' + id).classList.add('active');
+      event.target.classList.add('active');
+      window.scrollTo(0, 0);
+    }
+  </script>
+</body>
+</html>
