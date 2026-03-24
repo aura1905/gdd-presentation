@@ -347,13 +347,13 @@
       <div class="hero-badge">DATA TABLE REFERENCE</div>
       <h1><span>전투</span> 데이터테이블</h1>
       <div class="subtitle">캐릭터 · 적 · 스킬 · 파티 편성 — 전투 시스템의 모든 XML 테이블</div>
-      <div class="date">v1.0 | 2026.03.24</div>
+      <div class="date">v1.1 | 2026.03.24</div>
 
       <div class="summary-bar">
         <div class="summary-item"><span class="num">5</span><span class="label">테이블</span></div>
-        <div class="summary-item"><span class="num">123</span><span class="label">캐릭터</span></div>
-        <div class="summary-item"><span class="num">617</span><span class="label">스킬</span></div>
-        <div class="summary-item"><span class="num">85</span><span class="label">인연</span></div>
+        <div class="summary-item"><span class="num">128</span><span class="label">캐릭터</span></div>
+        <div class="summary-item"><span class="num">694</span><span class="label">스킬</span></div>
+        <div class="summary-item"><span class="num">236</span><span class="label">인연</span></div>
         <div class="summary-item"><span class="num">10</span><span class="label">전투 규칙</span></div>
       </div>
     </div>
@@ -385,24 +385,24 @@
           </div>
 
           <h3 class="sub-header">테이블 관계도</h3>
-          <div class="flow-box">PlayerTable (123행) ──┬── SkillID → SkillTable (SKL 401종)
-      │                │                     ↑
-      │                │           SkillList → SkillTable (SKM 207종)
-      │                │                     ↑
-      └── vs ──────────┤  EnemyPartyTable (154+행) → EnemyTemplateTable (108행)
-                       │                                ↑
-                       │                       보스 전투 → SkillTable (SKB 9종)
-                       │
-                       └── CharA + CharB → BondTable (85행) → 인연 보너스 적용</div>
+          <div class="flow-box">PlayerTable (128행)
+  ├─ Skill1/2/3 ────────→ SkillTable (SKL 478종)  ← 캐릭터가 스킬 참조
+  ├─ CharA + CharB ─────→ BondTable (236행)        ← 인연 보너스 적용
+  │
+  └── vs ───────────────┐
+                        │
+  EnemyPartyTable (61행)  → EnemyTemplateTable (108행)
+                                ├─ SkillList ───→ SkillTable (SKM 207종)
+                                └─ 보스 전투 ──→ SkillTable (SKB 9종)</div>
 
           <h3 class="sub-header">테이블 목록</h3>
           <table class="tbl">
             <tr><th>파일</th><th class="center">행 수</th><th>PK</th><th>역할</th></tr>
-            <tr style="background:rgba(74,144,217,0.06)"><td><strong>PlayerTable</strong></td><td class="center">123</td><td>ID</td><td>캐릭터 123명의 기본 스탯·직업·역할·성장률·소속.</td></tr>
-            <tr style="background:rgba(217,138,74,0.06)"><td><strong>SkillTable</strong></td><td class="center">617</td><td>SkillID</td><td>플레이어(SKL 401) + 적(SKM 207) + 보스(SKB 9) 통합.</td></tr>
+            <tr style="background:rgba(74,144,217,0.06)"><td><strong>PlayerTable</strong></td><td class="center">128</td><td>ID</td><td>캐릭터 128명의 기본 스탯·직업·역할·성장률·소속.</td></tr>
+            <tr style="background:rgba(217,138,74,0.06)"><td><strong>SkillTable</strong></td><td class="center">694</td><td>SkillID</td><td>플레이어(SKL 478) + 적(SKM 207) + 보스(SKB 9) 통합.</td></tr>
             <tr style="background:rgba(217,74,92,0.06)"><td><strong>EnemyTemplateTable</strong></td><td class="center">108</td><td>ID</td><td>10종족 적 유닛 원형. 스케일링 + 접두어 배수.</td></tr>
-            <tr style="background:rgba(217,74,92,0.06)"><td><strong>EnemyPartyTable</strong></td><td class="center">154+</td><td>PartyID</td><td>리전×헥스레벨별 적 3인 파티 편성표.</td></tr>
-            <tr style="background:rgba(78,204,163,0.06)"><td><strong>BondTable</strong></td><td class="center">85</td><td>BondID</td><td>캐릭터 간 인연 조합. 5종 보너스 발동.</td></tr>
+            <tr style="background:rgba(217,74,92,0.06)"><td><strong>EnemyPartyTable</strong></td><td class="center">61</td><td>PartyID</td><td>리전×헥스레벨별 적 3인 파티 편성표.</td></tr>
+            <tr style="background:rgba(78,204,163,0.06)"><td><strong>BondTable</strong></td><td class="center">236</td><td>BondID</td><td>캐릭터 간 인연 조합. 5종 보너스 발동.</td></tr>
           </table>
 
           <h3 class="sub-header">전투 규칙 (코드 상수)</h3>
@@ -435,26 +435,26 @@
           <div class="section-header">
             <div class="section-icon" style="background:rgba(74,144,217,0.12);">&#128100;</div>
             <h2>PlayerTable</h2>
-            <span class="tag">123행</span>
+            <span class="tag">128행</span>
           </div>
 
           <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
-            게임에 등장하는 <strong>123명 플레이어 캐릭터의 원형(템플릿)</strong>을 정의하는 마스터 테이블.
+            게임에 등장하는 <strong>128명 플레이어 캐릭터의 원형(템플릿)</strong>을 정의하는 마스터 테이블.
             각 캐릭터는 직업(F/S/M/W/L), 역할(Dealer/Tanker/Healer/Support), 소속 진영, 기본 스탯과 레벨당 성장률을 가진다.
             전투 시 이 테이블의 Base 스탯에 레벨 성장률을 곱해 실전 스탯을 계산하며,
-            SkillTable에서 해당 캐릭터 ID로 귀속된 고유 스킬(Slot 1~3)과 비전스킬(Slot 4~5)을 조회한다.
+            Skill1~3 필드가 SkillTable의 고유 스킬을 직접 참조한다. 비전스킬(Slot 4~5)은 뽑기/장착 대상이므로 서버 DB에서 런타임 관리.
           </p>
 
           <table class="tbl">
             <tr><th>필드</th><th>타입</th><th>설명</th></tr>
-            <tr><td>ID</td><td>int (PK)</td><td>캐릭터 고유 ID (1~123)</td></tr>
+            <tr><td>ID</td><td>int (PK)</td><td>캐릭터 고유 ID (1~128)</td></tr>
             <tr><td>NameKey</td><td>string</td><td>StringTable 키 (CHAR_{NNN}_NAME)</td></tr>
-            <tr><td>Rarity</td><td>int</td><td>희귀도 (1~4: ★~★★★★)</td></tr>
+            <tr><td>Rarity</td><td>int</td><td>희귀도 (2~7: ★★~C7)</td></tr>
             <tr><td>JobClass</td><td>char</td><td>직업 — F(Fighter) / S(Scout) / M(Musketeer) / W(Wizard) / L(Leader)</td></tr>
             <tr><td>Element</td><td>enum</td><td>속성 — Fire / Ice / Wind / Lightning / Dark / Light / Nature / Water / None</td></tr>
             <tr><td>Role</td><td>enum</td><td>역할 — Dealer / Tanker / Healer / Support</td></tr>
             <tr><td>Affiliation</td><td>string</td><td>소속 진영 (Reboldoeux, Coimbra, Auch, Opoluto, Bristia 등)</td></tr>
-            <tr><td>Placement</td><td>enum</td><td>배치 — front(전열) / back(후열)</td></tr>
+            <tr><td>Placement</td><td>enum</td><td>배치 — front(전열) / mid(중열) / back(후열)</td></tr>
             <tr><td>BaseHP</td><td>int</td><td>기본 체력</td></tr>
             <tr><td>BaseATK</td><td>int</td><td>기본 공격력</td></tr>
             <tr><td>BaseDEF</td><td>int</td><td>기본 방어력</td></tr>
@@ -465,20 +465,26 @@
             <tr><td>GrowthHP</td><td>int</td><td>레벨당 HP 성장</td></tr>
             <tr><td>GrowthATK</td><td>float</td><td>레벨당 ATK 성장</td></tr>
             <tr><td>GrowthDEF</td><td>float</td><td>레벨당 DEF 성장</td></tr>
+            <tr><td>Skill1</td><td>string (FK)</td><td>고유 액티브 — SkillTable 참조 (SKL_NNN_01). 기본 해금.</td></tr>
+            <tr><td>Skill2</td><td>string (FK)</td><td>고유 패시브 — SkillTable 참조 (SKL_NNN_02). 기본 해금.</td></tr>
+            <tr><td>Skill3</td><td>string (FK)</td><td>리더스킬 — SkillTable 참조 (SKL_NNN_03). 리더 슬롯 배치 시 발동.</td></tr>
             <tr><td>OpenWeek</td><td>string</td><td>해금 주차 (W01=출시, W02=2주차, ...)</td></tr>
             <tr><td>PrefabPath</td><td>string</td><td>Unity 프리팹 경로</td></tr>
+            <tr><td>PrefabPathAlt</td><td>string</td><td>대체 프리팹 경로 (스킨/변신 등)</td></tr>
+            <tr><td>PivotX</td><td>float</td><td>스프라이트 피벗 X 오프셋</td></tr>
+            <tr><td>PivotY</td><td>float</td><td>스프라이트 피벗 Y 오프셋</td></tr>
           </table>
 
           <h3 class="sub-header">직업별 분포</h3>
           <div class="card-grid-3" style="grid-template-columns: repeat(5, 1fr);">
             <div class="card" style="text-align:center">
               <h3 style="justify-content:center"><span class="badge badge-red">F Fighter</span></h3>
-              <div style="font-size:28px;font-weight:900;color:var(--accent-red)">33</div>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-red)">35</div>
               <p style="color:var(--text-dim);font-size:12px;margin-top:4px">근접 물리<br>전열 중심</p>
             </div>
             <div class="card" style="text-align:center">
               <h3 style="justify-content:center"><span class="badge badge-green">S Scout</span></h3>
-              <div style="font-size:28px;font-weight:900;color:var(--accent-green)">24</div>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-green)">26</div>
               <p style="color:var(--text-dim);font-size:12px;margin-top:4px">단검/활<br>고속·회피</p>
             </div>
             <div class="card" style="text-align:center">
@@ -488,7 +494,7 @@
             </div>
             <div class="card" style="text-align:center">
               <h3 style="justify-content:center"><span class="badge badge-purple">W Wizard</span></h3>
-              <div style="font-size:28px;font-weight:900;color:var(--accent-purple)">22</div>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-purple)">23</div>
               <p style="color:var(--text-dim);font-size:12px;margin-top:4px">마법/힐<br>원소 특화</p>
             </div>
             <div class="card" style="text-align:center">
@@ -512,6 +518,12 @@
             <p><strong>SPD:</strong> 레벨 성장 없음 (기본값 고정). 비전스킬/장비로만 변동.</p>
             <p><strong>Tier 2 스탯:</strong> CRI/CRD/RES 외 나머지(BLK, EVD, PEN, DR 등)는 기본값 0. 비전스킬로만 획득.</p>
           </div>
+
+          <div class="highlight-box">
+            <p><strong>PrefabPath:</strong> <code>FieldObject/{캐릭터명}/Prefab/{캐릭터명}</code> — Aseprite 기반 2D 스프라이트 프리팹. 기본 캐릭터는 남녀 구분(fighter_m/f), NPC 영입 캐릭터는 개별명(adelina_f, claude_m).</p>
+            <p><strong>애니메이션:</strong> idle / attack / skill / run / die — 각 프리팹 폴더 내 Animation/ 에 포함.</p>
+            <p><strong>초상화/썸네일:</strong> 추후 제작 예정. 완성 시 PortraitPath 필드 추가.</p>
+          </div>
         </div>
       </div>
     </div>
@@ -523,29 +535,26 @@
           <div class="section-header">
             <div class="section-icon" style="background:rgba(217,138,74,0.12);">&#9889;</div>
             <h2>SkillTable</h2>
-            <span class="tag">617행 (통합)</span>
+            <span class="tag">694행 (통합)</span>
           </div>
 
           <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
             플레이어·적·보스의 <strong>모든 스킬을 하나의 테이블에서 관리</strong>하는 통합 스킬 마스터 테이블.
-            세 계열(SKL/SKM/SKB)이 SkillID 접두어로 구분되며, <code>OwnerCharID=0</code>과 <code>Slot=0</code>인 스킬은
-            특정 캐릭터에 귀속되지 않는 <strong>공유 스킬</strong>(적/보스)이다.
-            EnemyTemplateTable의 SkillList 필드가 SKM ID를 참조하고, 보스 전투에서는 SKB ID를 직접 호출한다.
+            세 계열(SKL/SKM/SKB)이 SkillID 접두어로 구분된다. 순수 스킬 정의만 담고, 소유자 정보는 없다.
+            PlayerTable.Skill1~3이 SKL을 참조하고, EnemyTemplateTable.SkillList가 SKM을 참조하며, 보스 전투에서는 SKB를 직접 호출한다.
           </p>
 
           <table class="tbl">
             <tr><th>필드</th><th>타입</th><th>설명</th></tr>
-            <tr><td>SkillID</td><td>string (PK)</td><td>SKL_001~401 (플레이어) / SKM_001~260 (적) / SKB_001~009 (보스)</td></tr>
+            <tr><td>SkillID</td><td>string (PK)</td><td>SKL_001~478 (플레이어) / SKM_001~260 (적) / SKB_001~009 (보스)</td></tr>
             <tr><td>NameKey</td><td>string</td><td>StringTable 키 (SKL/SKM/SKB_NNN_NAME)</td></tr>
-            <tr><td>OwnerCharID</td><td>int</td><td>소유 캐릭터 ID (0 = 공유 스킬)</td></tr>
-            <tr><td>Slot</td><td>int</td><td>스킬 슬롯 (0 = 공유, 1~5 = 캐릭터 고유)</td></tr>
             <tr><td>Category</td><td>enum</td><td>Damage / Buff / Debuff / Heal / Passive / Summon / Special</td></tr>
-            <tr><td>TargetType</td><td>enum</td><td>SingleEnemy / AllEnemy / Self / SingleAlly / AllAlly / RandomEnemy</td></tr>
+            <tr><td>TargetType</td><td>enum</td><td>SingleEnemy / TwoEnemy / ThreeEnemy / AllEnemy / MultiEnemy / RandomTwoEnemy / RandomThreeEnemy / Self / SingleAlly / TwoAlly / AllAlly / FrontRow / BackRow</td></tr>
             <tr><td>Multiplier</td><td>float</td><td>스킬 배율 (1.0 = 100% ATK)</td></tr>
             <tr><td>Hits</td><td>int</td><td>타격 횟수 (1~5)</td></tr>
-            <tr><td>Rate</td><td>int</td><td>발동률 % (30~65)</td></tr>
+            <tr><td>Rate</td><td>int</td><td>발동률 % (15~100)</td></tr>
             <tr><td>Cooldown</td><td>int</td><td>쿨타임 (턴)</td></tr>
-            <tr><td>Effect</td><td>string</td><td>부가 효과 (출혈, 스턴, 버프 등)</td></tr>
+            <tr><td>Special</td><td>string</td><td>부가 효과 (출혈, 스턴, 버프 등)</td></tr>
             <tr><td>Confirmed</td><td>bool</td><td>기획 확정 여부</td></tr>
           </table>
 
@@ -553,8 +562,8 @@
           <div class="card-grid-3">
             <div class="card" style="text-align:center">
               <h3 style="justify-content:center"><span class="badge badge-blue">SKL 플레이어</span></h3>
-              <div style="font-size:28px;font-weight:900;color:var(--accent-blue)">401</div>
-              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">123명 캐릭터<br>고유 스킬 + 비전스킬</p>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-blue)">478</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">128명 캐릭터<br>고유 스킬 + 비전스킬</p>
             </div>
             <div class="card" style="text-align:center">
               <h3 style="justify-content:center"><span class="badge badge-red">SKM 적 공유</span></h3>
@@ -570,12 +579,12 @@
 
           <h3 class="sub-header">SKL — 플레이어 스킬 슬롯 구조</h3>
           <table class="tbl">
-            <tr><th>슬롯</th><th>종류</th><th>해금 조건</th><th>설명</th></tr>
-            <tr><td>Slot 1</td><td>고유 주력기</td><td>기본</td><td>캐릭터 정체성. 변경 불가.</td></tr>
-            <tr><td>Slot 2</td><td>고유 상황기</td><td>★3 강화</td><td>조건부/보조 스킬.</td></tr>
-            <tr><td>Slot 3</td><td>고유 궁극기</td><td>★5 해금</td><td>강력한 필살기.</td></tr>
-            <tr><td>Slot 4</td><td>비전스킬 1</td><td>★3 각성</td><td>자유 장착. 빌드 핵심.</td></tr>
-            <tr><td>Slot 5</td><td>비전스킬 2</td><td>★5 각성</td><td>자유 장착. 조합 다양성.</td></tr>
+            <tr><th>슬롯</th><th>종류</th><th>참조 위치</th><th>설명</th></tr>
+            <tr><td>Skill1</td><td>고유 액티브</td><td>PlayerTable.Skill1</td><td>기본 해금. 캐릭터 정체성.</td></tr>
+            <tr><td>Skill2</td><td>고유 패시브</td><td>PlayerTable.Skill2</td><td>기본 해금. 상시 발동 효과.</td></tr>
+            <tr><td>Skill3</td><td>리더스킬</td><td>PlayerTable.Skill3</td><td>리더 슬롯 배치 시 발동. 파티 전체 효과.</td></tr>
+            <tr><td>VisionSlot1</td><td>비전스킬 1</td><td>서버 DB (런타임)</td><td>뽑기/제작으로 획득. 자유 장착.</td></tr>
+            <tr><td>VisionSlot2</td><td>비전스킬 2</td><td>서버 DB (런타임)</td><td>뽑기/제작으로 획득. 자유 장착.</td></tr>
           </table>
 
           <h3 class="sub-header">SKM — 적 스킬 번호대 카테고리</h3>
@@ -607,7 +616,8 @@
           </table>
 
           <div class="highlight-box blue">
-            <p><strong>통합 원칙:</strong> 적 스킬도 플레이어 스킬과 동일한 스키마를 사용. <code>OwnerCharID=0</code>이면 공유 스킬, <code>Slot=0</code>이면 특정 슬롯에 귀속되지 않음.</p>
+            <p><strong>통합 원칙:</strong> 스킬은 순수 정의만. 소유자 정보 없음. 캐릭터/적 테이블에서 ID로 참조.</p>
+            <p><strong>비전스킬 획득:</strong> 뽑기 / 추출(캐릭터 분해→SKLI, 배율 70%) / 제작(재료 조합). 장착은 서버 DB에서 관리.</p>
           </div>
         </div>
       </div>
@@ -649,15 +659,9 @@
             <p>SPD는 레벨 무관 고정. 성장률은 챕터별 감소 (Ch.1: 0.04 → Ch.5: 0.02).</p>
           </div>
 
-          <h3 class="sub-header">접두어 배수 (PrefixMult)</h3>
-          <table class="tbl">
-            <tr><th>접두어</th><th>HP</th><th>ATK/DEF</th><th>최소 등급</th></tr>
-            <tr><td>(없음)</td><td>×1.0</td><td>×1.0</td><td>★1+</td></tr>
-            <tr><td>Dire</td><td>×1.5</td><td>×1.3</td><td>★2+</td></tr>
-            <tr><td>Alpha</td><td>×2.0</td><td>×1.6</td><td>★3+</td></tr>
-            <tr><td>Elder</td><td>×3.0</td><td>×2.0</td><td>★4+</td></tr>
-            <tr><td>King</td><td>×5.0</td><td>×2.5</td><td>★5</td></tr>
-          </table>
+          <div class="highlight-box green">
+            <p><strong>접두어 배수:</strong> <a href="#" onclick="showTab('rules');return false" style="color:var(--accent-cyan)">전투 규칙 → 성급/접두어 배수</a> 탭 참조. 중복 정의 방지.</p>
+          </div>
 
           <h3 class="sub-header">10대 종족 분포</h3>
           <div class="card-grid-3">
@@ -683,7 +687,7 @@
           <div class="section-header">
             <div class="section-icon" style="background:rgba(217,74,92,0.12);">&#9876;</div>
             <h2>EnemyPartyTable</h2>
-            <span class="tag">154+행</span>
+            <span class="tag">61행</span>
           </div>
 
           <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
@@ -740,7 +744,7 @@
           <div class="section-header">
             <div class="section-icon" style="background:rgba(78,204,163,0.12);">&#128149;</div>
             <h2>BondTable</h2>
-            <span class="tag">85행</span>
+            <span class="tag">236행</span>
           </div>
 
           <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
@@ -750,7 +754,7 @@
 
           <table class="tbl">
             <tr><th>필드</th><th>타입</th><th>설명</th></tr>
-            <tr><td>BondID</td><td>string (PK)</td><td>BOND_0001 ~ BOND_0085</td></tr>
+            <tr><td>BondID</td><td>string (PK)</td><td>BOND_0001 ~ BOND_0236</td></tr>
             <tr><td>CharA</td><td>int (FK)</td><td>PlayerTable ID 참조 (캐릭터 A)</td></tr>
             <tr><td>CharB</td><td>int (FK)</td><td>PlayerTable ID 참조 (캐릭터 B)</td></tr>
             <tr><td>BondType</td><td>enum</td><td>Comrade / Rival / Family / Mentor / Lovers</td></tr>
@@ -772,17 +776,17 @@
           <div class="card-grid-3">
             <div class="card" style="text-align:center">
               <h3 style="justify-content:center"><span class="badge badge-gold">S 등급</span></h3>
-              <div style="font-size:28px;font-weight:900;color:var(--gold)">20</div>
+              <div style="font-size:28px;font-weight:900;color:var(--gold)">21</div>
               <p style="color:var(--text-dim);font-size:12px;margin-top:4px">원작 퀘스트/스토리<br>확실한 근거</p>
             </div>
             <div class="card" style="text-align:center">
               <h3 style="justify-content:center"><span class="badge badge-blue">A 등급</span></h3>
-              <div style="font-size:28px;font-weight:900;color:var(--accent-blue)">42</div>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-blue)">74</div>
               <p style="color:var(--text-dim);font-size:12px;margin-top:4px">원작 설정/대사<br>높은 신뢰도</p>
             </div>
             <div class="card" style="text-align:center">
               <h3 style="justify-content:center"><span class="badge badge-purple">B 등급</span></h3>
-              <div style="font-size:28px;font-weight:900;color:var(--accent-purple)">23</div>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-purple)">141</div>
               <p style="color:var(--text-dim);font-size:12px;margin-top:4px">소속/진영 기반<br>추론 관계</p>
             </div>
           </div>
@@ -1148,10 +1152,10 @@ void OnCCExpired(Unit unit, CCType ccType)
           <table class="tbl">
             <tr><th>접두어</th><th class="center">HP</th><th class="center">ATK/DEF</th><th class="center">최소 강도</th></tr>
             <tr><td>(없음)</td><td class="center">×1.0</td><td class="center">×1.0</td><td class="center">★1+</td></tr>
-            <tr><td>Dire</td><td class="center">×1.3</td><td class="center">×1.3</td><td class="center">★2+</td></tr>
-            <tr><td>Alpha</td><td class="center">×1.6</td><td class="center">×1.6</td><td class="center">★3+</td></tr>
-            <tr><td>Elder</td><td class="center">×2.0</td><td class="center">×2.0</td><td class="center">★4+</td></tr>
-            <tr><td>King</td><td class="center">×2.5</td><td class="center">×2.5</td><td class="center">★5</td></tr>
+            <tr><td>Dire</td><td class="center">×1.5</td><td class="center">×1.3</td><td class="center">★2+</td></tr>
+            <tr><td>Alpha</td><td class="center">×2.0</td><td class="center">×1.6</td><td class="center">★3+</td></tr>
+            <tr><td>Elder</td><td class="center">×3.0</td><td class="center">×2.0</td><td class="center">★4+</td></tr>
+            <tr><td>King</td><td class="center">×5.0</td><td class="center">×2.5</td><td class="center">★5</td></tr>
           </table>
 
           <h3 class="sub-header">역할별 기본 Tier 2 스탯</h3>
