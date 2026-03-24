@@ -1372,11 +1372,15 @@
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ TerrainID → <strong>TerrainTable</strong> (14행) : 지형 속성<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ StructureID → <strong>StructureTable</strong> (47행) : 구조물 상세<br>
                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├─ ResourceCode → <strong>ResourceTable</strong> (25행) : 자원 생산 규칙<br>
-                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ RegionID+HexLevel → <strong>EnemyPartyTable</strong> (154+행) → <strong>EnemyTemplateTable</strong> (108행)
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ RegionID+HexLevel → <strong>EnemyPartyTable</strong> (154+행) → <strong>EnemyTemplateTable</strong> (108행)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└─ SkillList → <strong>SkillTable</strong> (617행) : 통합 스킬
               </p>
             </div>
+            <div class="highlight-box green" style="margin-top:8px">
+              <p><strong>전투 배경:</strong> 별도 테이블 없음. <code>bg_field_{OutpostID:02d}{지형코드}</code> 네이밍 규칙으로 런타임 매핑. 상세 목록은 bg_art_spec.md 참조.</p>
+            </div>
 
-            <h3 class="sub-header">테이블 목록 (7개 + StringTable)</h3>
+            <h3 class="sub-header">테이블 목록 (8개 + StringTable)</h3>
             <table class="tbl">
               <tr><th>파일</th><th>행 수</th><th>PK</th><th>역할</th></tr>
               <tr style="background:rgba(212,168,67,0.08)"><td><strong>WorldHexTable ★</strong></td><td>1,060</td><td>HexID</td><td>월드맵 마스터 테이블. 모든 게임 헥스의 좌표·리전·지형·레벨·자원·구조물을 한 행에 정의. 다른 테이블은 이 테이블의 FK를 참조하는 속성 테이블.</td></tr>
@@ -1386,7 +1390,8 @@
               <tr><td><strong>EnemyPartyTable</strong></td><td>154+</td><td>PartyID</td><td>실제 전투에서 플레이어와 맞붙는 적 파티 편성표. 리전+헥스레벨 조합마다 A/B/C 파티가 랜덤 등장하며, 각 슬롯에 EnemyTemplate ID를 배치.</td></tr>
               <tr><td><strong>TerrainTable</strong></td><td>14</td><td>TerrainID</td><td>헥스 타일의 지형 속성 정의. 이동 가능 여부·이동 시간·피로도 소모·전투 스탯 보정을 결정해, 탐색 경로 선택과 전투 난이도에 직접 영향.</td></tr>
               <tr><td><strong>ResourceTable</strong></td><td>25</td><td>ID</td><td>점령한 헥스에서 시간 경과로 자동 생산되는 자원의 종류·등급·생산량·정제 규칙. 경제 시스템(건설·업그레이드·교역)의 재화 공급원.</td></tr>
-              <tr><td><strong>StringTable_KR</strong></td><td>430</td><td>Key</td><td>모든 테이블의 표시용 텍스트를 분리 관리하는 다국어 테이블. 테이블에는 Key만 저장하고 런타임에 언어별 StringTable에서 실제 텍스트를 로드.</td></tr>
+              <tr><td><strong>SkillTable</strong></td><td>617</td><td>SkillID</td><td>플레이어·적·보스 스킬을 하나로 통합 관리하는 마스터 스킬 테이블. SKL(플레이어 401) + SKM(적 공유 207) + SKB(보스 9). EnemyTemplateTable의 SkillList가 이 테이블의 SKM ID를 참조.</td></tr>
+              <tr><td><strong>StringTable_KR</strong></td><td>1,461</td><td>Key</td><td>모든 테이블의 표시용 텍스트를 분리 관리하는 다국어 테이블. 테이블에는 Key만 저장하고 런타임에 언어별 StringTable에서 실제 텍스트를 로드.</td></tr>
             </table>
           </div>
 
@@ -1566,7 +1571,7 @@
               <tr><td>Tier</td><td>int</td><td>1~7 (강도 단계)</td></tr>
               <tr><td>Role</td><td>enum</td><td>Dealer / Tanker / Support / Leader</td></tr>
               <tr><td>BaseHP/ATK/DEF/SPD</td><td>int</td><td>기본 스탯 (스케일링 전)</td></tr>
-              <tr><td>SkillList</td><td>string</td><td>영문 스킬코드 콤마 구분 (BITE,ROAR,...)</td></tr>
+              <tr><td>SkillList</td><td>string</td><td>SKM ID 콤마 구분 (SKM_007,SKM_100,...) — SkillTable 참조</td></tr>
               <tr><td>MinStrength</td><td>int</td><td>최소 등장 리전 강도</td></tr>
               <tr><td>Element</td><td>enum</td><td>None/Fire/Ice/Dark/Light/Nature/Water</td></tr>
               <tr><td>AIValue</td><td>int</td><td>파티 편성 예산 단위</td></tr>
@@ -1627,6 +1632,76 @@
               <tr><td>Slot1~3Role</td><td>enum</td><td>Dealer / Tanker / Support / Leader</td></tr>
               <tr><td>FormationType</td><td>enum</td><td>Balanced / Offensive / Defensive / Leader / SingleRace</td></tr>
             </table>
+          </div>
+
+          <!-- SkillTable -->
+          <div class="section">
+            <div class="section-header">
+              <div class="section-icon" style="background:rgba(217,138,74,0.12);">&#9889;</div>
+              <h2>SkillTable</h2>
+              <span class="tag">617행 (통합)</span>
+            </div>
+
+            <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+              플레이어·적·보스의 <strong>모든 스킬을 하나의 테이블에서 관리</strong>하는 통합 스킬 마스터 테이블.
+              세 계열(SKL/SKM/SKB)이 SkillID 접두어로 구분되며, <code>OwnerCharID=0</code>과 <code>Slot=0</code>인 스킬은
+              특정 캐릭터에 귀속되지 않는 <strong>공유 스킬</strong>(적/보스)이다.
+              EnemyTemplateTable의 SkillList 필드가 SKM ID를 참조하고, 보스 전투에서는 SKB ID를 직접 호출한다.
+            </p>
+
+            <table class="tbl">
+              <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+              <tr><td>SkillID</td><td>string (PK)</td><td>SKL_001~401 (플레이어) / SKM_001~260 (적) / SKB_001~009 (보스)</td></tr>
+              <tr><td>NameKey</td><td>string</td><td>StringTable 키 (SKL/SKM/SKB_NNN_NAME)</td></tr>
+              <tr><td>OwnerCharID</td><td>int</td><td>소유 캐릭터 ID (0 = 공유 스킬)</td></tr>
+              <tr><td>Slot</td><td>int</td><td>스킬 슬롯 (0 = 공유, 1~5 = 캐릭터 고유)</td></tr>
+              <tr><td>Category</td><td>enum</td><td>Damage / Buff / Debuff / Heal / Passive / Summon / Special</td></tr>
+              <tr><td>TargetType</td><td>enum</td><td>SingleEnemy / AllEnemy / Self / SingleAlly / AllAlly / RandomEnemy</td></tr>
+              <tr><td>Multiplier</td><td>float</td><td>스킬 배율 (1.0 = 100% ATK)</td></tr>
+              <tr><td>Hits</td><td>int</td><td>타격 횟수 (1~5)</td></tr>
+              <tr><td>Rate</td><td>int</td><td>발동률 % (30~65)</td></tr>
+              <tr><td>Cooldown</td><td>int</td><td>쿨타임 (턴)</td></tr>
+              <tr><td>Effect</td><td>string</td><td>부가 효과 (출혈, 스턴, 버프 등)</td></tr>
+              <tr><td>Confirmed</td><td>bool</td><td>기획 확정 여부</td></tr>
+            </table>
+
+            <h3 class="sub-header">3계열 스킬 분포</h3>
+            <div class="card-grid-3">
+              <div class="card" style="text-align:center">
+                <h3 style="justify-content:center"><span class="badge badge-blue">SKL 플레이어</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-blue)">401</div>
+                <p style="color:var(--text-dim);font-size:12px;margin-top:4px">123명 캐릭터<br>고유 + 비전스킬</p>
+              </div>
+              <div class="card" style="text-align:center">
+                <h3 style="justify-content:center"><span class="badge badge-red">SKM 적 공유</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-red)">207</div>
+                <p style="color:var(--text-dim);font-size:12px;margin-top:4px">10종족 공통<br>물기/돌진/브레스 등</p>
+              </div>
+              <div class="card" style="text-align:center">
+                <h3 style="justify-content:center"><span class="badge badge-purple">SKB 보스</span></h3>
+                <div style="font-size:28px;font-weight:900;color:var(--accent-purple)">9</div>
+                <p style="color:var(--text-dim);font-size:12px;margin-top:4px">던전 보스 전용<br>전멸기/광역 CC</p>
+              </div>
+            </div>
+
+            <h3 class="sub-header">SKM 번호대 카테고리</h3>
+            <table class="tbl">
+              <tr><th>번호대</th><th>카테고리</th><th>대표 스킬</th></tr>
+              <tr><td>001~039</td><td>근접 기본</td><td>물기, 할퀴기, 찌르기</td></tr>
+              <tr><td>040~069</td><td>원거리 기본</td><td>던지기, 독침 발사, 거미줄</td></tr>
+              <tr><td>070~099</td><td>브레스/원소</td><td>화염 브레스, 냉기 브레스, 독안개</td></tr>
+              <tr><td>100~129</td><td>디버프</td><td>공포의 포효, 마비 독, 저주</td></tr>
+              <tr><td>130~159</td><td>방어/버프</td><td>껍질 강화, 군체 결속, 전투 지휘</td></tr>
+              <tr><td>160~179</td><td>회복</td><td>재생, 흡혈, 포자 치유</td></tr>
+              <tr><td>180~199</td><td>소환</td><td>유충 소환, 해골 소환, 분열</td></tr>
+              <tr><td>200~229</td><td>광역/지형</td><td>지진, 낙석, 용암 분출</td></tr>
+              <tr><td>230~260</td><td>특수</td><td>은신, 자폭, 용의 위엄</td></tr>
+            </table>
+
+            <div class="highlight-box blue">
+              <p><strong>통합 원칙:</strong> 적 스킬도 플레이어 스킬과 동일한 스키마를 사용. <code>OwnerCharID=0</code>이면 공유 스킬, <code>Slot=0</code>이면 특정 슬롯에 귀속되지 않음.</p>
+              <p><strong>보스 스킬(SKB):</strong> 던전 보스 전용. 광역 CC, 전멸기, 페이즈 전환 등 일반 적과 차별화된 강력한 효과.</p>
+            </div>
           </div>
 
           <!-- TerrainTable -->
@@ -1760,7 +1835,7 @@ string name = StringTable.Get(region.NameKey); // "퀸즈게이트"</div>
             <div class="section-header">
               <div class="section-icon" style="background:rgba(74,204,217,0.12);">&#127760;</div>
               <h2>StringTable_KR</h2>
-              <span class="tag">430키</span>
+              <span class="tag">1,461키</span>
             </div>
 
             <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
@@ -1776,11 +1851,12 @@ string name = StringTable.Get(region.NameKey); // "퀸즈게이트"</div>
               <tr><td>리전 보스</td><td>REGION_R{N}_BOSS</td><td>42</td><td>REGION_R01_BOSS → 대형 거미 여왕</td></tr>
               <tr><td>구조물명</td><td>STRUCT_{ID}_NAME</td><td>47</td><td>STRUCT_1_NAME → 퀸즈게이트 거점</td></tr>
               <tr><td>적 이름</td><td>ENEMY_{ID}_NAME</td><td>108</td><td>ENEMY_B01_NAME → 야생견</td></tr>
-              <tr><td>스킬명</td><td>SKILL_{CODE}</td><td>155</td><td>SKILL_BITE → 물기</td></tr>
+              <tr><td>플레이어 스킬</td><td>SKL_{NNN}_NAME</td><td>401</td><td>SKL_001_NAME → 정밀 사격</td></tr>
+              <tr><td>적 스킬</td><td>SKM_{NNN}_NAME</td><td>207</td><td>SKM_007_NAME → 물기</td></tr>
+              <tr><td>보스 스킬</td><td>SKB_{NNN}_NAME</td><td>9</td><td>SKB_001_NAME → 공포의 포효</td></tr>
               <tr><td>지형명</td><td>TERRAIN_{N}_NAME</td><td>14</td><td>TERRAIN_1_NAME → 초원</td></tr>
               <tr><td>자원명</td><td>RES_{CODE}_NAME/DESC</td><td>10</td><td>RES_IRON_NAME → 철광석</td></tr>
               <tr><td>자원 등급</td><td>HEXRES_GRADE{N}_NAME/PREFIX</td><td>10</td><td>HEXRES_GRADE3_PREFIX → 정제된~</td></tr>
-              <tr><td>전투필드</td><td>BFIELD_{N}_NAME/DESC</td><td>2</td><td>BFIELD_1_NAME → 기본 전투 필드</td></tr>
             </table>
 
             <div class="highlight-box blue">
