@@ -1366,14 +1366,14 @@
 
             <h3 class="sub-header">테이블 목록 (6개 + StringTable)</h3>
             <table class="tbl">
-              <tr><th>파일</th><th>행 수</th><th>PK</th><th>용도</th></tr>
-              <tr><td><strong>RegionTable</strong></td><td>42</td><td>RegionID</td><td>42 리전 정의 (챕터, 강도, 자원, 적 종족)</td></tr>
-              <tr><td><strong>StructureTable</strong></td><td>47</td><td>StructureID</td><td>거점13 + 던전7 + 도시3 + 관문24</td></tr>
-              <tr><td><strong>EnemyTemplateTable</strong></td><td>108</td><td>ID (B01~X08)</td><td>적 기본 스탯, 스킬, AI Value</td></tr>
-              <tr><td><strong>EnemyPartyTable</strong></td><td>154+</td><td>PartyID</td><td>리전×헥스레벨별 3v3 파티 편성</td></tr>
-              <tr><td><strong>TerrainTable</strong></td><td>14</td><td>TerrainID</td><td>지형별 이동시간, 피로도, 전투 보정</td></tr>
-              <tr><td><strong>ResourceTable</strong></td><td>25</td><td>ID</td><td>5자원 × 5등급 (생산량, 정제, 슬롯비용)</td></tr>
-              <tr><td><strong>StringTable_KR</strong></td><td>430</td><td>Key</td><td>한국어 텍스트 (다국어 확장용)</td></tr>
+              <tr><th>파일</th><th>행 수</th><th>PK</th><th>역할</th></tr>
+              <tr><td><strong>RegionTable</strong></td><td>42</td><td>RegionID</td><td>월드맵의 최상위 영역 단위. 각 리전이 어떤 챕터에 속하고, 난이도·자원·적 종족이 뭔지 정의한다. 탐색/점령/자원 시스템이 모두 이 테이블을 기준으로 동작.</td></tr>
+              <tr><td><strong>StructureTable</strong></td><td>47</td><td>StructureID</td><td>맵 위에 배치되는 모든 구조물(거점·던전·도시·관문)의 위치와 타입. 피로 회복, 보스 레이드, 상점, 리전 연결 등 구조물별 기능 분기의 기준 테이블.</td></tr>
+              <tr><td><strong>EnemyTemplateTable</strong></td><td>108</td><td>ID (B01~X08)</td><td>개별 적 유닛의 원형(템플릿) 정의. 종족·등급·역할·기본 스탯·스킬을 갖고 있으며, EnemyPartyTable에서 이 ID를 참조해 3인 파티를 조합한다.</td></tr>
+              <tr><td><strong>EnemyPartyTable</strong></td><td>154+</td><td>PartyID</td><td>실제 전투에서 플레이어와 맞붙는 적 파티 편성표. 리전+헥스레벨 조합마다 A/B/C 파티가 랜덤 등장하며, 각 슬롯에 EnemyTemplate ID를 배치.</td></tr>
+              <tr><td><strong>TerrainTable</strong></td><td>14</td><td>TerrainID</td><td>헥스 타일의 지형 속성 정의. 이동 가능 여부·이동 시간·피로도 소모·전투 스탯 보정을 결정해, 탐색 경로 선택과 전투 난이도에 직접 영향.</td></tr>
+              <tr><td><strong>ResourceTable</strong></td><td>25</td><td>ID</td><td>점령한 헥스에서 시간 경과로 자동 생산되는 자원의 종류·등급·생산량·정제 규칙. 경제 시스템(건설·업그레이드·교역)의 재화 공급원.</td></tr>
+              <tr><td><strong>StringTable_KR</strong></td><td>430</td><td>Key</td><td>모든 테이블의 표시용 텍스트를 분리 관리하는 다국어 테이블. 테이블에는 Key만 저장하고 런타임에 언어별 StringTable에서 실제 텍스트를 로드.</td></tr>
             </table>
           </div>
 
@@ -1384,6 +1384,12 @@
               <h2>RegionTable</h2>
               <span class="tag">42행</span>
             </div>
+
+            <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+              월드맵을 구성하는 <strong>42개 리전(영역)</strong>의 마스터 테이블. 6개 챕터에 걸쳐 분포하며, 각 리전은 고유한 난이도(Strength 1~5), 주/부 자원, 주/부 적 종족을 가진다.
+              클라이언트가 월드맵을 렌더링할 때 이 테이블로 리전 경계·아이콘·색상을 결정하고, 탐색 시스템은 Strength와 LvDistribution을 기반으로 헥스별 적 레벨과 자원 등급을 생성한다.
+              점령 슬롯 상한도 이 테이블 단위로 계산된다.
+            </p>
 
             <table class="tbl">
               <tr><th>필드</th><th>타입</th><th>설명</th></tr>
@@ -1414,6 +1420,13 @@
               <h2>StructureTable</h2>
               <span class="tag">47행</span>
             </div>
+
+            <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+              월드맵에 고정 배치되는 <strong>47개 구조물</strong>의 위치·타입·소속 정보. 구조물은 일반 헥스와 달리 점령 슬롯을 소모하지 않으며, 타입별로 고유 기능을 제공한다:
+              <strong>Fort(거점)</strong>는 피로 100% 회복 + 주둔 방어 거점, <strong>City(도시)</strong>는 상점·정제소·피로 회복,
+              <strong>Dungeon(던전)</strong>은 보스 레이드 입장 지점, <strong>Gate(관문)</strong>은 리전 간 이동 통로로 점령해야 다음 리전에 진입할 수 있다.
+              HexQ/HexR 좌표는 Unity Tilemap에 <code>Vector3Int(q, r, 0)</code>으로 직접 매핑된다.
+            </p>
 
             <table class="tbl">
               <tr><th>필드</th><th>타입</th><th>설명</th></tr>
@@ -1458,6 +1471,13 @@
               <h2>EnemyTemplateTable</h2>
               <span class="tag">108행</span>
             </div>
+
+            <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+              게임에 등장하는 <strong>108종 적 유닛의 원형(템플릿)</strong>을 정의하는 테이블. 10개 종족(야수·곤충·언데드 등) × 최대 16종으로 구성되며,
+              각 템플릿은 기본 스탯(HP/ATK/DEF/SPD)·스킬 목록·역할(Dealer/Tanker/Support/Leader)·최소 등장 강도를 가진다.
+              이 테이블 자체는 "설계도"이며, 실전 스탯은 <strong>헥스 레벨에 따른 스케일링 공식</strong>과 <strong>접두어(Dire/Alpha/Elder/King) 배수</strong>를 곱해 결정된다.
+              EnemyPartyTable이 이 ID를 참조해 3인 파티를 편성한다.
+            </p>
 
             <table class="tbl">
               <tr><th>필드</th><th>타입</th><th>설명</th></tr>
@@ -1511,6 +1531,12 @@
               <span class="tag">154+행</span>
             </div>
 
+            <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+              플레이어가 헥스에서 조우하는 <strong>적 파티의 실제 편성표</strong>. 리전(RegionID) × 헥스 레벨(1~5) 조합마다 A/B/C 세 종류의 파티가 정의되어 있고,
+              전투 진입 시 이 중 하나가 랜덤 선택된다. 각 파티는 Slot1~3에 EnemyTemplateTable의 ID를 배치하며, 역할 조합(Balanced/Offensive/Defensive 등)에 따라
+              전투 체감 난이도가 달라진다. 리전의 주 적 종족이 우선 배치되고, 부 종족이 보조로 섞이는 구조.
+            </p>
+
             <table class="tbl">
               <tr><th>필드</th><th>타입</th><th>설명</th></tr>
               <tr><td>PartyID</td><td>int (PK)</td><td>파티 고유 ID (1001~)</td></tr>
@@ -1531,6 +1557,13 @@
               <h2>TerrainTable</h2>
               <span class="tag">14행</span>
             </div>
+
+            <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+              월드맵 헥스 타일에 부여되는 <strong>14종 지형의 속성 정의</strong>. 지형은 탐색과 전투 양쪽에 영향을 준다:
+              <strong>탐색</strong> — 이동 가능 여부(Movable), 이동 소요 시간(MoveTimeSec), 피로도 소모(FatigueCost), 점령 가능 여부(Capturable)를 결정.
+              <strong>전투</strong> — ATK/DEF/SPD 보정값과 속성 보너스(화염·빙결 등)를 적용해, 같은 적이라도 지형에 따라 전투 난이도가 달라진다.
+              예를 들어 산악 지형은 이동이 느리고 피로 소모가 크지만 DEF 보정이 높고, 사막은 화염 속성 보너스가 붙는다.
+            </p>
 
             <table class="tbl">
               <tr><th>필드</th><th>타입</th><th>설명</th></tr>
@@ -1559,6 +1592,13 @@
               <h2>ResourceTable</h2>
               <span class="tag">25행 (5자원×5등급)</span>
             </div>
+
+            <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+              헥스 점령 후 <strong>시간 경과로 자동 생산되는 자원</strong>의 마스터 테이블. 5종 자원(철광석·목재·석재·곡물·약초) × 5등급 = 25행으로 구성된다.
+              등급은 헥스 레벨과 1:1 대응하며, 상위 등급일수록 분당 생산량과 가치 배수가 높지만 점령 슬롯을 더 많이 소모한다.
+              하위 등급 자원 3개를 상위 1개로 <strong>정제(Refine)</strong>할 수 있으며, 정제는 도시(City) 구조물에서만 가능하다.
+              건설·업그레이드·교역 등 게임 내 경제 시스템의 핵심 재화 공급원이 이 테이블에서 결정된다.
+            </p>
 
             <table class="tbl">
               <tr><th>필드</th><th>타입</th><th>설명</th></tr>
@@ -1594,6 +1634,13 @@
               <h2>헥스 좌표계 규칙</h2>
               <span class="tag">Unity 호환</span>
             </div>
+
+            <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+              월드맵의 모든 헥스 타일과 구조물은 <strong>Flat-top odd-q offset 좌표계</strong>를 사용한다.
+              이 좌표계는 Unity의 <code>Hexagonal Flat Top</code> Tilemap과 직접 호환되므로,
+              테이블의 (HexQ, HexR) 값을 <code>Vector3Int(q, r, 0)</code>으로 변환 없이 바로 사용할 수 있다.
+              이웃 헥스를 탐색할 때는 <strong>홀수/짝수 열(q)</strong>에 따라 6방향 오프셋이 다르므로 반드시 분기 처리해야 한다.
+            </p>
 
             <div class="highlight-box">
               <p><strong>Flat-top odd-q offset</strong> — Unity Hexagonal Flat Top Tilemap 호환.</p>
@@ -1636,6 +1683,13 @@ string name = StringTable.Get(region.NameKey); // "퀸즈게이트"</div>
               <h2>StringTable_KR</h2>
               <span class="tag">430키</span>
             </div>
+
+            <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+              모든 데이터테이블에서 사용하는 <strong>표시용 텍스트를 중앙 관리</strong>하는 다국어 지원 테이블.
+              다른 테이블에는 한글을 직접 넣지 않고 NameKey/DescKey 같은 문자열 키만 저장한 뒤, 런타임에 이 테이블에서 실제 텍스트를 조회한다.
+              다국어 확장 시 StringTable_EN.xml, StringTable_JP.xml 등을 동일한 Key 구조로 추가하면 되며,
+              언어 설정에 따라 로드할 파일만 변경하면 모든 UI 텍스트가 자동으로 전환된다.
+            </p>
 
             <table class="tbl">
               <tr><th>카테고리</th><th>키 패턴</th><th>수량</th><th>예시</th></tr>
