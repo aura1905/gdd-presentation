@@ -350,11 +350,11 @@
       <div class="date">v1.0 | 2026.03.24</div>
 
       <div class="summary-bar">
-        <div class="summary-item"><span class="num">4</span><span class="label">테이블</span></div>
+        <div class="summary-item"><span class="num">5</span><span class="label">테이블</span></div>
         <div class="summary-item"><span class="num">123</span><span class="label">캐릭터</span></div>
-        <div class="summary-item"><span class="num">108</span><span class="label">적 템플릿</span></div>
         <div class="summary-item"><span class="num">617</span><span class="label">스킬</span></div>
-        <div class="summary-item"><span class="num">154+</span><span class="label">적 파티</span></div>
+        <div class="summary-item"><span class="num">85</span><span class="label">인연</span></div>
+        <div class="summary-item"><span class="num">10</span><span class="label">전투 규칙</span></div>
       </div>
     </div>
 
@@ -365,6 +365,8 @@
       <a class="nav-item" onclick="showTab('skill')">SkillTable</a>
       <a class="nav-item" onclick="showTab('enemy')">EnemyTemplateTable</a>
       <a class="nav-item" onclick="showTab('party')">EnemyPartyTable</a>
+      <a class="nav-item" onclick="showTab('bond')">BondTable</a>
+      <a class="nav-item" onclick="showTab('rules')">전투 규칙</a>
     </div>
 
     <!-- TAB: 총괄 -->
@@ -374,35 +376,53 @@
           <div class="section-header">
             <div class="section-icon" style="background:rgba(212,168,67,0.12);">&#9876;</div>
             <h2>전투 데이터테이블 총괄</h2>
-            <span class="tag">4개 테이블</span>
+            <span class="tag">5개 테이블 + 전투 규칙</span>
           </div>
 
           <div class="highlight-box">
             <p><strong>경로:</strong> <code>Assets/ClientCore/Resources/Datatables/</code></p>
-            <p><strong>원칙:</strong> 전투에 관여하는 모든 유닛(아군/적/보스)과 스킬을 4개 테이블로 정의. 월드맵/필드 테이블은 <a href="../field-battle/" style="color:var(--accent-cyan)">필드 전투 시스템</a> 문서 참조.</p>
+            <p><strong>원칙:</strong> 유닛·스킬·인연은 XML 데이터테이블, 데미지 공식·상성 등 고정 규칙은 코드 상수로 관리. 월드맵/필드 테이블은 <a href="../field-battle/" style="color:var(--accent-cyan)">필드 전투 시스템</a> 문서 참조.</p>
           </div>
 
           <h3 class="sub-header">테이블 관계도</h3>
-          <div class="flow-box">PlayerTable (123행) ──── SkillID → SkillTable (SKL 401종)
-      │                              ↑
-      │                    SkillList → SkillTable (SKM 207종)
-      │                              ↑
-      └── vs ── EnemyPartyTable (154+행) → EnemyTemplateTable (108행)
-                                           ↑
-                                  보스 전투 → SkillTable (SKB 9종)</div>
+          <div class="flow-box">PlayerTable (123행) ──┬── SkillID → SkillTable (SKL 401종)
+      │                │                     ↑
+      │                │           SkillList → SkillTable (SKM 207종)
+      │                │                     ↑
+      └── vs ──────────┤  EnemyPartyTable (154+행) → EnemyTemplateTable (108행)
+                       │                                ↑
+                       │                       보스 전투 → SkillTable (SKB 9종)
+                       │
+                       └── CharA + CharB → BondTable (85행) → 인연 보너스 적용</div>
 
           <h3 class="sub-header">테이블 목록</h3>
           <table class="tbl">
             <tr><th>파일</th><th class="center">행 수</th><th>PK</th><th>역할</th></tr>
-            <tr style="background:rgba(74,144,217,0.06)"><td><strong>PlayerTable</strong></td><td class="center">123</td><td>ID</td><td>플레이어 캐릭터 123명의 기본 스탯·직업·역할·성장률·소속. 전투 시 아군 유닛의 원형 데이터.</td></tr>
-            <tr style="background:rgba(217,138,74,0.06)"><td><strong>SkillTable</strong></td><td class="center">617</td><td>SkillID</td><td>플레이어(SKL) + 적(SKM) + 보스(SKB) 스킬 통합. 배율·발동률·쿨타임·효과를 한 테이블에서 관리.</td></tr>
-            <tr style="background:rgba(217,74,92,0.06)"><td><strong>EnemyTemplateTable</strong></td><td class="center">108</td><td>ID</td><td>10종족 × 최대 16종 적 유닛 원형. 기본 스탯 + SKM 스킬 참조. 헥스 레벨로 스케일링.</td></tr>
-            <tr style="background:rgba(217,74,92,0.06)"><td><strong>EnemyPartyTable</strong></td><td class="center">154+</td><td>PartyID</td><td>리전×헥스레벨 조합별 적 3인 파티 편성표. A/B/C 랜덤 선택.</td></tr>
+            <tr style="background:rgba(74,144,217,0.06)"><td><strong>PlayerTable</strong></td><td class="center">123</td><td>ID</td><td>캐릭터 123명의 기본 스탯·직업·역할·성장률·소속.</td></tr>
+            <tr style="background:rgba(217,138,74,0.06)"><td><strong>SkillTable</strong></td><td class="center">617</td><td>SkillID</td><td>플레이어(SKL 401) + 적(SKM 207) + 보스(SKB 9) 통합.</td></tr>
+            <tr style="background:rgba(217,74,92,0.06)"><td><strong>EnemyTemplateTable</strong></td><td class="center">108</td><td>ID</td><td>10종족 적 유닛 원형. 스케일링 + 접두어 배수.</td></tr>
+            <tr style="background:rgba(217,74,92,0.06)"><td><strong>EnemyPartyTable</strong></td><td class="center">154+</td><td>PartyID</td><td>리전×헥스레벨별 적 3인 파티 편성표.</td></tr>
+            <tr style="background:rgba(78,204,163,0.06)"><td><strong>BondTable</strong></td><td class="center">85</td><td>BondID</td><td>캐릭터 간 인연 조합. 5종 보너스 발동.</td></tr>
+          </table>
+
+          <h3 class="sub-header">전투 규칙 (코드 상수)</h3>
+          <table class="tbl">
+            <tr><th>규칙</th><th>성격</th><th>구현 위치</th></tr>
+            <tr><td>데미지 파이프라인 (13단계)</td><td>고정 공식</td><td>damage_pipeline</td></tr>
+            <tr><td>병종 상성 (5각)</td><td>고정 매트릭스</td><td>combat_engine</td></tr>
+            <tr><td>속성 상성 (원소 순환)</td><td>고정 매트릭스</td><td>damage_pipeline</td></tr>
+            <tr><td>역할 상성 (D>S>T)</td><td>고정 배수</td><td>damage_pipeline</td></tr>
+            <tr><td>피로도</td><td>단계별 감쇠</td><td>fatigue</td></tr>
+            <tr><td>CC/상태이상</td><td>우선순위 + 면역</td><td>buff_handler</td></tr>
+            <tr><td>인연 보너스 수치</td><td>고정 5종</td><td>config</td></tr>
+            <tr><td>편성 보너스</td><td>조합 조건부</td><td>config</td></tr>
+            <tr><td>접두어 배수</td><td>고정 5단계</td><td>config</td></tr>
+            <tr><td>성급 배수</td><td>고정 10단계</td><td>config</td></tr>
           </table>
 
           <div class="highlight-box green">
             <p><strong>전투 배경:</strong> 별도 테이블 없음. <code>bg_field_{OutpostID:02d}{지형코드}</code> 네이밍 규칙으로 런타임 매핑.</p>
-            <p><strong>StringTable 키:</strong> 캐릭터명(CHAR), 적 이름(ENEMY), 스킬명(SKL/SKM/SKB) 등 전투 관련 표시 텍스트는 StringTable_KR.xml에서 관리.</p>
+            <p><strong>참조:</strong> <code>Tools/battle_simulator/config.json</code>에 모든 전투 상수 정의. 시뮬레이터에서 검증 완료된 수치.</p>
           </div>
         </div>
       </div>
@@ -710,6 +730,445 @@
 
 범위: 1001 (R1-Lv1-A) ~ 42053 (R42-Lv5-C)</div>
         </div>
+      </div>
+    </div>
+
+    <!-- TAB: BondTable -->
+    <div class="tab-content" id="tab-bond">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(78,204,163,0.12);">&#128149;</div>
+            <h2>BondTable</h2>
+            <span class="tag">85행</span>
+          </div>
+
+          <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+            캐릭터 간 <strong>인연(Bond) 관계</strong>를 정의하는 테이블. 같은 파티에 인연 관계인 캐릭터 2명이 편성되면
+            인연 타입에 따른 스탯 보너스가 자동 적용된다. 근거 등급(S/A/B)은 원작 기반 설정 신뢰도를 나타내며 게임 내 효과에는 영향 없음.
+          </p>
+
+          <table class="tbl">
+            <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+            <tr><td>BondID</td><td>string (PK)</td><td>BOND_0001 ~ BOND_0085</td></tr>
+            <tr><td>CharA</td><td>int (FK)</td><td>PlayerTable ID 참조 (캐릭터 A)</td></tr>
+            <tr><td>CharB</td><td>int (FK)</td><td>PlayerTable ID 참조 (캐릭터 B)</td></tr>
+            <tr><td>BondType</td><td>enum</td><td>Comrade / Rival / Family / Mentor / Lovers</td></tr>
+            <tr><td>NameKey</td><td>string</td><td>StringTable 키 (BOND_NNNN_NAME)</td></tr>
+            <tr><td>Evidence</td><td>enum</td><td>S / A / B (원작 근거 등급)</td></tr>
+          </table>
+
+          <h3 class="sub-header">인연 5종 보너스</h3>
+          <table class="tbl">
+            <tr><th>타입</th><th>한글</th><th>보너스</th><th>설명</th></tr>
+            <tr><td><span class="badge badge-blue">Comrade</span></td><td>동료</td><td>ATK +5%, DEF +5%</td><td>함께 싸운 전우. 공방 균형 강화.</td></tr>
+            <tr><td><span class="badge badge-red">Rival</span></td><td>라이벌</td><td>CRI +5%, CRD +8%</td><td>경쟁 관계. 크리티컬 특화.</td></tr>
+            <tr><td><span class="badge badge-green">Family</span></td><td>가문</td><td>HP +8%, RES +8%</td><td>혈연/양자. 생존력 강화.</td></tr>
+            <tr><td><span class="badge badge-purple">Mentor</span></td><td>사제</td><td>쿨타임 -8%</td><td>스승/제자. 스킬 회전율 증가.</td></tr>
+            <tr><td><span class="badge badge-orange">Lovers</span></td><td>연인</td><td>전스탯 +3%, 힐 +10%</td><td>연인 관계. 범용 소폭 강화.</td></tr>
+          </table>
+
+          <h3 class="sub-header">근거 등급 분포</h3>
+          <div class="card-grid-3">
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-gold">S 등급</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--gold)">20</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">원작 퀘스트/스토리<br>확실한 근거</p>
+            </div>
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-blue">A 등급</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-blue)">42</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">원작 설정/대사<br>높은 신뢰도</p>
+            </div>
+            <div class="card" style="text-align:center">
+              <h3 style="justify-content:center"><span class="badge badge-purple">B 등급</span></h3>
+              <div style="font-size:28px;font-weight:900;color:var(--accent-purple)">23</div>
+              <p style="color:var(--text-dim);font-size:12px;margin-top:4px">소속/진영 기반<br>추론 관계</p>
+            </div>
+          </div>
+
+          <h3 class="sub-header">C# 구현</h3>
+          <div class="flow-box">// 인연 조회 — 파티 내 모든 2인 조합 검색
+public List&lt;Bond&gt; LookupBonds(List&lt;int&gt; partyCharIds)
+{
+    var bonds = new List&lt;Bond&gt;();
+    for (int i = 0; i &lt; partyCharIds.Count; i++)
+        for (int j = i + 1; j &lt; partyCharIds.Count; j++)
+        {
+            int a = Math.Min(partyCharIds[i], partyCharIds[j]);
+            int b = Math.Max(partyCharIds[i], partyCharIds[j]);
+            string key = $"{a}|{b}";
+            if (_bondMap.TryGetValue(key, out var bond))
+                bonds.Add(bond);
+        }
+    return bonds;
+}
+
+// 인연 보너스 적용
+void ApplyBondBonus(Unit unit, Bond bond)
+{
+    switch (bond.BondType)
+    {
+        case BondType.Comrade:
+            unit.ATK *= 1.05f; unit.DEF *= 1.05f; break;
+        case BondType.Rival:
+            unit.CRI += 5f; unit.CRD += 8f; break;
+        case BondType.Family:
+            unit.HP *= 1.08f; unit.RES += 8f; break;
+        case BondType.Mentor:
+            unit.CooldownReduction += 0.08f; break;
+        case BondType.Lovers:
+            unit.ATK *= 1.03f; unit.DEF *= 1.03f;
+            unit.HP *= 1.03f; unit.HealBonus += 0.10f; break;
+    }
+}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: 전투 규칙 -->
+    <div class="tab-content" id="tab-rules">
+      <div class="container">
+
+        <!-- 데미지 파이프라인 -->
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(217,74,92,0.12);">&#128163;</div>
+            <h2>데미지 파이프라인</h2>
+            <span class="tag">13단계</span>
+          </div>
+
+          <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+            공격 1회가 최종 데미지로 변환되는 <strong>13단계 순차 연산</strong>. 주피증은 합연산, 받피감은 곱연산.
+          </p>
+
+          <table class="tbl">
+            <tr><th class="center">#</th><th>단계</th><th>공식</th><th>비고</th></tr>
+            <tr><td class="center">1</td><td>기본 피해</td><td><code>ATK × (ATK / (ATK + DEF×(1-PEN/100))) × 1.1</code></td><td>base_damage_coefficient: 1.1</td></tr>
+            <tr><td class="center">2</td><td>스킬 배율</td><td><code>× skill.multiplier</code></td><td>SkillTable의 Multiplier</td></tr>
+            <tr><td class="center">3</td><td>HP 감쇠</td><td><code>× (현재HP/최대HP)^0.3</code></td><td>현재 비활성 (exponent=0.0)</td></tr>
+            <tr><td class="center">4</td><td>주피증</td><td><code>× (1 + Σ buff%)</code></td><td>합연산</td></tr>
+            <tr><td class="center">5</td><td>받피감</td><td><code>× Π(1 - debuff%)</code></td><td>곱연산</td></tr>
+            <tr><td class="center">6</td><td>속성 상성</td><td><code>× 1.25 / 0.75 / 1.0</code></td><td>화→풍→지→수→화, 광↔암</td></tr>
+            <tr><td class="center">7</td><td>역할 상성</td><td><code>× 1.10 / 0.90 / 1.0</code></td><td>Dealer→Support→Tanker→Dealer</td></tr>
+            <tr><td class="center">8</td><td>크리티컬</td><td><code>× CRD (CRI 판정 성공 시)</code></td><td>CRI cap 75%, CRD cap 300%</td></tr>
+            <tr><td class="center">9</td><td>피로도</td><td><code>× fatigue_mult</code></td><td>§피로도 참조</td></tr>
+            <tr><td class="center">10</td><td>난수</td><td><code>× random(0.85~1.15)</code></td><td>±15% 분산</td></tr>
+            <tr><td class="center">11</td><td>스킬뎀 보너스</td><td><code>× (1 + skill_dmg_bonus%)</code></td><td>리더 스킬 전용</td></tr>
+            <tr><td class="center">12</td><td>DR</td><td><code>× (1 - DR/100)</code></td><td>최종 피해 감소</td></tr>
+            <tr><td class="center">13</td><td>블럭</td><td><code>× (1 - BRD/100)</code></td><td>BLK 판정 성공 시. BLK cap 60%</td></tr>
+          </table>
+
+          <h3 class="sub-header">C# 구현</h3>
+          <div class="flow-box">public float CalculateDamage(Unit attacker, Unit defender, Skill skill)
+{
+    float effAtk = attacker.ATK;
+    float effDef = defender.DEF * (1f - attacker.PEN / 100f);
+
+    // Stage 1: Base damage
+    float dmg = effAtk * (effAtk / (effAtk + effDef)) * BASE_DMG_COEFF;
+
+    // Stage 2: Skill multiplier
+    dmg *= skill.Multiplier;
+
+    // Stage 3: HP decay (disabled: exponent = 0)
+    if (HP_DECAY_EXP > 0f)
+        dmg *= Mathf.Pow(attacker.HPRatio, HP_DECAY_EXP);
+
+    // Stage 4-5: Buff/Debuff
+    dmg *= (1f + attacker.DamageIncrease);   // 합연산
+    dmg *= (1f - defender.DamageReduce);      // 곱연산
+
+    // Stage 6: Element advantage
+    dmg *= GetElementMult(attacker.Element, defender.Element);
+
+    // Stage 7: Role advantage
+    dmg *= GetRoleMult(attacker.Role, defender.Role);
+
+    // Stage 8: Critical
+    if (Random.value &lt; Mathf.Min(attacker.CRI / 100f, CRI_CAP))
+        dmg *= Mathf.Min(attacker.CRD / 100f, CRD_CAP);
+
+    // Stage 9-10: Fatigue + Variance
+    dmg *= GetFatigueMult(attacker.Fatigue);
+    dmg *= Random.Range(0.85f, 1.15f);
+
+    // Stage 11-12: Skill bonus + DR
+    dmg *= (1f + attacker.SkillDmgBonus);
+    dmg *= (1f - defender.DR / 100f);
+
+    // Stage 13: Block
+    if (Random.value &lt; Mathf.Min(defender.BLK / 100f, BLK_CAP))
+        dmg *= (1f - defender.BRD / 100f);
+
+    return Mathf.Max(dmg, MIN_DAMAGE);
+}</div>
+        </div>
+
+        <!-- 병종 상성 -->
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(217,138,74,0.12);">&#9881;</div>
+            <h2>병종 상성 (5각)</h2>
+            <span class="tag">JobClass</span>
+          </div>
+
+          <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+            파티 리더의 <strong>JobClass(직업)</strong>를 기준으로 상성 판정. 5각 구조로 강약이 순환한다.
+          </p>
+
+          <div class="highlight-box" style="text-align:center;font-size:16px;font-weight:700;line-height:2.2">
+            <p>F(Fighter) → S(Scout) → M(Musketeer) → W(Wizard) → L(Leader) → F</p>
+          </div>
+
+          <h3 class="sub-header">상성 배수</h3>
+          <table class="tbl">
+            <tr><th>관계</th><th class="center">ATK 배수</th><th class="center">DEF 배수</th><th>예시</th></tr>
+            <tr><td><span class="badge badge-green">강세 (Strong)</span></td><td class="center">×1.25</td><td class="center">×1.15</td><td>F → M</td></tr>
+            <tr><td><span class="badge badge-cyan">약간 강세</span></td><td class="center">×1.10</td><td class="center">×1.05</td><td>F → S</td></tr>
+            <tr><td>중립</td><td class="center">×1.00</td><td class="center">×1.00</td><td>F → F</td></tr>
+            <tr><td><span class="badge badge-orange">약간 열세</span></td><td class="center">×0.95</td><td class="center">×0.97</td><td>F → L</td></tr>
+            <tr><td><span class="badge badge-red">열세 (Weak)</span></td><td class="center">×0.90</td><td class="center">×0.93</td><td>F → W</td></tr>
+          </table>
+
+          <h3 class="sub-header">동일 병종 편성 보너스</h3>
+          <table class="tbl">
+            <tr><th>같은 JobClass 수</th><th class="center">유니티 배수</th><th>효과</th></tr>
+            <tr><td>3명 (풀 유니티)</td><td class="center">×1.5</td><td>상성 효과 1.5배 증폭</td></tr>
+            <tr><td>2명</td><td class="center">×1.2</td><td>상성 효과 1.2배 증폭</td></tr>
+            <tr><td>1명 (혼합)</td><td class="center">×1.0</td><td>기본값</td></tr>
+          </table>
+
+          <h3 class="sub-header">C# 구현</h3>
+          <div class="flow-box">// 상성 매트릭스 [공격자, 방어자] → 배수
+static readonly float[,] ATK_MATRIX = {
+//         F     S     M     W     L
+/* F */ { 1.00f,1.10f,1.25f,0.90f,0.95f },
+/* S */ { 0.90f,1.00f,1.10f,1.25f,0.95f },
+/* M */ { 0.90f,0.95f,1.00f,1.10f,1.25f },
+/* W */ { 1.25f,0.90f,0.95f,1.00f,1.10f },
+/* L */ { 1.10f,1.25f,0.90f,0.95f,1.00f },
+};
+
+void ApplyJobAdvantage(Unit attacker, Unit defender, int sameJobCount)
+{
+    int atkIdx = (int)attacker.JobClass;
+    int defIdx = (int)defender.JobClass;
+    float mult = ATK_MATRIX[atkIdx, defIdx];
+    float unity = sameJobCount == 3 ? 1.5f : sameJobCount == 2 ? 1.2f : 1.0f;
+    attacker.ATK *= 1f + (mult - 1f) * unity;
+}</div>
+        </div>
+
+        <!-- 속성 상성 -->
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(155,111,217,0.12);">&#10024;</div>
+            <h2>속성 상성 (원소 순환)</h2>
+            <span class="tag">Element</span>
+          </div>
+
+          <div class="highlight-box" style="text-align:center;font-size:15px;font-weight:700;line-height:2">
+            <p style="color:var(--accent-red)">火(Fire) → 風(Wind) → 地(Nature) → 水(Water) → 火</p>
+            <p style="color:var(--accent-purple)">光(Light) ↔ 闇(Dark) — 상호 유리</p>
+          </div>
+
+          <table class="tbl">
+            <tr><th>관계</th><th class="center">배수</th><th>조건</th></tr>
+            <tr><td><span class="badge badge-green">유리</span></td><td class="center">×1.25</td><td>순환 순서상 공격자 우위</td></tr>
+            <tr><td><span class="badge badge-red">불리</span></td><td class="center">×0.75</td><td>순환 역방향</td></tr>
+            <tr><td>중립 / 동일</td><td class="center">×1.00</td><td>같은 속성이거나 None</td></tr>
+          </table>
+
+          <div class="flow-box">static float GetElementMult(Element atk, Element def)
+{
+    if (atk == Element.None || def == Element.None) return 1f;
+    if (atk == def) return 1f;
+
+    // 광↔암 상호 유리
+    if ((atk == Element.Light &amp;&amp; def == Element.Dark) ||
+        (atk == Element.Dark &amp;&amp; def == Element.Light))
+        return 1.25f;
+
+    // 화→풍→지→수→화 순환
+    var cycle = new[] { Element.Fire, Element.Wind, Element.Nature, Element.Water };
+    int atkIdx = Array.IndexOf(cycle, atk);
+    int defIdx = Array.IndexOf(cycle, def);
+    if (atkIdx &lt; 0 || defIdx &lt; 0) return 1f;
+
+    return (atkIdx + 1) % 4 == defIdx ? 1.25f   // 유리
+         : (defIdx + 1) % 4 == atkIdx ? 0.75f   // 불리
+         : 1f;
+}</div>
+        </div>
+
+        <!-- 피로도 -->
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(217,138,74,0.12);">&#9889;</div>
+            <h2>피로도</h2>
+            <span class="tag">Fatigue</span>
+          </div>
+
+          <table class="tbl">
+            <tr><th>피로도 구간</th><th class="center">데미지/힐 배수</th><th>상태</th></tr>
+            <tr><td>80~100%</td><td class="center">×1.00</td><td>정상</td></tr>
+            <tr><td>60~79%</td><td class="center">×0.95</td><td>경미한 피로</td></tr>
+            <tr><td>40~59%</td><td class="center">×0.85</td><td>피로</td></tr>
+            <tr><td>20~39%</td><td class="center">×0.70</td><td>심각한 피로</td></tr>
+            <tr><td>0~19%</td><td class="center">×0.50</td><td>탈진</td></tr>
+          </table>
+
+          <table class="tbl" style="margin-top:16px">
+            <tr><th>설정</th><th>값</th><th>설명</th></tr>
+            <tr><td>초기값</td><td>100</td><td>전투 진입 시 피로도</td></tr>
+            <tr><td>턴당 소모 (일반)</td><td>-3</td><td>1~10라운드</td></tr>
+            <tr><td>턴당 소모 (연장)</td><td>-5</td><td>11라운드+</td></tr>
+            <tr><td>저피로 임계</td><td>50</td><td>스킬 발동률 페널티 시작</td></tr>
+            <tr><td>위험 임계</td><td>20</td><td>심각한 페널티</td></tr>
+          </table>
+
+          <div class="flow-box">static float GetFatigueMult(int fatigue)
+{
+    if (fatigue > 80) return 1.00f;
+    if (fatigue > 60) return 0.95f;
+    if (fatigue > 40) return 0.85f;
+    if (fatigue > 20) return 0.70f;
+    return 0.50f;
+}</div>
+        </div>
+
+        <!-- CC / 상태이상 -->
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(155,111,217,0.12);">&#128167;</div>
+            <h2>CC / 상태이상</h2>
+            <span class="tag">4종 CC + 버프/디버프</span>
+          </div>
+
+          <h3 class="sub-header">CC 4종</h3>
+          <table class="tbl">
+            <tr><th>CC</th><th class="center">행동 차단</th><th class="center">스킬 차단</th><th class="center">쿨타임 정지</th><th>우선순위</th><th>특수</th></tr>
+            <tr><td><span class="badge badge-red">STUN</span></td><td class="center">O</td><td class="center">-</td><td class="center">-</td><td>3 (최고)</td><td>쿨타임 정상 감소</td></tr>
+            <tr><td><span class="badge badge-cyan">FREEZE</span></td><td class="center">O</td><td class="center">-</td><td class="center">O</td><td>3 (최고)</td><td>쿨타임까지 멈춤</td></tr>
+            <tr><td><span class="badge badge-purple">CONFUSE</span></td><td class="center">-</td><td class="center">-</td><td class="center">-</td><td>2</td><td>50% 확률 아군 공격</td></tr>
+            <tr><td><span class="badge badge-orange">SILENCE</span></td><td class="center">-</td><td class="center">O</td><td class="center">-</td><td>1</td><td>일반공격만 가능</td></tr>
+          </table>
+
+          <h3 class="sub-header">CC 면역 규칙</h3>
+          <div class="highlight-box">
+            <p><strong>저항 판정:</strong> <code>resist_chance = RES / 100</code> — RES 40% = 40% 확률로 CC 무효.</p>
+            <p><strong>면역:</strong> CC 해제 후 <strong>1턴 동안 동일 CC 면역</strong> 자동 부여.</p>
+            <p><strong>우선순위:</strong> 이미 CC 중일 때, 같거나 높은 우선순위의 CC만 덮어쓰기 가능.</p>
+          </div>
+
+          <h3 class="sub-header">버프/디버프 카테고리</h3>
+          <div class="card-grid">
+            <div class="card">
+              <h3><span class="badge badge-green">공격 버프</span></h3>
+              <p>ATK_UP, CRI_UP, CRD_UP, PEN_UP, DAMAGE_INCREASE</p>
+            </div>
+            <div class="card">
+              <h3><span class="badge badge-blue">방어 버프</span></h3>
+              <p>DEF_UP, EVD_UP, BLK_UP, DR_UP, RES_UP, LS_UP, HRB_UP, ACC_UP</p>
+            </div>
+            <div class="card">
+              <h3><span class="badge badge-red">디버프</span></h3>
+              <p>ATK_DOWN, DEF_DOWN, SPD_DOWN 등 + DAMAGE_REDUCE</p>
+            </div>
+            <div class="card">
+              <h3><span class="badge badge-orange">지속 효과</span></h3>
+              <p>HP_REGEN, POISON, BURN, COUNTER_ATTACK</p>
+            </div>
+          </div>
+
+          <div class="flow-box">bool TryApplyCC(Unit target, CCType ccType, int duration)
+{
+    // 1. 면역 체크
+    if (target.HasCCImmunity(ccType)) return false;
+
+    // 2. 저항 판정
+    if (Random.value &lt; target.RES / 100f) return false;
+
+    // 3. 기존 CC 우선순위 비교
+    if (target.HasActiveCC())
+    {
+        if (GetPriority(ccType) &lt; target.CurrentCC.Priority)
+            return false;  // 더 강한 CC 유지
+    }
+
+    // 4. CC 적용
+    target.ApplyCC(ccType, duration);
+    return true;
+}
+
+void OnCCExpired(Unit unit, CCType ccType)
+{
+    unit.GrantCCImmunity(ccType, duration: 1); // 1턴 면역
+}</div>
+        </div>
+
+        <!-- 편성 보너스 -->
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(74,144,217,0.12);">&#128101;</div>
+            <h2>편성 보너스</h2>
+            <span class="tag">Composition</span>
+          </div>
+
+          <p style="color:var(--text-dim);line-height:1.7;margin-bottom:16px">
+            파티 구성에 특정 역할이 빠졌을 때 <strong>자동 보상 보너스</strong>가 적용된다. 특화 편성을 유도하되, 밸런스를 잡는 안전장치.
+          </p>
+
+          <table class="tbl">
+            <tr><th>조건</th><th>보너스</th><th>의도</th></tr>
+            <tr><td><span class="badge badge-red">탱커 없음</span></td><td>ATK +12%, CRI +8%, PEN +8%</td><td>유리 몸통 → 화력으로 보상</td></tr>
+            <tr><td><span class="badge badge-green">힐러 없음</span></td><td>ATK +8%, DEF +5%, LS +8%</td><td>회복 없음 → 흡혈+방어 보상</td></tr>
+            <tr><td><span class="badge badge-blue">딜러 없음</span></td><td>ATK +25%, CRI +15%, CRD +30%, PEN +12%</td><td>화력 부재 → 대폭 보상</td></tr>
+            <tr><td><span class="badge badge-purple">올 딜러</span></td><td>ATK +15%, CRI +10%, CRD +20%</td><td>공격 특화 보상</td></tr>
+            <tr><td><span class="badge badge-orange">인연 없음</span></td><td>ATK +5%, HP +5%, DEF +5%</td><td>인연 미활용 → 기본 보상</td></tr>
+          </table>
+        </div>
+
+        <!-- 성급 배수 -->
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(212,168,67,0.12);">&#11088;</div>
+            <h2>성급 배수 / 접두어 배수</h2>
+            <span class="tag">Constants</span>
+          </div>
+
+          <h3 class="sub-header">성급(★) 스탯 배수</h3>
+          <table class="tbl">
+            <tr><th class="center">★0</th><th class="center">★1</th><th class="center">★2</th><th class="center">★3</th><th class="center">★4</th><th class="center">★5</th><th class="center">★6</th><th class="center">★7</th><th class="center">★8</th><th class="center">★9</th></tr>
+            <tr><td class="center">1.00</td><td class="center">1.04</td><td class="center">1.09</td><td class="center">1.15</td><td class="center">1.22</td><td class="center">1.30</td><td class="center">1.40</td><td class="center">1.52</td><td class="center">1.65</td><td class="center">1.80</td></tr>
+          </table>
+
+          <h3 class="sub-header">적 접두어 배수</h3>
+          <table class="tbl">
+            <tr><th>접두어</th><th class="center">HP</th><th class="center">ATK/DEF</th><th class="center">최소 강도</th></tr>
+            <tr><td>(없음)</td><td class="center">×1.0</td><td class="center">×1.0</td><td class="center">★1+</td></tr>
+            <tr><td>Dire</td><td class="center">×1.3</td><td class="center">×1.3</td><td class="center">★2+</td></tr>
+            <tr><td>Alpha</td><td class="center">×1.6</td><td class="center">×1.6</td><td class="center">★3+</td></tr>
+            <tr><td>Elder</td><td class="center">×2.0</td><td class="center">×2.0</td><td class="center">★4+</td></tr>
+            <tr><td>King</td><td class="center">×2.5</td><td class="center">×2.5</td><td class="center">★5</td></tr>
+          </table>
+
+          <h3 class="sub-header">역할별 기본 Tier 2 스탯</h3>
+          <table class="tbl">
+            <tr><th>역할</th><th class="center">CRI</th><th class="center">CRD</th><th class="center">PEN</th><th class="center">RES</th><th class="center">EVD</th></tr>
+            <tr><td>Dealer</td><td class="center">10%</td><td class="center">150%</td><td class="center">10%</td><td class="center">0%</td><td class="center">0%</td></tr>
+            <tr><td>Tanker</td><td class="center">8%</td><td class="center">140%</td><td class="center">0%</td><td class="center">20%</td><td class="center">0%</td></tr>
+            <tr><td>Healer</td><td class="center">10%</td><td class="center">140%</td><td class="center">5%</td><td class="center">15%</td><td class="center">0%</td></tr>
+            <tr><td>Support</td><td class="center">10%</td><td class="center">145%</td><td class="center">8%</td><td class="center">0%</td><td class="center">0%</td></tr>
+          </table>
+
+          <div class="highlight-box blue">
+            <p><strong>전체 상수 원본:</strong> <code>Tools/battle_simulator/config.json</code></p>
+            <p>시뮬레이터에서 10,000회+ 라운드로빈 검증 완료된 수치. 변경 시 반드시 시뮬레이터로 밸런스 재검증.</p>
+          </div>
+        </div>
+
       </div>
     </div>
 
