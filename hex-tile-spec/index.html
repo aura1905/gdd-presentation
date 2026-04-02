@@ -1,0 +1,1235 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>헥스 타일 그래픽 에셋 명세서 — GE 개척시대</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --surface: #16213e;
+    --card: #0f3460;
+    --accent: #e94560;
+    --text: #eee;
+    --muted: #999;
+    --green: #4ade80;
+    --yellow: #fbbf24;
+    --blue: #60a5fa;
+    --purple: #c084fc;
+    --orange: #fb923c;
+    --cyan: #22d3ee;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: 'Segoe UI', 'Malgun Gothic', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 40px 20px;
+  }
+  .container { max-width: 1200px; margin: 0 auto; }
+
+  h1 {
+    font-size: 28px;
+    border-bottom: 3px solid var(--accent);
+    padding-bottom: 12px;
+    margin-bottom: 8px;
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 13px;
+    margin-bottom: 40px;
+  }
+  .meta span { margin-right: 20px; }
+
+  h2 {
+    font-size: 22px;
+    color: var(--cyan);
+    margin: 48px 0 16px;
+    padding-left: 12px;
+    border-left: 4px solid var(--cyan);
+  }
+  h3 {
+    font-size: 17px;
+    color: var(--yellow);
+    margin: 28px 0 12px;
+  }
+
+  /* Summary cards */
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+    margin: 20px 0;
+  }
+  .summary-card {
+    background: var(--surface);
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    border: 1px solid #333;
+  }
+  .summary-card .num {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--accent);
+  }
+  .summary-card .label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+
+  /* Spec box */
+  .spec-box {
+    background: var(--surface);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .spec-row {
+    display: flex;
+    padding: 6px 0;
+    border-bottom: 1px solid #222;
+  }
+  .spec-row:last-child { border-bottom: none; }
+  .spec-key {
+    width: 140px;
+    font-weight: bold;
+    color: var(--blue);
+    flex-shrink: 0;
+  }
+
+  /* Asset tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  th {
+    background: var(--card);
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 13px;
+    color: var(--cyan);
+    border-bottom: 2px solid #444;
+    position: sticky;
+    top: 0;
+  }
+  td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #222;
+    vertical-align: top;
+  }
+  tr:hover td { background: rgba(255,255,255,0.03); }
+
+  /* Color swatch */
+  .swatch {
+    display: inline-block;
+    width: 20px; height: 20px;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-right: 6px;
+    border: 1px solid #555;
+  }
+
+  /* Tags */
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-right: 4px;
+  }
+  .tag-pass { background: #166534; color: #4ade80; }
+  .tag-block { background: #7f1d1d; color: #fca5a5; }
+  .tag-layer1 { background: #1e3a5f; color: #60a5fa; }
+  .tag-layer2 { background: #3b1f5e; color: #c084fc; }
+  .tag-layer3 { background: #5c3a1e; color: #fbbf24; }
+  .tag-layer4 { background: #1e4d3a; color: #4ade80; }
+
+  /* Star rating */
+  .stars { color: var(--yellow); letter-spacing: 2px; }
+
+  /* Naming convention */
+  code {
+    background: #1a1a2e;
+    border: 1px solid #333;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Consolas', 'D2Coding', monospace;
+    font-size: 13px;
+    color: var(--green);
+  }
+
+  .naming-list {
+    background: var(--surface);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 12px 0;
+    font-family: 'Consolas', 'D2Coding', monospace;
+    font-size: 13px;
+    line-height: 2;
+    color: var(--green);
+  }
+  .naming-list .comment { color: var(--muted); }
+
+  /* Layer diagram */
+  .layer-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin: 16px 0;
+    max-width: 500px;
+  }
+  .layer-bar {
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 14px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .layer-bar.l4 { background: #166534; }
+  .layer-bar.l3 { background: #5c3a1e; }
+  .layer-bar.l2 { background: #3b1f5e; }
+  .layer-bar.l1 { background: #1e3a5f; }
+
+  /* Notes */
+  .note {
+    background: #2d1f0e;
+    border-left: 3px solid var(--yellow);
+    padding: 12px 16px;
+    margin: 12px 0;
+    font-size: 13px;
+    color: #fde68a;
+  }
+
+  .toc {
+    background: var(--surface);
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+  }
+  .toc a {
+    color: var(--blue);
+    text-decoration: none;
+    display: block;
+    padding: 3px 0;
+  }
+  .toc a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>헥스 타일 그래픽 에셋 명세서</h1>
+<div class="meta">
+  <span>GE 개척시대</span>
+  <span>작성일: 2026.03.27</span>
+  <span>대상: 2D 그래픽 디자이너</span>
+  <span>타일 크기: 256 × 256 px</span>
+</div>
+
+<!-- ========== TOC ========== -->
+<div class="toc">
+  <strong style="color:var(--cyan)">목차</strong>
+  <a href="#summary">1. 총 물량 요약</a>
+  <a href="#spec">2. 납품 규격</a>
+  <a href="#layers">3. 레이어 구조</a>
+  <a href="#terrain">4. 기본 지형 타일 (Layer 1)</a>
+  <a href="#structures">5. 구조물 (Layer 2)</a>
+  <a href="#resources">6. 자원 (Layer 3)</a>
+  <a href="#installables">7. 설치물 (Layer 4)</a>
+  <a href="#transition">8. 변이 타일 (반복 방지)</a>
+  <a href="#state">9. 상태 오버레이</a>
+  <a href="#dungeon">10. 던전 맵 (별도 레이어)</a>
+  <a href="#naming">11. 전체 에셋 네이밍</a>
+</div>
+
+<!-- ========== 1. SUMMARY ========== -->
+<h2 id="summary">1. 총 물량 요약</h2>
+
+<div class="summary-grid">
+  <div class="summary-card">
+    <div class="num">13</div>
+    <div class="label">기본 지형 타일</div>
+  </div>
+  <div class="summary-card">
+    <div class="num">13</div>
+    <div class="label">기본 지형 (01 기본)</div>
+  </div>
+  <div class="summary-card">
+    <div class="num">27</div>
+    <div class="label">구조물 (도시/콜로니/관문/던전)</div>
+  </div>
+  <div class="summary-card">
+    <div class="num">25</div>
+    <div class="label">자원 아이콘 (5종×5성)</div>
+  </div>
+  <div class="summary-card">
+    <div class="num">12</div>
+    <div class="label">설치물 (4종×3단계)</div>
+  </div>
+  <div class="summary-card">
+    <div class="num">30</div>
+    <div class="label">변이 타일 (반복 방지)</div>
+  </div>
+  <div class="summary-card">
+    <div class="num">6</div>
+    <div class="label">상태 오버레이</div>
+  </div>
+  <div class="summary-card">
+    <div class="num">40</div>
+    <div class="label">던전 전용 헥스 (5던전)</div>
+  </div>
+  <div class="summary-card">
+    <div class="num" style="color:var(--yellow)">~175</div>
+    <div class="label">전체 합계 (변이 포함)</div>
+  </div>
+</div>
+
+<!-- ========== 2. SPEC ========== -->
+<h2 id="spec">2. 납품 규격</h2>
+
+<div class="spec-box">
+  <div class="spec-row"><div class="spec-key">타일 형태</div><div>플랫탑(Flat-Top) 정육각형</div></div>
+  <div class="spec-row"><div class="spec-key">타일 크기</div><div><strong>256 × 256 px</strong></div></div>
+  <div class="spec-row"><div class="spec-key">여백</div><div>가장자리 2px 투명 여백 (블리딩 방지)</div></div>
+  <div class="spec-row"><div class="spec-key">색공간</div><div>sRGB</div></div>
+  <div class="spec-row"><div class="spec-key">포맷</div><div>PNG (투명 배경)</div></div>
+  <div class="spec-row"><div class="spec-key">PSD 납품</div><div>전환 타일은 PSD 레이어 분리 납품</div></div>
+  <div class="spec-row"><div class="spec-key">시점</div><div>약간 위에서 내려다보는 쿼터뷰 (45~60°)</div></div>
+  <div class="spec-row"><div class="spec-key">조명</div><div>좌상단 → 우하단 일관 광원</div></div>
+  <div class="spec-row"><div class="spec-key">스타일</div><div>외곽선 없음, 페인팅 스타일, 중~고 채도</div></div>
+</div>
+
+<!-- ========== 3. LAYERS ========== -->
+<h2 id="layers">3. 레이어 구조</h2>
+
+<div class="layer-stack">
+  <div class="layer-bar l4">Layer 4 — 설치물 (벙커/타워) <span>플레이어 건설</span></div>
+  <div class="layer-bar l3">Layer 3 — 자원 (성급별) <span>오버레이 아이콘</span></div>
+  <div class="layer-bar l2">Layer 2 — 구조물 (도시/콜로니/관문/던전) <span>고정 배치</span></div>
+  <div class="layer-bar l1">Layer 1 — 기본 지형 <span>초원/숲/산지 등</span></div>
+</div>
+
+<div class="note">
+  Layer 1이 항상 바닥. Layer 2~4는 Layer 1 위에 오버레이로 겹쳐진다.<br>
+  구조물이 있는 헥스에도 기본 지형 타일은 반드시 깔린다.
+</div>
+
+<!-- ========== 4. TERRAIN ========== -->
+<h2 id="terrain">4. 기본 지형 타일 — Layer 1 (13종)</h2>
+
+<h3>4-1. 이동 가능 지형 (9종)</h3>
+<table>
+  <tr>
+    <th>#</th><th>에셋 ID</th><th>한글명</th><th>색상</th><th>화면 느낌</th><th>변이</th><th>GE 원작 참고</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td><code>hex_plains</code></td>
+    <td>초원</td>
+    <td><span class="swatch" style="background:#8fc06e"></span>#8fc06e</td>
+    <td>짧은 풀, 완만한 언덕</td>
+    <td>3</td>
+    <td>reb_zone 초원</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><code>hex_forest</code></td>
+    <td>숲</td>
+    <td><span class="swatch" style="background:#5a9e3e"></span>#5a9e3e</td>
+    <td>울창한 나무, 그림자</td>
+    <td>3</td>
+    <td>tul_forest 튜링엔 숲</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><code>hex_desert</code></td>
+    <td>사막</td>
+    <td><span class="swatch" style="background:#e2c76a"></span>#e2c76a</td>
+    <td>모래 언덕, 바위</td>
+    <td>3</td>
+    <td>자캥 분화구 참고</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><code>hex_coast</code></td>
+    <td>해안</td>
+    <td><span class="swatch" style="background:#c8b87a"></span>#c8b87a</td>
+    <td>모래/자갈 해변, 파도</td>
+    <td>3</td>
+    <td>porto_coast</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td><code>hex_swamp</code></td>
+    <td>늪지</td>
+    <td><span class="swatch" style="background:#7aaa5e"></span>#7aaa5e</td>
+    <td>질퍽한 땅, 고인 물, 갈대</td>
+    <td>3</td>
+    <td>reb_swamp</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td><code>hex_ice</code></td>
+    <td>빙설</td>
+    <td><span class="swatch" style="background:#d0d8c8"></span>#d0d8c8</td>
+    <td>눈덮인 땅, 얼음 결정</td>
+    <td>3</td>
+    <td>snow_field</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td><code>hex_ruins</code></td>
+    <td>유적</td>
+    <td><span class="swatch" style="background:#bca87c"></span>#bca87c</td>
+    <td>무너진 건물, 고대 석재</td>
+    <td>3</td>
+    <td>tetra 유적</td>
+  </tr>
+  <tr>
+    <td>8</td>
+    <td><code>hex_city</code></td>
+    <td>도시</td>
+    <td><span class="swatch" style="background:#c0b8a8"></span>#c0b8a8</td>
+    <td>석조 건물, 광장, 지붕</td>
+    <td>3</td>
+    <td>리볼/코임/오슈</td>
+  </tr>
+  <tr>
+    <td>9</td>
+    <td><code>hex_colony</code></td>
+    <td>콜로니</td>
+    <td><span class="swatch" style="background:#b0a090"></span>#b0a090</td>
+    <td>요새 전초기지, 목책/깃발</td>
+    <td>3</td>
+    <td>GE 콜로니전 거점</td>
+  </tr>
+</table>
+
+<h3>4-2. 이동 불가 지형 (4종)</h3>
+<table>
+  <tr>
+    <th>#</th><th>에셋 ID</th><th>한글명</th><th>색상</th><th>화면 느낌</th><th>변이</th>
+  </tr>
+  <tr>
+    <td>10</td>
+    <td><code>hex_mountain</code></td>
+    <td>산지</td>
+    <td><span class="swatch" style="background:#8a8078"></span>#8a8078</td>
+    <td>험준한 바위산, 절벽</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>11</td>
+    <td><code>hex_volcano</code></td>
+    <td>화산</td>
+    <td><span class="swatch" style="background:#7a3030"></span>#7a3030</td>
+    <td>검은 용암, 붉은 균열</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>12</td>
+    <td><code>hex_water</code></td>
+    <td>수역</td>
+    <td><span class="swatch" style="background:#2a6090"></span>#2a6090</td>
+    <td>바다/깊은 물</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td>13</td>
+    <td><code>hex_gate_land</code></td>
+    <td>육상관문</td>
+    <td><span class="swatch" style="background:#908888"></span>#908888</td>
+    <td>산 사이 돌 성문, 철문</td>
+    <td>2</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>삭제 항목:</strong> <code>cave</code>(지하) — 던전 입구는 구조물(Layer 2)로 별도 관리.<br>
+  <strong>분리 항목:</strong> 관문 → <code>gate_land</code>(육상관문) + <code>gate_sea</code>(해상관문, 구조물에서 관리)<br>
+  <strong>변경 항목:</strong> 거점 → 콜로니 (GE 원작 콜로니전 용어)
+</div>
+
+<!-- ========== 5. STRUCTURES ========== -->
+<h2 id="structures">5. 구조물 — Layer 2 (23종)</h2>
+
+<div class="note">
+  구조물은 기본 지형 타일 위에 오버레이로 배치된다.<br>
+  구조물 이미지는 타일 영역의 60~70% 크기, 나머지에 지형이 보여야 한다.
+</div>
+
+<h3>5-1. 도시 (3종)</h3>
+<table>
+  <tr><th>에셋 ID</th><th>도시명</th><th>컨셉</th><th>점유</th><th>GE 참고</th></tr>
+  <tr>
+    <td><code>struct_city_reb</code></td>
+    <td>리볼도외</td>
+    <td>서유럽 중세 성곽도시, 분수 광장</td>
+    <td>7타일</td>
+    <td>Cite de Reboldoeux</td>
+  </tr>
+  <tr>
+    <td><code>struct_city_coim</code></td>
+    <td>코임브라</td>
+    <td>항구도시, 등대, 선착장</td>
+    <td>7타일</td>
+    <td>City of Coimbra</td>
+  </tr>
+  <tr>
+    <td><code>struct_city_orshu</code></td>
+    <td>오슈</td>
+    <td>동방풍 요새도시, 돔 지붕</td>
+    <td>7타일</td>
+    <td>City of Orshu</td>
+  </tr>
+</table>
+
+<h3>5-2. 콜로니 (13종)</h3>
+<table>
+  <tr><th>#</th><th>에셋 ID</th><th>콜로니명</th><th>리전</th><th>주변 지형</th><th>컨셉</th></tr>
+  <tr>
+    <td>1</td>
+    <td><code>struct_colony_perucho</code></td>
+    <td>페루초삼거리</td>
+    <td>R3</td>
+    <td>초원</td>
+    <td>삼거리 요새, 관문</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><code>struct_colony_cathari</code></td>
+    <td>카타리 폭포</td>
+    <td>R5</td>
+    <td>숲/수역</td>
+    <td>폭포 옆 요새, 수비대</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><code>struct_colony_topolo</code></td>
+    <td>토플로 두르가</td>
+    <td>R15</td>
+    <td>유적</td>
+    <td>고대 유적 위 거점</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><code>struct_colony_cracked</code></td>
+    <td>갈라진 땅</td>
+    <td>R11</td>
+    <td>사막</td>
+    <td>지열 균열 옆 요새</td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td><code>struct_colony_portobello</code></td>
+    <td>포르토벨로 황량한 언덕</td>
+    <td>R18</td>
+    <td>해안</td>
+    <td>황량한 언덕 위 전초기지</td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td><code>struct_colony_jezebel</code></td>
+    <td>지저벨 협곡</td>
+    <td>R17</td>
+    <td>산지</td>
+    <td>협곡 사이 요새</td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td><code>struct_colony_dock</code></td>
+    <td>버려진 부두</td>
+    <td>R19</td>
+    <td>해안</td>
+    <td>버려진 부두 거점</td>
+  </tr>
+  <tr>
+    <td>8</td>
+    <td><code>struct_colony_devil</code></td>
+    <td>마의 계곡</td>
+    <td>R23</td>
+    <td>화산</td>
+    <td>어둠의 계곡 전초기지</td>
+  </tr>
+  <tr>
+    <td>9</td>
+    <td><code>struct_colony_bonavista</code></td>
+    <td>보나비스타 지류</td>
+    <td>R21</td>
+    <td>초원/수역</td>
+    <td>강변 요새</td>
+  </tr>
+  <tr>
+    <td>10</td>
+    <td><code>struct_colony_senissa</code></td>
+    <td>쎄니싸 고원</td>
+    <td>R24</td>
+    <td>초원/산지</td>
+    <td>고원 절벽 요새</td>
+  </tr>
+  <tr>
+    <td>11</td>
+    <td><code>struct_colony_tejado</code></td>
+    <td>테하도 베르테</td>
+    <td>R26</td>
+    <td>숲</td>
+    <td>녹색 지붕 요새</td>
+  </tr>
+  <tr>
+    <td>12</td>
+    <td><code>struct_colony_3sisters</code></td>
+    <td>세자매의 호수</td>
+    <td>R27</td>
+    <td>수역/숲</td>
+    <td>호수 가운데 요새</td>
+  </tr>
+  <tr>
+    <td>13</td>
+    <td><code>struct_colony_snowfield</code></td>
+    <td>순백의 대지</td>
+    <td>R31</td>
+    <td>빙설</td>
+    <td>빙설 요새</td>
+  </tr>
+</table>
+
+<h3>5-3. 관문 (2종 × 3방향 = 6개)</h3>
+
+<div class="note">
+  관문은 인접 두 헥스 사이에 배치되므로, 연결 방향에 따라 3방향 변이 필요.<br>
+  플랫탑 헥스 기준 맞은편 변은 대칭이므로 3방향이면 전체 커버.
+</div>
+
+<table>
+  <tr><th>에셋 ID</th><th>한글명</th><th>방향</th><th>컨셉</th></tr>
+  <tr>
+    <td><code>struct_gate_land_v</code></td>
+    <td>육상 관문 — 세로</td>
+    <td>↑↓</td>
+    <td rowspan="3">산과 산 사이 돌 성문, 아치형</td>
+  </tr>
+  <tr>
+    <td><code>struct_gate_land_dr</code></td>
+    <td>육상 관문 — 우하향</td>
+    <td>↘↖</td>
+  </tr>
+  <tr>
+    <td><code>struct_gate_land_dl</code></td>
+    <td>육상 관문 — 좌하향</td>
+    <td>↙↗</td>
+  </tr>
+  <tr>
+    <td><code>struct_gate_sea_v</code></td>
+    <td>해상 관문 — 세로</td>
+    <td>↑↓</td>
+    <td rowspan="3">수역 사이 해상 요새, 쇄사슬/수문</td>
+  </tr>
+  <tr>
+    <td><code>struct_gate_sea_dr</code></td>
+    <td>해상 관문 — 우하향</td>
+    <td>↘↖</td>
+  </tr>
+  <tr>
+    <td><code>struct_gate_sea_dl</code></td>
+    <td>해상 관문 — 좌하향</td>
+    <td>↙↗</td>
+  </tr>
+</table>
+
+<h3>5-4. 던전 입구 (5종)</h3>
+
+<div class="note">
+  던전 입구는 각각 완전히 고유한 디자인. 내부 맵은 별도 배틀필드로 제작.<br>
+  월드맵에서는 입구 외형만 표현.
+</div>
+
+<table>
+  <tr><th>에셋 ID</th><th>던전명</th><th>컨셉</th></tr>
+  <tr>
+    <td><code>struct_dun_tetra</code></td>
+    <td>테트라 대유적</td>
+    <td>고대 유적, 무너진 기둥, 수풀</td>
+  </tr>
+  <tr>
+    <td><code>struct_dun_capybara</code></td>
+    <td>캐피바라 지하농장</td>
+    <td>지하 동굴 입구, 작물 흔적</td>
+  </tr>
+  <tr>
+    <td><code>struct_dun_portobello</code></td>
+    <td>포르토벨로 던전</td>
+    <td>해적 은신처, 동굴+선박 잔해</td>
+  </tr>
+  <tr>
+    <td><code>struct_dun_jacq</code></td>
+    <td>자캥 수용소</td>
+    <td>감옥 시설, 철창, 폐허</td>
+  </tr>
+  <tr>
+    <td><code>struct_dun_torsche</code></td>
+    <td>토르쉐 저택</td>
+    <td>고딕 대저택, 어두운 분위기</td>
+  </tr>
+</table>
+
+<!-- ========== 6. RESOURCES ========== -->
+<h2 id="resources">6. 자원 — Layer 3</h2>
+
+<div class="note">
+  자원은 기본 지형 위에 오버레이 아이콘으로 표시.<br>
+  각 자원은 1~5성급으로 나뉘며, 성급에 따라 아이콘 크기/광택이 달라진다.
+</div>
+
+<h3>6-1. 자원 종류 (5종)</h3>
+<table>
+  <tr><th>에셋 ID</th><th>한글명</th><th>아이콘</th><th>아이콘 컨셉</th><th>크기</th></tr>
+  <tr>
+    <td><code>res_iron</code></td>
+    <td>철광</td>
+    <td>⛏</td>
+    <td>곡괭이 + 광석 덩어리</td>
+    <td>48 × 48px</td>
+  </tr>
+  <tr>
+    <td><code>res_wood</code></td>
+    <td>목재</td>
+    <td>🪵</td>
+    <td>나무 원목 단면</td>
+    <td>48 × 48px</td>
+  </tr>
+  <tr>
+    <td><code>res_stone</code></td>
+    <td>석재</td>
+    <td>🪨</td>
+    <td>석재 블록</td>
+    <td>48 × 48px</td>
+  </tr>
+  <tr>
+    <td><code>res_grain</code></td>
+    <td>식량</td>
+    <td>🌾</td>
+    <td>밀 이삭</td>
+    <td>48 × 48px</td>
+  </tr>
+  <tr>
+    <td><code>res_herbs</code></td>
+    <td>약초</td>
+    <td>🌿</td>
+    <td>허브 잎사귀</td>
+    <td>48 × 48px</td>
+  </tr>
+</table>
+
+<h3>6-2. 성급 체계 (5단계)</h3>
+<table>
+  <tr><th>성급</th><th>표시</th><th>시각 차이</th><th>네이밍 접미사</th></tr>
+  <tr>
+    <td>1성</td>
+    <td><span class="stars">★</span></td>
+    <td>기본 아이콘, 작은 크기</td>
+    <td><code>_s1</code></td>
+  </tr>
+  <tr>
+    <td>2성</td>
+    <td><span class="stars">★★</span></td>
+    <td>약간 큰 아이콘</td>
+    <td><code>_s2</code></td>
+  </tr>
+  <tr>
+    <td>3성</td>
+    <td><span class="stars">★★★</span></td>
+    <td>보통 크기, 은은한 광택</td>
+    <td><code>_s3</code></td>
+  </tr>
+  <tr>
+    <td>4성</td>
+    <td><span class="stars">★★★★</span></td>
+    <td>큰 아이콘, 금빛 광택</td>
+    <td><code>_s4</code></td>
+  </tr>
+  <tr>
+    <td>5성</td>
+    <td><span class="stars">★★★★★</span></td>
+    <td>최대 크기, 강한 광택 + 이펙트</td>
+    <td><code>_s5</code></td>
+  </tr>
+</table>
+
+<div class="note">
+  자원 에셋 전체: 5종 × 5성급 = <strong>25개</strong><br>
+  예: <code>res_iron_s1.png</code> ~ <code>res_iron_s5.png</code>
+</div>
+
+<!-- ========== 7. INSTALLABLES ========== -->
+<h2 id="installables">7. 설치물 — Layer 4</h2>
+
+<div class="note">
+  설치물은 플레이어가 점령한 헥스에 건설하는 구조물.<br>
+  기본 지형 + 자원 위에 최상단 레이어로 표시된다.
+</div>
+
+<table>
+  <tr><th>에셋 ID</th><th>한글명</th><th>기능</th><th>Lv1 컨셉</th><th>Lv2 컨셉</th><th>Lv3 컨셉</th></tr>
+  <tr>
+    <td><code>install_bunker</code></td>
+    <td>벙커</td>
+    <td>방어 + 보급</td>
+    <td>토담 참호, 천막</td>
+    <td>석재 벙커, 보급 상자</td>
+    <td>요새화 벙커, 철문</td>
+  </tr>
+  <tr>
+    <td><code>install_tower</code></td>
+    <td>타워</td>
+    <td>적 자동 공격</td>
+    <td>나무 사격탑</td>
+    <td>석재 화살탑</td>
+    <td>대형 포탑, 대포</td>
+  </tr>
+  <tr>
+    <td><code>install_beacon</code></td>
+    <td>봉화대</td>
+    <td>시야 확보 / 조기 경보</td>
+    <td>작은 횃불대</td>
+    <td>석조 봉화대</td>
+    <td>대형 봉화탑, 신호기</td>
+  </tr>
+  <tr>
+    <td><code>install_harvest</code></td>
+    <td>채집소</td>
+    <td>자원 산출량 증가</td>
+    <td>간이 채집 도구</td>
+    <td>작업장, 수레</td>
+    <td>대형 채굴/수확 시설</td>
+  </tr>
+</table>
+
+<div class="note">
+  4종 × 3단계 = <strong>12개</strong>. 크기: 64 × 64px (타일 위 오버레이).<br>
+  단계별로 크기/디테일이 점진적으로 커지며, Lv3는 시각적으로 눈에 띄어야 한다.
+</div>
+
+<h3>7-1. 벙커 — 전진기지 (삼전: 영장/营帐)</h3>
+
+<div class="note">
+  거점이 멀어 피로도 관리가 어려운 구간의 <strong>야전 기지</strong>.<br>
+  파티를 <strong>주둔시켜 방어 가능</strong>. 삼전 영장과 동일하게 전방 거점 역할.
+</div>
+
+<table>
+  <tr><th>항목</th><th>Lv1</th><th>Lv2</th><th>Lv3</th></tr>
+  <tr><td><strong>해금</strong></td><td>거점 1개 점령</td><td>가문 Lv 11</td><td>가문 Lv 26</td></tr>
+  <tr><td><strong>건설 비용</strong></td><td>목재 500 + 석재 300 + 식량 200</td><td>목재 800 + 석재 500 + 식량 300</td><td>목재 1200 + 석재 800 + 식량 500</td></tr>
+  <tr><td><strong>건설 시간</strong></td><td>30분</td><td>45분</td><td>60분</td></tr>
+  <tr><td><strong>주둔</strong></td><td>1파티</td><td>2파티</td><td>3파티</td></tr>
+  <tr><td><strong>피로 회복</strong></td><td>50%</td><td>65%</td><td>80%</td></tr>
+  <tr><td><strong>치료</strong></td><td>경상만</td><td>경상 + 중상(느림)</td><td>경상 즉시 + 중상</td></tr>
+  <tr><td><strong>물자 저장</strong></td><td>주변 2칸, 6시간분</td><td>주변 3칸, 12시간분</td><td>주변 4칸, 24시간분</td></tr>
+  <tr><td><strong>시야</strong></td><td>주변 2칸</td><td>주변 3칸</td><td>주변 4칸</td></tr>
+  <tr><td><strong>내구도</strong></td><td>HP 1000</td><td>HP 2000</td><td>HP 3500</td></tr>
+  <tr><td><strong>유지비</strong></td><td>식량 10/시간</td><td>식량 15/시간</td><td>식량 20/시간</td></tr>
+  <tr><td><strong>슬롯 비용</strong></td><td colspan="3">점령 슬롯 1 소모</td></tr>
+  <tr><td><strong>동시 건설</strong></td><td>최대 1개</td><td>최대 2개</td><td>최대 3개</td></tr>
+</table>
+
+<div class="note">
+  <strong>주둔 방어:</strong> 적이 벙커 헥스를 공격하면 주둔 파티가 자동 방어전 수행. 주둔 파티 없으면 내구도만 깎임.<br>
+  <strong>건설 조건:</strong> 점령한 빈 필드, 아군 인접 연결 필수, 고립 위치 불가.<br>
+  <strong>파괴 조건:</strong> 주둔 파티 전멸 + HP 소진 → 벙커 소멸 (헥스 점령 유지, 슬롯 반환).<br>
+  <strong>식량 고갈:</strong> 경고 후 1시간 뒤 자동 철거. 수동 철거 시 자원 환불 없음.<br>
+  <strong>거점과 차이:</strong> 거점은 피로 100% + 무제한 물자 + 영구 구조물. 벙커는 열화판 전진기지.
+</div>
+
+<h3>7-2. 타워 — 자동 공격 방어탑 (삼전: 전루/箭塔)</h3>
+
+<div class="note">
+  적이 인접 헥스로 진입하면 <strong>자동 원거리 공격</strong>을 가하는 방어 시설.<br>
+  기본 NPC 수비군이 배치되며, 플레이어 파티로 <strong>교체 주둔 가능</strong>.
+</div>
+
+<table>
+  <tr><th>항목</th><th>Lv1</th><th>Lv2</th><th>Lv3</th></tr>
+  <tr><td><strong>해금</strong></td><td>거점 2개 점령</td><td>가문 Lv 15</td><td>가문 Lv 30</td></tr>
+  <tr><td><strong>건설 비용</strong></td><td>목재 400 + 석재 400 + 철광 200</td><td>목재 600 + 석재 700 + 철광 400</td><td>석재 1000 + 철광 800 + 목재 500</td></tr>
+  <tr><td><strong>건설 시간</strong></td><td>20분</td><td>30분</td><td>45분</td></tr>
+  <tr><td><strong>공격 범위</strong></td><td>인접 1칸</td><td>2칸</td><td>3칸</td></tr>
+  <tr><td><strong>NPC 수비군</strong></td><td>전투력 200</td><td>전투력 500</td><td>전투력 1000</td></tr>
+  <tr><td><strong>주둔</strong></td><td colspan="3">1파티 (NPC 수비군 대체). 주둔 파티가 타워의 공격 범위/속도 보너스를 받음</td></tr>
+  <tr><td><strong>공격 속도</strong></td><td>5초/회</td><td>4초/회</td><td>3초/회</td></tr>
+  <tr><td><strong>내구도</strong></td><td>HP 800</td><td>HP 1500</td><td>HP 2500</td></tr>
+  <tr><td><strong>유지비</strong></td><td>철광 5/시간</td><td>철광 8/시간</td><td>철광 12/시간</td></tr>
+  <tr><td><strong>슬롯 비용</strong></td><td colspan="3">점령 슬롯 1 소모</td></tr>
+  <tr><td><strong>동시 건설</strong></td><td>최대 2개</td><td>최대 3개</td><td>최대 5개</td></tr>
+</table>
+
+<div class="note">
+  <strong>자동 교전:</strong> 비우호 파티가 타워 범위 내 진입 시 자동 전투 개시.<br>
+  <strong>NPC vs 주둔:</strong> 기본 NPC 수비군이 방어. 플레이어 파티를 주둔시키면 NPC를 대체하여 더 강력한 방어.<br>
+  <strong>관문 시너지:</strong> 관문 인접 배치 시 공격력 +20% — 관문에 막힌 적을 타워가 공격하는 조합.<br>
+  <strong>제한:</strong> 자원 헥스에는 건설 불가 — 방어 or 생산 택일.
+</div>
+
+<h3>7-3. 봉화대 — 시야 확보 / 조기 경보 (삼전: 요망탑/瞭望塔)</h3>
+
+<div class="note">
+  넓은 범위의 <strong>전장의 안개(Fog of War)를 해제</strong>하고, 적 접근 시 경보를 보내는 정찰 시설.<br>
+  공격 능력 없음, <strong>주둔 불가</strong> — 순수 정보전 구조물.
+</div>
+
+<table>
+  <tr><th>항목</th><th>Lv1</th><th>Lv2</th><th>Lv3</th></tr>
+  <tr><td><strong>해금</strong></td><td>Ch.1 클리어</td><td>가문 Lv 12</td><td>가문 Lv 25</td></tr>
+  <tr><td><strong>건설 비용</strong></td><td>목재 300 + 석재 200</td><td>목재 500 + 석재 400</td><td>석재 800 + 철광 300</td></tr>
+  <tr><td><strong>건설 시간</strong></td><td>15분</td><td>25분</td><td>40분</td></tr>
+  <tr><td><strong>시야 범위</strong></td><td>4칸</td><td>6칸</td><td>8칸</td></tr>
+  <tr><td><strong>경보 기능</strong></td><td>적 접근 알림 (1칸 전)</td><td>적 접근 알림 (2칸 전) + 병력 수</td><td>적 접근 알림 (3칸 전) + 병력 수 + 전투력</td></tr>
+  <tr><td><strong>내구도</strong></td><td>HP 500</td><td>HP 900</td><td>HP 1500</td></tr>
+  <tr><td><strong>유지비</strong></td><td>목재 3/시간</td><td>목재 5/시간</td><td>목재 8/시간</td></tr>
+  <tr><td><strong>슬롯 비용</strong></td><td colspan="3">점령 슬롯 1 소모</td></tr>
+  <tr><td><strong>동시 건설</strong></td><td>최대 3개</td><td>최대 4개</td><td>최대 6개</td></tr>
+</table>
+
+<div class="note">
+  <strong>주둔 불가:</strong> 삼전 요망탑과 동일 — 무인 정찰 시설.<br>
+  <strong>봉화 연쇄:</strong> 봉화대 2개의 시야가 겹치면 경보 전달 속도 즉시 (실시간 푸시).<br>
+  <strong>야간 보너스:</strong> 밤 사이클 시 시야 -2칸 감소하지만, 봉화대는 감소 없음.<br>
+  <strong>은폐 감지:</strong> Lv3 봉화대는 은폐 유닛/함정 탐지 가능.
+</div>
+
+<h3>7-4. 채집소 — 자원 산출량 증가 (삼전: 자원지 고급건물)</h3>
+
+<div class="note">
+  자원이 배정된 헥스에 설치하여 <strong>산출량을 증가</strong>시키는 생산 시설.<br>
+  자원 헥스에만 건설 가능, <strong>주둔 불가</strong> — 방어는 해당 헥스 전투로 처리.
+</div>
+
+<table>
+  <tr><th>항목</th><th>Lv1</th><th>Lv2</th><th>Lv3</th></tr>
+  <tr><td><strong>해금</strong></td><td>거점 1개 점령</td><td>가문 Lv 10</td><td>가문 Lv 22</td></tr>
+  <tr><td><strong>건설 비용</strong></td><td>목재 200 + 식량 100</td><td>목재 400 + 석재 200 + 식량 200</td><td>목재 600 + 석재 400 + 철광 200</td></tr>
+  <tr><td><strong>건설 시간</strong></td><td>10분</td><td>20분</td><td>35분</td></tr>
+  <tr><td><strong>산출 보너스</strong></td><td>+30%</td><td>+60%</td><td>+100%</td></tr>
+  <tr><td><strong>저장 용량</strong></td><td>12시간분</td><td>24시간분</td><td>48시간분</td></tr>
+  <tr><td><strong>내구도</strong></td><td>HP 400</td><td>HP 700</td><td>HP 1200</td></tr>
+  <tr><td><strong>유지비</strong></td><td>없음</td><td>식량 3/시간</td><td>식량 5/시간</td></tr>
+  <tr><td><strong>슬롯 비용</strong></td><td colspan="3">점령 슬롯 0 (자원 헥스에 부속)</td></tr>
+  <tr><td><strong>동시 건설</strong></td><td>최대 5개</td><td>최대 8개</td><td>최대 12개</td></tr>
+</table>
+
+<div class="note">
+  <strong>주둔 불가:</strong> 삼전 자원지 건물과 동일 — 생산 전용 시설.<br>
+  <strong>제한:</strong> 자원 헥스(resource != null)에만 건설 가능. 1헥스 1채집소.<br>
+  <strong>자원 등급 매칭:</strong> 헥스 자원 성급이 높을수록 보너스 효과가 곱연산 (★3 × Lv3 = 기본의 6배).<br>
+  <strong>약탈 가능:</strong> 적이 해당 헥스를 공격하면 저장된 자원을 약탈할 수 있음.
+</div>
+
+<h3>7-5. 주둔 규칙 비교표</h3>
+
+<table>
+  <tr><th>설치물</th><th>주둔</th><th>NPC 수비군</th><th>방어 방식</th><th>삼전 대응</th></tr>
+  <tr><td><strong>벙커</strong></td><td>가능 (1~3파티)</td><td>없음</td><td>주둔 파티가 방어전 수행. 빈 벙커는 내구도만 깎임</td><td>영장(营帐)</td></tr>
+  <tr><td><strong>타워</strong></td><td>가능 (1파티, NPC 대체)</td><td>있음 (Lv별)</td><td>NPC 수비군 or 주둔 파티가 범위 내 적 자동 교전</td><td>전루(箭塔)</td></tr>
+  <tr><td><strong>봉화대</strong></td><td>불가</td><td>없음</td><td>내구도만 존재. 적이 공격하면 파괴</td><td>요망탑(瞭望塔)</td></tr>
+  <tr><td><strong>채집소</strong></td><td>불가</td><td>없음</td><td>내구도만 존재. 적 공격 시 자원 약탈 + 파괴</td><td>자원지 건물</td></tr>
+</table>
+
+<h3>7-6. 데이터 테이블 설계 — InstallableTable.xml</h3>
+
+<div class="note">
+  설치물 4종 × 3레벨의 모든 스탯을 담는 데이터 테이블.<br>
+  프로그래머 요청사항으로, 아래 컬럼 구조와 데이터를 전달한다.
+</div>
+
+<h4>컬럼 정의</h4>
+<table>
+  <tr><th>컬럼명</th><th>타입</th><th>설명</th><th>예시</th></tr>
+  <tr><td><code>ID</code></td><td>int</td><td>고유 ID (종류 100번대 + 레벨)</td><td>101, 102, 103</td></tr>
+  <tr><td><code>Type</code></td><td>string</td><td>설치물 종류</td><td>Bunker, Tower, Beacon, Harvest</td></tr>
+  <tr><td><code>Level</code></td><td>int</td><td>레벨 (1~3)</td><td>1, 2, 3</td></tr>
+  <tr><td><code>Name</code></td><td>string</td><td>표시명</td><td>벙커 Lv1</td></tr>
+  <tr><td><code>UnlockCondition</code></td><td>string</td><td>해금 조건</td><td>Fort_1, FamilyLv_11</td></tr>
+  <tr><td><code>CostWood</code></td><td>int</td><td>목재 비용</td><td>500</td></tr>
+  <tr><td><code>CostStite</code></td><td>int</td><td>석재 비용</td><td>300</td></tr>
+  <tr><td><code>CostIron</code></td><td>int</td><td>철광 비용</td><td>0</td></tr>
+  <tr><td><code>CostGrain</code></td><td>int</td><td>식량 비용</td><td>200</td></tr>
+  <tr><td><code>BuildTime</code></td><td>int</td><td>건설 시간 (분)</td><td>30</td></tr>
+  <tr><td><code>HP</code></td><td>int</td><td>내구도</td><td>1000</td></tr>
+  <tr><td><code>GarrisonSlot</code></td><td>int</td><td>주둔 가능 파티 수 (0=불가)</td><td>1</td></tr>
+  <tr><td><code>NpcDefense</code></td><td>int</td><td>NPC 수비군 전투력 (0=없음)</td><td>0</td></tr>
+  <tr><td><code>SightRange</code></td><td>int</td><td>시야 범위 (칸)</td><td>2</td></tr>
+  <tr><td><code>FatigueRecovery</code></td><td>int</td><td>피로 회복률 % (0=없음)</td><td>50</td></tr>
+  <tr><td><code>HealGrade</code></td><td>int</td><td>치료 등급 (0=없음, 1=경상, 2=중상느림, 3=중상)</td><td>1</td></tr>
+  <tr><td><code>StorageRange</code></td><td>int</td><td>물자 저장 수집 범위 (칸, 0=없음)</td><td>2</td></tr>
+  <tr><td><code>StorageHours</code></td><td>int</td><td>물자 저장 용량 (시간분, 0=없음)</td><td>6</td></tr>
+  <tr><td><code>AtkRange</code></td><td>int</td><td>공격 범위 (칸, 0=없음)</td><td>0</td></tr>
+  <tr><td><code>AtkSpeed</code></td><td>float</td><td>공격 속도 (초/회, 0=없음)</td><td>0</td></tr>
+  <tr><td><code>AlertRange</code></td><td>int</td><td>경보 범위 (칸, 0=없음)</td><td>0</td></tr>
+  <tr><td><code>AlertDetail</code></td><td>int</td><td>경보 상세 (0=없음, 1=접근만, 2=+병력수, 3=+전투력)</td><td>0</td></tr>
+  <tr><td><code>ResourceBonus</code></td><td>int</td><td>자원 산출 보너스 % (0=없음)</td><td>0</td></tr>
+  <tr><td><code>UpkeepType</code></td><td>string</td><td>유지비 자원 종류</td><td>Grain, Iron, Wood, None</td></tr>
+  <tr><td><code>UpkeepAmount</code></td><td>int</td><td>유지비 (시간당)</td><td>10</td></tr>
+  <tr><td><code>SlotCost</code></td><td>int</td><td>점령 슬롯 소모</td><td>1</td></tr>
+  <tr><td><code>MaxCount</code></td><td>int</td><td>동시 건설 최대 수</td><td>1</td></tr>
+  <tr><td><code>RequireResource</code></td><td>bool</td><td>자원 헥스 전용 여부</td><td>false</td></tr>
+  <tr><td><code>PrefabPath</code></td><td>string</td><td>프리팹 경로</td><td>Install/Bunker_Lv1</td></tr>
+</table>
+
+<h4>데이터 (12행)</h4>
+<table>
+  <tr><th>ID</th><th>Type</th><th>Lv</th><th>Name</th><th>해금</th><th>목재</th><th>석재</th><th>철광</th><th>식량</th><th>시간</th><th>HP</th><th>주둔</th><th>NPC</th><th>시야</th></tr>
+  <tr style="background:#1a3a2a"><td>101</td><td>Bunker</td><td>1</td><td>벙커 Lv1</td><td>Fort_1</td><td>500</td><td>300</td><td>0</td><td>200</td><td>30</td><td>1000</td><td>1</td><td>0</td><td>2</td></tr>
+  <tr style="background:#1a3a2a"><td>102</td><td>Bunker</td><td>2</td><td>벙커 Lv2</td><td>FamilyLv_11</td><td>800</td><td>500</td><td>0</td><td>300</td><td>45</td><td>2000</td><td>2</td><td>0</td><td>3</td></tr>
+  <tr style="background:#1a3a2a"><td>103</td><td>Bunker</td><td>3</td><td>벙커 Lv3</td><td>FamilyLv_26</td><td>1200</td><td>800</td><td>0</td><td>500</td><td>60</td><td>3500</td><td>3</td><td>0</td><td>4</td></tr>
+  <tr style="background:#2a1a1a"><td>201</td><td>Tower</td><td>1</td><td>타워 Lv1</td><td>Fort_2</td><td>400</td><td>400</td><td>200</td><td>0</td><td>20</td><td>800</td><td>1</td><td>200</td><td>1</td></tr>
+  <tr style="background:#2a1a1a"><td>202</td><td>Tower</td><td>2</td><td>타워 Lv2</td><td>FamilyLv_15</td><td>600</td><td>700</td><td>400</td><td>0</td><td>30</td><td>1500</td><td>1</td><td>500</td><td>2</td></tr>
+  <tr style="background:#2a1a1a"><td>203</td><td>Tower</td><td>3</td><td>타워 Lv3</td><td>FamilyLv_30</td><td>500</td><td>1000</td><td>800</td><td>0</td><td>45</td><td>2500</td><td>1</td><td>1000</td><td>3</td></tr>
+  <tr style="background:#1a1a3a"><td>301</td><td>Beacon</td><td>1</td><td>봉화대 Lv1</td><td>Ch1_Clear</td><td>300</td><td>200</td><td>0</td><td>0</td><td>15</td><td>500</td><td>0</td><td>0</td><td>4</td></tr>
+  <tr style="background:#1a1a3a"><td>302</td><td>Beacon</td><td>2</td><td>봉화대 Lv2</td><td>FamilyLv_12</td><td>500</td><td>400</td><td>0</td><td>0</td><td>25</td><td>900</td><td>0</td><td>0</td><td>6</td></tr>
+  <tr style="background:#1a1a3a"><td>303</td><td>Beacon</td><td>3</td><td>봉화대 Lv3</td><td>FamilyLv_25</td><td>0</td><td>800</td><td>300</td><td>0</td><td>40</td><td>1500</td><td>0</td><td>0</td><td>8</td></tr>
+  <tr style="background:#2a2a1a"><td>401</td><td>Harvest</td><td>1</td><td>채집소 Lv1</td><td>Fort_1</td><td>200</td><td>0</td><td>0</td><td>100</td><td>10</td><td>400</td><td>0</td><td>0</td><td>0</td></tr>
+  <tr style="background:#2a2a1a"><td>402</td><td>Harvest</td><td>2</td><td>채집소 Lv2</td><td>FamilyLv_10</td><td>400</td><td>200</td><td>0</td><td>200</td><td>20</td><td>700</td><td>0</td><td>0</td><td>0</td></tr>
+  <tr style="background:#2a2a1a"><td>403</td><td>Harvest</td><td>3</td><td>채집소 Lv3</td><td>FamilyLv_22</td><td>600</td><td>400</td><td>200</td><td>0</td><td>35</td><td>1200</td><td>0</td><td>0</td><td>0</td></tr>
+</table>
+
+<div class="note">
+  테이블이 가로로 길어 위 표에는 핵심 컬럼만 표시. 나머지 컬럼(피로회복, 치료, 공격, 경보, 자원보너스, 유지비 등)은 각 설치물 상세 표(§7-1~7-4)를 참조.<br>
+  <strong>수치는 밸런싱 전 초안</strong> — 전투 시뮬레이터 검증 후 조정 예정.
+</div>
+
+<!-- ========== 8. VARIATION ========== -->
+<h2 id="transition">8. 변이 타일 — 반복 타일링 방지</h2>
+
+<div class="note">
+  <strong>지형 전환(블렌딩)은 셰이더/마스크로 프로그래머가 처리.</strong> 전환 타일 별도 제작 없음.<br>
+  대신, 같은 지형이 넓게 깔릴 때 반복감을 줄이기 위한 <strong>변이 타일</strong>을 제작한다.
+</div>
+
+<h3>8-1. 변이 규칙</h3>
+
+<div class="spec-box">
+  <div class="spec-row"><div class="spec-key">변이 수</div><div>지형당 <strong>3종</strong> (넓은 면적) 또는 <strong>2종</strong> (좁은 면적)</div></div>
+  <div class="spec-row"><div class="spec-key">배치 방식</div><div>동일 지형 헥스에 랜덤 배정 (프로그래밍 처리)</div></div>
+  <div class="spec-row"><div class="spec-key">제작 원칙</div><div>색감/톤 동일, 디테일만 다르게 (풀 위치, 돌 배치, 파도 패턴 등)</div></div>
+  <div class="spec-row"><div class="spec-key">연결성</div><div>어떤 변이끼리 인접해도 자연스러워야 함 — 타일 가장자리 30px는 동일 톤 유지</div></div>
+</div>
+
+<h3>8-2. 지형별 변이 수</h3>
+
+<table>
+  <tr><th>지형</th><th>변이 수</th><th>면적 비중</th><th>변이 차이 포인트</th></tr>
+  <tr><td>초원</td><td>3</td><td>높음</td><td>풀 높이, 꽃 유무, 돌멩이</td></tr>
+  <tr><td>숲</td><td>3</td><td>높음</td><td>나무 밀도, 수종 배치, 그림자</td></tr>
+  <tr><td>수역</td><td>3</td><td>매우 높음</td><td>파도 패턴, 물결 방향, 색 농도</td></tr>
+  <tr><td>산지</td><td>3</td><td>높음</td><td>바위 형태, 절벽 각도, 눈 유무</td></tr>
+  <tr><td>빙설</td><td>3</td><td>높음</td><td>눈 질감, 얼음 결정, 균열</td></tr>
+  <tr><td>사막</td><td>2</td><td>낮음</td><td>모래 언덕 방향, 바위</td></tr>
+  <tr><td>해안</td><td>2</td><td>낮음</td><td>모래/자갈 비율, 조개</td></tr>
+  <tr><td>늪지</td><td>2</td><td>낮음</td><td>물웅덩이 위치, 갈대 배치</td></tr>
+  <tr><td>유적</td><td>2</td><td>낮음</td><td>잔해 형태, 이끼 패턴</td></tr>
+  <tr><td>화산</td><td>2</td><td>낮음</td><td>용암 균열, 연기 위치</td></tr>
+  <tr><td>도시</td><td>2</td><td>낮음</td><td>건물 배치, 지붕 색</td></tr>
+  <tr><td>콜로니</td><td>2</td><td>낮음</td><td>목책 형태, 깃발 위치</td></tr>
+  <tr><td>육상관문</td><td>1</td><td>극소</td><td>—</td></tr>
+  <tr><td></td><td><strong>합계 30종</strong></td><td></td><td></td></tr>
+</table>
+
+<!-- ========== 9. STATE ========== -->
+<h2 id="state">9. 상태 오버레이 (6종)</h2>
+<table>
+  <tr><th>에셋 ID</th><th>상태</th><th>컨셉</th><th>적용 방식</th></tr>
+  <tr><td><code>state_fog</code></td><td>전쟁의 안개</td><td>반투명 회색 안개</td><td>미탐색 헥스 전체 덮음</td></tr>
+  <tr><td><code>state_owned</code></td><td>아군 점령</td><td>연한 파란 테두리</td><td>헥스 가장자리 하이라이트</td></tr>
+  <tr><td><code>state_enemy</code></td><td>적 점령</td><td>연한 빨간 테두리</td><td>헥스 가장자리 하이라이트</td></tr>
+  <tr><td><code>state_contested</code></td><td>분쟁 중</td><td>깜빡이는 주황 테두리</td><td>전투 발생 중인 헥스</td></tr>
+  <tr><td><code>state_selected</code></td><td>선택됨</td><td>밝은 백색 테두리</td><td>터치한 헥스</td></tr>
+  <tr><td><code>state_movable</code></td><td>이동 가능</td><td>연한 녹색 반투명</td><td>이동 범위 내 헥스</td></tr>
+</table>
+
+<!-- ========== 10. DUNGEON ========== -->
+<h2 id="dungeon">10. 던전 맵 — 별도 레이어</h2>
+
+<div class="note">
+  던전은 월드맵과 <strong>별도의 헥스 맵</strong>으로 관리된다.<br>
+  각 던전마다 고유한 테마의 전용 헥스 타일 세트가 필요하며, 층별로 맵이 분리된다.<br>
+  월드맵의 던전 입구(struct_dun_*)를 통해 진입한다.
+</div>
+
+<h3>10-1. 던전 헥스 구성</h3>
+
+<table>
+  <tr><th>헥스 타입</th><th>에셋 ID</th><th>설명</th><th>변이</th></tr>
+  <tr>
+    <td><span class="tag tag-layer1">입구</span></td>
+    <td><code>dun_{던전}_entrance</code></td>
+    <td>층 진입 지점. 이전 층/월드맵으로 되돌아가는 포탈</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-layer1">필드</span></td>
+    <td><code>dun_{던전}_field</code></td>
+    <td>일반 이동 가능 구역. 몬스터 출현, 탐색 가능</td>
+    <td>3</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-layer2">보스 구역</span></td>
+    <td><code>dun_{던전}_boss</code></td>
+    <td>보스 전투 전용 구역. 진입 시 전투 트리거</td>
+    <td>1</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-block">벽</span></td>
+    <td><code>dun_{던전}_wall</code></td>
+    <td>이동 불가 경계. 던전 테마에 맞는 벽/장애물</td>
+    <td>2</td>
+  </tr>
+  <tr>
+    <td><span class="tag tag-layer3">계단</span></td>
+    <td><code>dun_{던전}_stairs</code></td>
+    <td>다음 층으로 이동하는 계단/통로</td>
+    <td>1</td>
+  </tr>
+</table>
+
+<h3>10-2. 던전별 테마 타일 (5개 던전)</h3>
+
+<table>
+  <tr><th>던전</th><th>테마</th><th>필드 색감</th><th>벽 느낌</th><th>헥스 수 (타입당)</th></tr>
+  <tr>
+    <td><code>dun_tetra</code><br>테트라 대유적</td>
+    <td>고대 유적</td>
+    <td>황토~갈색 석재 바닥</td>
+    <td>무너진 돌기둥, 이끼</td>
+    <td>입구1 + 필드3 + 보스1 + 벽2 + 계단1 = <strong>8</strong></td>
+  </tr>
+  <tr>
+    <td><code>dun_capybara</code><br>캐피바라 지하농장</td>
+    <td>지하 농장</td>
+    <td>습한 흙, 버섯, 뿌리</td>
+    <td>흙벽, 나무 지지대</td>
+    <td><strong>8</strong></td>
+  </tr>
+  <tr>
+    <td><code>dun_portobello</code><br>포르토벨로 던전</td>
+    <td>해적 동굴</td>
+    <td>암석 바닥, 물웅덩이</td>
+    <td>해식 동굴벽, 선박 잔해</td>
+    <td><strong>8</strong></td>
+  </tr>
+  <tr>
+    <td><code>dun_jacq</code><br>자캥 수용소</td>
+    <td>감옥/수용소</td>
+    <td>회색 석재 바닥, 철창</td>
+    <td>감옥 벽, 쇠사슬</td>
+    <td><strong>8</strong></td>
+  </tr>
+  <tr>
+    <td><code>dun_torsche</code><br>토르쉐 저택</td>
+    <td>고딕 저택</td>
+    <td>어두운 목재, 카펫</td>
+    <td>서재 벽, 촛불, 커튼</td>
+    <td><strong>8</strong></td>
+  </tr>
+</table>
+
+<div class="note">
+  던전 전용 헥스 합계: 5개 던전 × 8종 = <strong>40개</strong><br>
+  각 던전은 여러 층으로 구성되며, 층마다 같은 테마 타일을 공유하되 배치가 다르다.
+</div>
+
+<h3>10-3. 층 구조 예시</h3>
+
+<div class="spec-box">
+  <div class="spec-row"><div class="spec-key">1층</div><div>입구(entrance) → 필드(field) 탐색 → 계단(stairs)으로 2층 이동</div></div>
+  <div class="spec-row"><div class="spec-key">2층</div><div>입구 → 필드 탐색 (난이도 상승) → 계단으로 3층 이동</div></div>
+  <div class="spec-row"><div class="spec-key">최종층</div><div>입구 → 필드 → <strong>보스 구역(boss)</strong> 진입 → 보스 전투</div></div>
+</div>
+
+<!-- ========== 11. NAMING ========== -->
+<h2 id="naming">11. 전체 에셋 네이밍</h2>
+
+<div class="naming-list">
+<span class="comment">── 기본 지형 (13종 × 3변이 = 39개) ──</span><br>
+hex_plains_{01~03}.png<br>
+hex_forest_{01~03}.png<br>
+hex_desert_{01~03}.png<br>
+hex_coast_{01~03}.png<br>
+hex_swamp_{01~03}.png<br>
+hex_ice_{01~03}.png<br>
+hex_ruins_{01~03}.png<br>
+hex_city_{01~03}.png<br>
+hex_colony_{01~03}.png<br>
+hex_mountain_{01~03}.png<br>
+hex_volcano_{01~03}.png<br>
+hex_water_{01~03}.png<br>
+hex_gate_land_{01~02}.png<br>
+<br>
+<span class="comment">── 변이 포함 네이밍 (기본 지형 + 변이 = 30종) ──</span><br>
+<span class="comment">── 변이 번호가 곧 변이 타일 (01=기본, 02~03=변이) ──</span><br>
+<br>
+<span class="comment">── 구조물 (23종) ──</span><br>
+struct_city_reb.png<br>
+struct_city_coim.png<br>
+struct_city_orshu.png<br>
+struct_colony_perucho.png<br>
+struct_colony_cathari.png<br>
+struct_colony_topolo.png<br>
+struct_colony_cracked.png<br>
+struct_colony_portobello.png<br>
+struct_colony_jezebel.png<br>
+struct_colony_dock.png<br>
+struct_colony_devil.png<br>
+struct_colony_bonavista.png<br>
+struct_colony_senissa.png<br>
+struct_colony_tejado.png<br>
+struct_colony_3sisters.png<br>
+struct_colony_snowfield.png<br>
+struct_gate_land_{v|dr|dl}.png<br>
+struct_gate_sea_{v|dr|dl}.png<br>
+struct_dun_tetra.png<br>
+struct_dun_capybara.png<br>
+struct_dun_portobello.png<br>
+struct_dun_jacq.png<br>
+struct_dun_torsche.png<br>
+<br>
+<span class="comment">── 자원 (5종 × 5성급 = 25개) ──</span><br>
+res_iron_s{1~5}.png<br>
+res_wood_s{1~5}.png<br>
+res_stone_s{1~5}.png<br>
+res_grain_s{1~5}.png<br>
+res_herbs_s{1~5}.png<br>
+<br>
+<span class="comment">── 설치물 (4종 × 3단계 = 12개) ──</span><br>
+install_bunker_lv{1~3}.png<br>
+install_tower_lv{1~3}.png<br>
+install_beacon_lv{1~3}.png<br>
+install_harvest_lv{1~3}.png<br>
+<br>
+<span class="comment">── 던전 전용 헥스 (5던전 × 8종 = 40개) ──</span><br>
+dun_tetra_{entrance|field_01~03|boss|wall_01~02|stairs}.png<br>
+dun_capybara_{entrance|field_01~03|boss|wall_01~02|stairs}.png<br>
+dun_portobello_{entrance|field_01~03|boss|wall_01~02|stairs}.png<br>
+dun_jacq_{entrance|field_01~03|boss|wall_01~02|stairs}.png<br>
+dun_torsche_{entrance|field_01~03|boss|wall_01~02|stairs}.png<br>
+<br>
+<span class="comment">── 상태 오버레이 (6종) ──</span><br>
+state_fog.png<br>
+state_owned.png<br>
+state_enemy.png<br>
+state_contested.png<br>
+state_selected.png<br>
+state_movable.png<br>
+</div>
+
+</div>
+</body>
+</html>
