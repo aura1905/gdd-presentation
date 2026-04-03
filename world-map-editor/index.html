@@ -1,0 +1,1774 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GE World Map Editor</title>
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
+  import { getAuth, signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCx9Et77K4bWe8Gt2EaFFs4x1-qgYXn4d4",
+    authDomain: "gdd-presentation-ddb3c.firebaseapp.com",
+    projectId: "gdd-presentation-ddb3c",
+    storageBucket: "gdd-presentation-ddb3c.firebasestorage.app",
+    messagingSenderId: "276123425066",
+    appId: "1:276123425066:web:390e40bb764d78fb976653"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const provider = new GoogleAuthProvider();
+
+  const ALLOWED_DOMAINS = ["imc.co.kr"];
+  const ALLOWED_EMAILS = ["hanaura@gmail.com"];
+
+  function checkAccess(user) {
+    if (ALLOWED_EMAILS.includes(user.email)) return true;
+    return ALLOWED_DOMAINS.includes(user.email.split('@')[1]);
+  }
+
+  window.fbSignIn = function() {
+    signInWithPopup(auth, provider).catch(err => {
+      document.getElementById('auth-error').textContent = '로그인 실패: ' + err.message;
+    });
+  };
+  window.fbSignOut = function() { signOut(auth); };
+
+  onAuthStateChanged(auth, (user) => {
+    const overlay = document.getElementById('auth-overlay');
+    const mainContent = document.getElementById('main-content');
+    const userInfo = document.getElementById('user-info');
+    if (!overlay || !mainContent) return;
+    if (user && checkAccess(user)) {
+      overlay.style.display = 'none';
+      mainContent.style.display = '';
+      if (userInfo) {
+        userInfo.innerHTML = `<img src="${user.photoURL}" style="width:20px;height:20px;border-radius:50%;margin-right:4px"><span style="font-size:11px">${user.displayName}</span><button onclick="fbSignOut()" style="margin-left:8px;background:#f38ba8;color:#fff;border:none;padding:2px 8px;border-radius:3px;cursor:pointer;font-size:10px">로그아웃</button>`;
+      }
+      // Re-init canvas after main-content becomes visible
+      requestAnimationFrame(() => { if (window.resizeCanvas) { resizeCanvas(); render(); } });
+    } else {
+      overlay.style.display = 'flex';
+      mainContent.style.display = 'none';
+      if (user && !checkAccess(user)) {
+        document.getElementById('auth-error').textContent = '접근 권한이 없는 계정입니다: ' + user.email;
+        signOut(auth);
+      }
+    }
+  });
+</script>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #1e1e2e; color: #cdd6f4; font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; font-size: 12px; }
+
+#app { display: flex; flex-direction: column; height: 100vh; }
+
+/* Top toolbar */
+#toolbar {
+  height: 40px; background: #181825; border-bottom: 1px solid #313244;
+  display: flex; align-items: center; padding: 0 8px; gap: 2px; flex-shrink: 0;
+}
+.tb-group { display: flex; gap: 1px; margin-right: 12px; position: relative; }
+.tb-group::after { content:''; position:absolute; right:-7px; top:4px; bottom:4px; width:1px; background:#313244; }
+.tb-group:last-child::after { display: none; }
+.tb-btn {
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid transparent; border-radius: 4px;
+  cursor: pointer; color: #a6adc8; font-size: 15px; position: relative;
+}
+.tb-btn:hover { background: #313244; color: #cdd6f4; }
+.tb-btn.active { background: #45475a; border-color: #89b4fa; color: #89b4fa; }
+.tb-btn .shortcut { position:absolute; bottom:0; right:1px; font-size:8px; color:#585b70; font-weight:bold; line-height:1; }
+.tb-label { font-size: 11px; color: #585b70; margin-right: 4px; font-weight: 600; }
+.tb-brush { display: flex; align-items: center; gap: 2px; }
+.tb-brush-btn {
+  width:24px; height:24px; background:transparent; border:1px solid #313244;
+  border-radius:3px; color:#a6adc8; cursor:pointer; font-size:11px; font-weight:bold;
+}
+.tb-brush-btn:hover { background: #313244; }
+.tb-brush-btn.active { background: #45475a; border-color: #89b4fa; color: #89b4fa; }
+
+#main { display: flex; flex: 1; overflow: hidden; }
+
+/* Left panel */
+#left-panel {
+  width: 240px; background: #1e1e2e; border-right: 1px solid #313244;
+  display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
+}
+.panel-section { border-bottom: 1px solid #313244; }
+.panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; background: #181825; cursor: pointer; user-select: none;
+}
+.panel-header h3 { font-size:11px; text-transform:uppercase; color:#585b70; letter-spacing:0.5px; font-weight:600; }
+.panel-header .toggle { color:#585b70; font-size:10px; }
+.panel-body { padding: 8px; }
+.panel-body.collapsed { display: none; }
+
+/* Layer list */
+.layer-item { display:flex; align-items:center; gap:6px; padding:4px 6px; border-radius:3px; cursor:pointer; margin-bottom:1px; }
+.layer-item:hover { background: #313244; }
+.layer-item.active { background: #45475a; }
+.layer-eye { width:18px; height:18px; display:flex; align-items:center; justify-content:center; font-size:12px; opacity:0.5; cursor:pointer; border-radius:2px; }
+.layer-eye.visible { opacity: 1; }
+.layer-eye:hover { background: #45475a; }
+.layer-name { flex: 1; font-size: 11px; }
+
+/* Terrain palette */
+.terrain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+.t-tile {
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  padding:4px 2px; border:2px solid transparent; border-radius:4px;
+  cursor:pointer; background:#181825; position:relative;
+}
+.t-tile:hover { border-color: #45475a; }
+.t-tile.selected { border-color: #89b4fa; background: #1e2030; }
+.t-tile.impassable::after { content:'✕'; position:absolute; top:1px; right:3px; font-size:8px; color:#f38ba8; font-weight:bold; }
+.t-swatch { width:100%; height:16px; border-radius:2px; border:1px solid rgba(255,255,255,0.1); }
+.t-icon { font-size: 14px; line-height: 1; }
+.t-name { font-size: 9px; color: #a6adc8; text-align: center; }
+
+/* Object palette */
+.obj-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 3px; }
+.o-tile {
+  display:flex; flex-direction:column; align-items:center; gap:1px;
+  padding:4px 2px; border:2px solid transparent; border-radius:4px;
+  cursor:pointer; background:#181825;
+}
+.o-tile:hover { border-color: #45475a; }
+.o-tile.selected { border-color: #a6e3a1; background: #1e2e20; }
+.o-icon { font-size: 14px; }
+.o-name { font-size: 9px; color: #a6adc8; }
+
+/* Region palette */
+.region-list { max-height: 260px; overflow-y: auto; }
+.r-item { display:flex; align-items:center; gap:6px; padding:3px 6px; border-radius:3px; cursor:pointer; margin-bottom:1px; }
+.r-item:hover { background: #313244; }
+.r-item.selected { background: #45475a; }
+.r-swatch { width:12px; height:12px; border-radius:2px; border:1px solid rgba(255,255,255,0.15); flex-shrink:0; }
+.r-name { font-size: 11px; flex: 1; }
+.r-id { font-size: 9px; color: #585b70; }
+
+/* Canvas */
+#canvas-wrap { flex: 1; position: relative; overflow: hidden; background: #11111b; }
+
+/* Right panel */
+#right-panel {
+  width: 220px; background: #1e1e2e; border-left: 1px solid #313244;
+  display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto;
+}
+.prop-row { display:flex; align-items:center; padding:4px 10px; gap:6px; }
+.prop-label { font-size:10px; color:#585b70; width:50px; flex-shrink:0; text-transform:uppercase; font-weight:600; }
+.prop-value { font-size: 11px; flex: 1; }
+.prop-input { width:100%; padding:3px 6px; background:#181825; border:1px solid #313244; color:#cdd6f4; border-radius:3px; font-size:11px; font-family:inherit; }
+.prop-input:focus { border-color: #89b4fa; outline: none; }
+.prop-divider { height: 1px; background: #313244; margin: 4px 0; }
+
+/* Status bar */
+#statusbar {
+  height:24px; background:#181825; border-top:1px solid #313244;
+  display:flex; align-items:center; padding:0 10px; gap:16px;
+  font-size:11px; color:#585b70; flex-shrink:0;
+}
+#statusbar .accent { color: #89b4fa; }
+
+/* Minimap */
+#minimap-wrap {
+  position:absolute; bottom:30px; right:6px; width:180px; height:120px;
+  background:rgba(24,24,37,0.95); border:1px solid #313244; border-radius:4px; overflow:hidden;
+}
+#minimap { width: 100%; height: 100%; }
+
+/* Modal */
+.modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); display:flex; align-items:center; justify-content:center; z-index:100; }
+.modal { background:#1e1e2e; border:1px solid #313244; border-radius:8px; padding:20px; min-width:320px; max-height:80vh; overflow-y:auto; }
+.modal h3 { color:#89b4fa; margin-bottom:12px; font-size:14px; }
+.modal h4 { color:#89b4fa; margin-top:12px; margin-bottom:4px; font-size:12px; }
+.modal label { display:block; margin-bottom:8px; font-size:12px; }
+.modal input, .modal select { width:100%; padding:6px; background:#181825; border:1px solid #313244; color:#cdd6f4; border-radius:3px; margin-top:3px; }
+.modal table { border-collapse:collapse; margin-top:4px; }
+.modal td, .modal th { padding:2px 8px; text-align:left; font-size:11px; }
+.modal th { color:#585b70; border-bottom:1px solid #313244; }
+.modal-actions { display:flex; gap:8px; margin-top:16px; justify-content:flex-end; }
+.modal .btn { padding: 6px 14px; }
+.btn { padding:4px 10px; border:1px solid #313244; background:#181825; color:#cdd6f4; border-radius:3px; cursor:pointer; font-size:11px; }
+.btn:hover { background: #313244; }
+.btn-primary { background:#89b4fa; border-color:#89b4fa; color:#1e1e2e; font-weight:600; }
+.btn-primary:hover { background: #74c7ec; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #45475a; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- AUTH OVERLAY -->
+<div id="auth-overlay" style="display:flex; position:fixed; inset:0; z-index:99999; background:#1e1e2e; align-items:center; justify-content:center; flex-direction:column; font-family:'Segoe UI',system-ui,sans-serif;">
+  <div style="text-align:center; color:#cdd6f4;">
+    <h1 style="font-size:1.6rem; color:#89b4fa; margin-bottom:6px;">GE: World Map Editor</h1>
+    <p style="color:#585b70; margin-bottom:28px; font-size:13px;">팀 전용 — 로그인 필요</p>
+    <button onclick="fbSignIn()" style="background:#4285f4; color:#fff; border:none; padding:12px 36px; border-radius:6px; font-size:14px; cursor:pointer; display:inline-flex; align-items:center; gap:8px; font-family:inherit;">
+      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.1H42V20H24v8h11.3C33.9 33.1 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.3 15.6 18.8 13 24 13c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.4 0-9.9-3.5-11.5-8.3l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.7-.4-3.9z"/></svg>
+      Google 계정으로 로그인
+    </button>
+    <p id="auth-error" style="color:#f38ba8; margin-top:14px; min-height:18px; font-size:12px;"></p>
+  </div>
+</div>
+
+<!-- MAIN CONTENT (hidden until auth) -->
+<div id="main-content" style="display:none;">
+<div id="user-info" style="position:fixed; top:4px; right:8px; z-index:9999; font-size:11px; color:#a6adc8; display:flex; align-items:center;"></div>
+
+<div id="app">
+  <!-- TOOLBAR -->
+  <div id="toolbar">
+    <span class="tb-label">Tools</span>
+    <div class="tb-group">
+      <button class="tb-btn active" data-tool="brush" title="Brush"><span>🖌</span><span class="shortcut">B</span></button>
+      <button class="tb-btn" data-tool="fill" title="Fill"><span>🪣</span><span class="shortcut">F</span></button>
+      <button class="tb-btn" data-tool="eraser" title="Eraser"><span>🧹</span><span class="shortcut">E</span></button>
+      <button class="tb-btn" data-tool="object" title="Object"><span>📍</span><span class="shortcut">O</span></button>
+      <button class="tb-btn" data-tool="region" title="Region"><span>🗺</span><span class="shortcut">R</span></button>
+      <button class="tb-btn" data-tool="select" title="Select"><span>🔍</span><span class="shortcut">S</span></button>
+    </div>
+    <span class="tb-label">Size</span>
+    <div class="tb-group tb-brush">
+      <button class="tb-brush-btn active" data-brush="1">1</button>
+      <button class="tb-brush-btn" data-brush="2">2</button>
+      <button class="tb-brush-btn" data-brush="3">3</button>
+      <button class="tb-brush-btn" data-brush="5">5</button>
+    </div>
+    <span class="tb-label">Map</span>
+    <div class="tb-group">
+      <button class="tb-btn" id="btn-new" title="New Map"><span>📄</span></button>
+      <button class="tb-btn" id="btn-load" title="Load JSON"><span>📂</span></button>
+      <button class="tb-btn" id="btn-save" title="Save (Ctrl+S)"><span>💾</span></button>
+      <button class="tb-btn" id="btn-stats" title="Statistics"><span>📊</span></button>
+      <button class="tb-btn" id="btn-resize" title="Resize Map"><span>↔️</span></button>
+    </div>
+    <div style="flex:1;"></div>
+    <span class="tb-label" id="tb-tool-name">Brush</span>
+  </div>
+
+  <!-- MAIN -->
+  <div id="main">
+    <!-- LEFT -->
+    <div id="left-panel">
+      <div class="panel-section">
+        <div class="panel-header" data-panel="layers"><h3>Layers</h3><span class="toggle">▾</span></div>
+        <div class="panel-body" id="layers-body">
+          <div class="layer-item" data-select-layer="terrain"><span class="layer-eye visible" data-layer="terrain">👁</span><span class="layer-name">Terrain</span></div>
+          <div class="layer-item" data-select-layer="region"><span class="layer-eye visible" data-layer="region">👁</span><span class="layer-name">Region</span></div>
+          <div class="layer-item" data-select-layer="structure"><span class="layer-eye visible" data-layer="structure">👁</span><span class="layer-name">Structures</span></div>
+          <div class="layer-item" data-select-layer="level"><span class="layer-eye" data-layer="level">👁</span><span class="layer-name">Level</span></div>
+          <div class="layer-item" data-select-layer="resource"><span class="layer-eye" data-layer="resource">👁</span><span class="layer-name">Resource</span></div>
+        </div>
+      </div>
+      <div class="panel-section" id="palette-terrain">
+        <div class="panel-header"><h3>Terrain</h3><span class="toggle">▾</span></div>
+        <div class="panel-body"><div class="terrain-grid" id="terrain-palette"></div></div>
+      </div>
+      <div class="panel-section" id="palette-structure" style="display:none;">
+        <div class="panel-header"><h3>Structures</h3><span class="toggle">▾</span></div>
+        <div class="panel-body" style="max-height:500px;overflow-y:auto;" id="structure-palette"></div>
+      </div>
+      <div class="panel-section" id="palette-region" style="display:none;">
+        <div class="panel-header"><h3>Regions</h3><span class="toggle">▾</span></div>
+        <div class="panel-body"><div class="region-list" id="region-palette"></div></div>
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div id="canvas-wrap">
+      <canvas id="map-canvas"></canvas>
+      <div id="minimap-wrap"><canvas id="minimap"></canvas></div>
+    </div>
+
+    <!-- RIGHT -->
+    <div id="right-panel">
+      <div class="panel-section">
+        <div class="panel-header"><h3>Properties</h3></div>
+        <div class="panel-body" id="props-body">
+          <div style="color:#585b70;font-size:11px;padding:8px;">Click a hex (S) to inspect.</div>
+        </div>
+      </div>
+      <div class="panel-section">
+        <div class="panel-header"><h3>Help</h3><span class="toggle">▾</span></div>
+        <div class="panel-body" style="font-size:10px;color:#585b70;line-height:1.6;">
+          <div><b>B</b> Brush &nbsp; <b>F</b> Fill &nbsp; <b>E</b> Eraser</div>
+          <div><b>O</b> Object &nbsp; <b>R</b> Region &nbsp; <b>S</b> Select</div>
+          <div><b>1-5</b> Brush size &nbsp; <b>Ctrl+S</b> Save</div>
+          <div><b>Mid/Right/Alt+Click</b> Pan &nbsp; <b>Scroll</b> Zoom</div>
+          <div><b>Eraser:</b> Click=hex, Shift=구조물+터레인, Ctrl=region</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div id="statusbar">
+    <span id="st-pos">Hex: —</span>
+    <span id="st-terrain">—</span>
+    <span id="st-region">—</span>
+    <span id="st-level">—</span>
+    <span id="st-zoom" class="accent">100%</span>
+    <span id="st-total">0 hexes</span>
+  </div>
+</div>
+
+<input type="file" id="file-input" accept=".json" style="display:none">
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const TERRAINS = [
+  { id:'plains',  name:'초원', icon:'🌾', color:'#8fc06e', passable:true,  height:2, side:'#6a9a4e', dark:'#507838' },
+  { id:'forest',  name:'숲',   icon:'🌲', color:'#5a9e3e', passable:true,  height:2, side:'#3d7a28', dark:'#2d5e1c' },
+  { id:'desert',  name:'사막', icon:'🏜️', color:'#e2c76a', passable:true,  height:2, side:'#c4a84e', dark:'#a68e38' },
+  { id:'coast',   name:'해안', icon:'🏖️', color:'#c8b87a', passable:true,  height:2, side:'#a89860', dark:'#8a7a48' },
+  { id:'swamp',   name:'늪지', icon:'🌿', color:'#7aaa5e', passable:true,  height:2, side:'#5c8844', dark:'#446830' },
+  { id:'ice',     name:'빙설', icon:'❄️', color:'#d0d8c8', passable:true,  height:2, side:'#b0b8a8', dark:'#909888' },
+  { id:'ruins',   name:'유적', icon:'🏛️', color:'#bca87c', passable:true,  height:2, side:'#9a8860', dark:'#7a6a48' },
+  { id:'city',    name:'도시', icon:'🏘️', color:'#c0b8a8', passable:true,  height:2, side:'#9a9488', dark:'#7a7468' },
+  { id:'fortress',name:'거점', icon:'🏰', color:'#b0a090', passable:true,  height:2, side:'#8a7a68', dark:'#6a5a48' },
+  { id:'wall',    name:'관문', icon:'🧱', color:'#908888', passable:false, height:8, side:'#686060', dark:'#484040' },
+  { id:'mountain',name:'산지', icon:'⛰️', color:'#8a8078', passable:false, height:14, side:'#5e5650', dark:'#3e3838' },
+  { id:'cave',    name:'지하', icon:'🕳️', color:'#4a3e36', passable:false, height:8, side:'#302820', dark:'#201c16' },
+  { id:'volcano', name:'화산', icon:'🌋', color:'#7a3030', passable:false, height:16, side:'#5a2020', dark:'#401818' },
+  { id:'water',   name:'수역', icon:'🌊', color:'#2a6090', passable:false, height:-4, side:'#1a4060', dark:'#102840' },
+];
+
+// Named structure stamps
+const STRUCTURES = [
+  // 도시 (14칸)
+  { id:'city_reboldoeux', name:'리볼도외',   type:'city', size:7, region:1,  color:'#f9e2af', border:'#c8a848' },
+  { id:'city_coimbra',    name:'코임브라',   type:'city', size:7, region:13, color:'#89dceb', border:'#4090b0' },
+  { id:'city_orshu',      name:'오슈',       type:'city', size:7, region:28, color:'#cba6f7', border:'#8060c0' },
+  // 거점 (7칸) — 13개
+  { id:'fort_perucho',    name:'페루초삼거리 거점',    type:'outpost', size:1, region:3,  color:'#f38ba8', border:'#c05070' },
+  { id:'fort_cathari',    name:'카타리폭포 거점',       type:'outpost', size:1, region:5,  color:'#f38ba8', border:'#c05070' },
+  { id:'fort_topolo',     name:'토플로 두르가 거점',    type:'outpost', size:1, region:15, color:'#f38ba8', border:'#c05070' },
+  { id:'fort_cracked',    name:'갈라진 땅 거점',       type:'outpost', size:1, region:11, color:'#f38ba8', border:'#c05070' },
+  { id:'fort_portobello', name:'포르토벨로 황량한 언덕 거점',type:'outpost', size:1, region:18, color:'#f38ba8', border:'#c05070' },
+  { id:'fort_jezebel',    name:'지저벨협곡 거점',      type:'outpost', size:1, region:17, color:'#f38ba8', border:'#c05070' },
+  { id:'fort_dock',       name:'버려진 부두 거점',     type:'outpost', size:1, region:19, color:'#f38ba8', border:'#c05070' },
+  { id:'fort_devil',      name:'마의 계곡 거점',        type:'outpost', size:1, region:23, color:'#f38ba8', border:'#c05070' },
+  { id:'fort_bonavista',  name:'보나비스타 지류 거점', type:'outpost', size:1, region:21, color:'#f38ba8', border:'#c05070' },
+  { id:'fort_senissa',    name:'쎄니싸 고원 거점',     type:'outpost', size:1, region:24, color:'#f38ba8', border:'#c05070' },
+  { id:'fort_tejado',     name:'테하도 베르테 거점',   type:'outpost', size:1, region:26, color:'#f38ba8', border:'#c05070' },
+  { id:'fort_3sisters',   name:'세자매의 호수 거점',   type:'outpost', size:1, region:27, color:'#f38ba8', border:'#c05070' },
+  { id:'fort_snowfield',  name:'순백의 대지 거점',     type:'outpost', size:1, region:31, color:'#f38ba8', border:'#c05070' },
+  // 관문 (1칸)
+  { id:'gate', name:'관문', type:'gate', size:1, color:'#cba6f7', border:'#9070c0' },
+  // 던전 입구 (1칸) — 7개
+  { id:'dun_alquelt',   name:'알쿠에트모레자',     type:'dungeon', size:1, color:'#ff6b6b', border:'#c03030' },
+  { id:'dun_tetra',     name:'테트라대유적',       type:'dungeon', size:1, color:'#ff6b6b', border:'#c03030' },
+  { id:'dun_capybara',  name:'캐피바라 지하농장',  type:'dungeon', size:1, color:'#ff6b6b', border:'#c03030' },
+  { id:'dun_portobello',name:'포르토벨로 던전',    type:'dungeon', size:1, color:'#ff6b6b', border:'#c03030' },
+  { id:'dun_jacq',      name:'자캥수용소 던전',    type:'dungeon', size:1, color:'#ff6b6b', border:'#c03030' },
+  { id:'dun_torsche',   name:'토르쉐저택',         type:'dungeon', size:1, color:'#ff6b6b', border:'#c03030' },
+  { id:'dun_icetower',  name:'빙마탑 던전',        type:'dungeon', size:1, color:'#ff6b6b', border:'#c03030' },
+];
+
+const REGIONS = [
+  // --- 리볼도외 권역 ---
+  { id:1,  name:'퀸즈게이트',          color:'#f5c542' },
+  { id:2,  name:'채석장',              color:'#d4a030' },
+  { id:3,  name:'페루초삼거리',        color:'#e86a5a' },
+  { id:4,  name:'알비강',              color:'#4ea8d8' },
+  { id:5,  name:'카타리폭포',          color:'#38c0e0' },
+  { id:6,  name:'티에라 데 라 시드',   color:'#c87848' },
+  { id:38, name:'알쿠엘트모레자',      color:'#d04040' },
+  // --- 중앙 권역 ---
+  { id:7,  name:'왕들의 정원',         color:'#45b8d0' },
+  { id:8,  name:'세레스테 호수',       color:'#50a0e0' },
+  { id:9,  name:'테트라언덕',          color:'#b07ee8' },
+  { id:39, name:'테트라대유적',        color:'#7858c0' },
+  { id:10, name:'테트라마다 계곡',     color:'#9868d0' },
+  { id:11, name:'갈라진 땅',           color:'#a05840' },
+  { id:12, name:'하비에로 초원',       color:'#68c858' },
+  // --- 코임브라 권역 ---
+  { id:13, name:'코임브라 님로드 다리',color:'#5ea8f0' },
+  { id:14, name:'구 코임브라 항구',    color:'#4890d0' },
+  { id:15, name:'토플로 두르가',       color:'#7880e8' },
+  { id:16, name:'비아 플루비알',       color:'#6898c8' },
+  // --- 지저벨·포르토벨로 권역 ---
+  { id:17, name:'지저벨협곡',          color:'#e85aa0' },
+  { id:18, name:'포르토벨로 황량한 언덕',color:'#42c8b8' },
+  { id:19, name:'포르토벨로 버려진 부두',color:'#8088b0' },
+  { id:41, name:'포르토벨로 던전',      color:'#3898a0' },
+  // --- 리온·보나비스타 권역 ---
+  { id:20, name:'리온 평원',           color:'#78d068' },
+  { id:21, name:'보나비스타 지류',     color:'#50c8a0' },
+  // --- 자캥 권역 ---
+  { id:22, name:'자캥분화구',          color:'#e04050' },
+  { id:23, name:'마의 계곡',           color:'#c83848' },
+  { id:42, name:'자캥수용소',          color:'#b03040' },
+  // --- 쎄니싸·토르쉐 권역 ---
+  { id:24, name:'쎄니싸 고원',         color:'#d86878' },
+  { id:25, name:'잊혀진 폐허',         color:'#a07060' },
+  { id:26, name:'테하도 베르테',       color:'#58d070' },
+  { id:27, name:'세자매의 호수',       color:'#48b8d8' },
+  // --- 토르쉐·오슈 권역 ---
+  { id:28, name:'작열의 고원',         color:'#a06ef0' },
+  { id:29, name:'캐피바라',            color:'#60c848' },
+  { id:40, name:'캐피바라 지하농장',   color:'#48a038' },
+  { id:36, name:'튜링엔 숲',           color:'#4ab848' },
+  { id:37, name:'토르쉐 저택',         color:'#8868c0' },
+  // --- 패루초 방벽·빙설 권역 ---
+  { id:30, name:'페루초 방벽',         color:'#9098c0' },
+  { id:31, name:'순백의 대지',         color:'#b0c8e0' },
+  { id:32, name:'얼어붙은 평원',       color:'#90b8d8' },
+  { id:33, name:'빙마의 설원',         color:'#78a8e0' },
+  { id:43, name:'빙마탑',             color:'#6090c8' },
+  // --- 최남단 ---
+  { id:34, name:'기간떼',              color:'#d0c040' },
+  { id:35, name:'불의 섬',             color:'#e06030' },
+];
+
+// ============================================================
+// ENEMY THEME DATA (§11-4-3, §11-7-3)
+// ============================================================
+const LEGION_ENEMIES = {
+  38:{str:'★1',main:'야수 (야생견,박쥐)',sub:'곤충 (거미)',boss:'대형 거미 여왕'},
+  1:{str:'★1',main:'곤충 (전갈,거미)',sub:'골렘 (록골렘)',boss:'킹 록 골렘'},
+  3:{str:'★1+',main:'야수 (늑대,멧돼지)',sub:'식물 (맨드레이크)',boss:'알파 울프'},
+  2:{str:'★1+',main:'곤충 (동굴거미)',sub:'언데드 (해골)',boss:'동굴 여왕벌'},
+  5:{str:'★2',main:'언데드 (스켈레톤,좀비)',sub:'수생 (피라냐)',boss:'데스 나이트'},
+  4:{str:'★2',main:'식물 (트렌트,독초)',sub:'수생 (워터스피릿)',boss:'고대수'},
+  8:{str:'★2',main:'수생 (머먼,워터스피릿)',sub:'정령 (수속성)',boss:'호수의 시서펜트'},
+  7:{str:'★2+',main:'식물 (맨드레이크,트렌트)',sub:'야수 (사슴,멧돼지)',boss:'정원의 수호자'},
+  13:{str:'★2+',main:'언데드 (레이스)',sub:'마수 (가고일)',boss:'다리의 수문장'},
+  9:{str:'★3',main:'야수 (다이어울프)',sub:'곤충 (독충)',boss:'언덕의 늑대왕'},
+  39:{str:'★3',main:'골렘 (가디언골렘)',sub:'마수 (가고일)',boss:'고대 수호자'},
+  14:{str:'★3',main:'수생 (해양생물)',sub:'인간형 (밀수업자)',boss:'항구의 해적왕'},
+  15:{str:'★3',main:'야수 (독수리,기수형)',sub:'정령 (풍속성)',boss:'구릉의 그리폰'},
+  18:{str:'★3+',main:'수생 (해안절벽)',sub:'곤충 (절벽거미)',boss:'절벽의 와이번'},
+  19:{str:'★3+',main:'인간형 (해적)',sub:'언데드 (유령선원)',boss:'해적 두목'},
+  41:{str:'★3+',main:'언데드 (유령선원,리치)',sub:'마수 (해양마수)',boss:'저주받은 선장'},
+  10:{str:'★3+',main:'야수 (켄타우르스)',sub:'정령 (풍속성)',boss:'켄타우르스 족장'},
+  16:{str:'★3+',main:'수생 (강 생물)',sub:'식물 (습지 독초)',boss:'강의 히드라'},
+  20:{str:'★4',main:'야수 (대형 야수)',sub:'정령 (토속성)',boss:'평원의 베히모스'},
+  21:{str:'★4',main:'식물 (숲 트렌트)',sub:'수생 (강변 머먼)',boss:'숲의 고대수'},
+  17:{str:'★4',main:'골렘 (석재 골렘)',sub:'곤충 (협곡 전갈)',boss:'협곡의 거대골렘'},
+  26:{str:'★4',main:'식물 (녹지 정령)',sub:'야수 (숲 야수)',boss:'숲의 수호정령'},
+  12:{str:'★4',main:'식물 (울창한 숲)',sub:'야수 (숲늑대)',boss:'트렌트 장로'},
+  27:{str:'★4',main:'수생 (호수 정령)',sub:'정령 (수속성)',boss:'호수의 수호자'},
+  37:{str:'★4+',main:'마수 (저택 마물)',sub:'골렘 (실험골렘)',boss:'십인 귀족 NPC'},
+  36:{str:'★4+',main:'야수 (사바나 대형)',sub:'정령 (토/풍)',boss:'사바나의 킹리온'},
+  23:{str:'★4',main:'마수 (화염마수)',sub:'정령 (화속성)',boss:'화염정령왕'},
+  42:{str:'★4',main:'언데드 (수용소 망자)',sub:'마수 (다크스탈커)',boss:'수용소 지배자'},
+  22:{str:'★4+',main:'마수 (데몬솔저)',sub:'곤충 (독전갈)',boss:'계곡의 아크데몬'},
+  24:{str:'★4+',main:'야수 (고원 대형)',sub:'식물 (고산 약초정령)',boss:'고원의 그리폰왕'},
+  25:{str:'★4+',main:'골렘 (폐허 가디언)',sub:'언데드 (고대 망자)',boss:'고대 수호골렘'},
+  28:{str:'★5',main:'정령 (화속성)',sub:'마수 (화염마수)',boss:'화염 피닉스'},
+  11:{str:'★5',main:'마수 (균열 악마)',sub:'골렘 (용암골렘)',boss:'균열의 악마왕'},
+  30:{str:'★5',main:'식물 (지하 독버섯)',sub:'곤충 (동굴 벌레)',boss:'지하 버섯왕'},
+  40:{str:'★5',main:'식물 (변이 식물)',sub:'곤충 (기생 곤충)',boss:'변이체'},
+  33:{str:'★5',main:'골렘 (빙골렘)',sub:'정령 (빙속성)',boss:'프로스트 자이언트'},
+  31:{str:'★5',main:'야수 (빙원 야수)',sub:'정령 (빙속성)',boss:'빙원의 울프킹'},
+  32:{str:'★5',main:'정령 (프로스트)',sub:'골렘 (아이스골렘)',boss:'프로스트 드레이크'},
+  34:{str:'★5+',main:'용종 (아이스 드래곤)',sub:'골렘 (고대빙골렘)',boss:'아이스 드래곤'},
+  43:{str:'★5+',main:'골렘 (빙마탑 수호)',sub:'용종 (엘더드래곤)',boss:'빙마 (최종보스)'},
+  35:{str:'★5+',main:'용종 (대형 드래곤)',sub:'골렘 (거인골렘)',boss:'거인왕'},
+};
+
+const AI_VALUE_TABLE = {
+  '★1':'300~500 (1파티)','★1+':'500~800 (1파티)',
+  '★2':'800~1,200 (1파티)','★2+':'1,200~1,800 (1파티)',
+  '★3':'1,800~2,500 (1파티)','★3+':'2,500~7,000 (1~2파티)',
+  '★4':'7,000~10,000 (2파티)','★4+':'10,000~14,000 (2파티)',
+  '★5':'14,000~30,000 (2~3파티)','★5+':'30,000~45,000 (3파티)',
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let mapData = { cols:60, rows:50, hexes:{} };
+let camera = { x:0, y:0, zoom:1.0 };
+let currentTool = 'brush', currentTerrain = 'plains', currentStructure = null, currentRegion = 1;
+let brushSize = 1;
+let layers = { terrain:true, region:true, structure:true, level:true, resource:true };
+let isDragging = false, dragStart = {x:0,y:0}, camStart = {x:0,y:0};
+let isPainting = false, hoveredHex = null, selectedHex = null;
+const undoStack = [], UNDO_LIMIT = 50;
+function pushUndo() {
+  const snap = {};
+  for (const k in mapData.hexes) {
+    const h = mapData.hexes[k];
+    snap[k] = { terrain:h.terrain, region:h.region, objects:[...h.objects], label:h.label, level:h.level||0, resource:h.resource||null };
+  }
+  undoStack.push(snap);
+  if (undoStack.length > UNDO_LIMIT) undoStack.shift();
+}
+function popUndo() {
+  if (undoStack.length === 0) return;
+  const snap = undoStack.pop();
+  mapData.hexes = {};
+  for (const k in snap) {
+    mapData.hexes[k] = { terrain:snap[k].terrain, region:snap[k].region, objects:[...snap[k].objects], label:snap[k].label, level:snap[k].level||0, resource:snap[k].resource||null };
+  }
+  render();
+}
+const HEX_SIZE = 20;
+
+// ============================================================
+// ISOMETRIC SETTINGS
+// ============================================================
+const ISO_Y = 0.75; // Y compression for isometric feel
+
+// ============================================================
+// HEX MATH (pointy-top, odd-row offset, q=row↑, r=col→)
+// Unity CellSwizzle=YXZ + flat-top = pointy-top과 동일한 배치
+// ============================================================
+function hexToPixel(q, r) {
+  // flat-top, q=row(vertical), r=col(horizontal), odd-r shifted up
+  return { x: HEX_SIZE * 1.5 * r, y: HEX_SIZE * Math.sqrt(3) * (q + 0.5 * (r & 1)) };
+}
+
+// Isometric render position
+function hexToISO(q, r) {
+  const p = hexToPixel(q, r);
+  return { x: p.x, y: -p.y * ISO_Y };
+}
+
+function pixelToHex(px, py) {
+  const realPy = -py / ISO_Y;
+  const size = HEX_SIZE;
+  // Flat-top: pixel → cube coordinates
+  const cx = (2/3 * px) / size;
+  const cz = (-1/3 * px + Math.sqrt(3)/3 * realPy) / size;
+  const cy = -cx - cz;
+  let rx = Math.round(cx), ry = Math.round(cy), rz = Math.round(cz);
+  const dx = Math.abs(rx - cx), dy = Math.abs(ry - cy), dz = Math.abs(rz - cz);
+  if (dx > dy && dx > dz) rx = -ry - rz;
+  else if (dy > dz) ry = -rx - rz;
+  else rz = -rx - ry;
+  // Cube → odd-r offset: r=col=cube_x, q=row=cube_z+floor(cube_x/2)
+  return { q: rz + ((rx - (rx & 1)) >> 1), r: rx };
+}
+
+function hexKey(q, r) { return `${q},${r}`; }
+
+// Flat-top odd-r offset — Unity Hexagonal Tilemap (YXZ) compatible
+// 짝수 r(col): [+1,0],[-1,0],[0,+1],[-1,+1],[0,-1],[-1,-1]
+// 홀수 r(col): [+1,0],[-1,0],[+1,+1],[0,+1],[+1,-1],[0,-1]
+function getHexDirs(q, r) {
+  if (r & 1) return [[1,0],[-1,0],[1,1],[0,1],[1,-1],[0,-1]];
+  return [[1,0],[-1,0],[0,1],[-1,1],[0,-1],[-1,-1]];
+}
+
+function hexNeighbors(q, r, radius) {
+  const results = [];
+  for (let dq = -radius; dq <= radius; dq++) {
+    for (let dr = -radius; dr <= radius; dr++) {
+      const nq = q+dq, nr = r+dr;
+      const p1 = hexToPixel(q,r), p2 = hexToPixel(nq,nr);
+      if (Math.sqrt((p1.x-p2.x)**2+(p1.y-p2.y)**2) <= radius*HEX_SIZE*Math.sqrt(3)+1) {
+        if (nq>=0 && nq<mapData.cols && nr>=0 && nr<mapData.rows) results.push({q:nq,r:nr});
+      }
+    }
+  }
+  return results;
+}
+
+// Get ring of hexes at exact distance from center (even-q offset)
+function hexRing(q, r, dist) {
+  if (dist === 0) return [{q, r}];
+  const results = [];
+  const all = hexNeighbors(q, r, dist);
+  const inner = dist > 1 ? hexNeighbors(q, r, dist - 1) : [{q, r}];
+  const innerSet = new Set(inner.map(h => hexKey(h.q, h.r)));
+  for (const h of all) {
+    if (!innerSet.has(hexKey(h.q, h.r))) results.push(h);
+  }
+  return results;
+}
+
+// Structure stamp patterns
+// City (도시): 14 hexes — center 7 + 7 from ring 2 (top half for compact shape)
+// Outpost (거점): 7 hexes — center + 6 neighbors
+// Barrier (방벽): 1 hex
+function getStructureStamp(q, r, objId) {
+  if (objId === 'barrier') return [{q, r}];
+  if (objId === 'outpost') return hexNeighbors(q, r, 1);
+  if (objId === 'city') {
+    const core = hexNeighbors(q, r, 1); // 7 hexes
+    const ring2 = hexRing(q, r, 2);
+    // Sort ring2 by Y position (top first) and take 7 to make 14 total
+    ring2.sort((a, b) => {
+      const pa = hexToPixel(a.q, a.r), pb = hexToPixel(b.q, b.r);
+      return pa.y - pb.y;
+    });
+    return [...core, ...ring2.slice(0, 7)];
+  }
+  return null; // not a structure stamp
+}
+
+
+// ============================================================
+// CANVAS
+// ============================================================
+const canvas = document.getElementById('map-canvas');
+const ctx = canvas.getContext('2d');
+const minimapCanvas = document.getElementById('minimap');
+const minimapCtx = minimapCanvas.getContext('2d');
+
+function resizeCanvas() {
+  const wrap = document.getElementById('canvas-wrap');
+  canvas.width = wrap.clientWidth; canvas.height = wrap.clientHeight;
+  minimapCanvas.width = 180; minimapCanvas.height = 120;
+  render();
+}
+window.addEventListener('resize', resizeCanvas);
+
+// ============================================================
+// 3D HEX DRAWING
+// ============================================================
+
+// Get hex vertices at given center, size, with optional Y offset (height)
+function hexVerts(cx, cy, size) {
+  const verts = [];
+  for (let i = 0; i < 6; i++) {
+    const a = Math.PI / 3 * i; // flat-top
+    verts.push({ x: cx + size * Math.cos(a), y: cy + size * Math.sin(a) * ISO_Y });
+  }
+  return verts;
+}
+
+// Draw a filled hex (isometric squashed)
+function drawHexISO(ctx, cx, cy, size, fill, stroke, lineWidth) {
+  const v = hexVerts(cx, cy, size);
+  ctx.beginPath();
+  ctx.moveTo(v[0].x, v[0].y);
+  for (let i = 1; i < 6; i++) ctx.lineTo(v[i].x, v[i].y);
+  ctx.closePath();
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); }
+  if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lineWidth || 0.5; ctx.stroke(); }
+}
+
+// Draw a dome/mound shape (for elevated terrain)
+function drawDome(ctx, cx, baseY, halfW, height, colorTop, colorMid, colorBot) {
+  ctx.beginPath();
+  ctx.moveTo(cx - halfW, baseY);
+  ctx.quadraticCurveTo(cx - halfW * 0.4, baseY - height * 1.15, cx, baseY - height);
+  ctx.quadraticCurveTo(cx + halfW * 0.4, baseY - height * 1.15, cx + halfW, baseY);
+  ctx.closePath();
+
+  const grad = ctx.createLinearGradient(cx, baseY - height, cx, baseY);
+  grad.addColorStop(0, colorTop);
+  grad.addColorStop(0.55, colorMid);
+  grad.addColorStop(1, colorBot);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // subtle highlight edge
+  ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+}
+
+// Draw elevated terrain mounds (mountain, volcano, cave, city)
+function drawElevatedTerrain(ctx, cx, cy, size, t) {
+  const ISO = ISO_Y;
+  if (t.id === 'mountain') {
+    // 3 overlapping rocky peaks
+    const baseY = cy + size * 0.05 * ISO;
+    drawDome(ctx, cx - size*0.3, baseY, size*0.35, size*0.55*ISO, t.color, t.side, t.dark);
+    drawDome(ctx, cx + size*0.25, baseY + size*0.02, size*0.32, size*0.48*ISO, t.color, t.side, t.dark);
+    drawDome(ctx, cx, baseY - size*0.02, size*0.42, size*0.72*ISO, t.color, t.side, t.dark);
+  } else if (t.id === 'volcano') {
+    // Single tall peak with lava glow
+    const baseY = cy + size * 0.08 * ISO;
+    drawDome(ctx, cx, baseY, size*0.5, size*0.9*ISO, t.color, t.side, t.dark);
+    ctx.beginPath();
+    ctx.ellipse(cx, baseY - size*0.78*ISO, size*0.1, size*0.07*ISO, 0, 0, Math.PI*2);
+    ctx.fillStyle = '#ff5522';
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx, baseY - size*0.78*ISO, size*0.05, size*0.035*ISO, 0, 0, Math.PI*2);
+    ctx.fillStyle = '#ffaa44';
+    ctx.fill();
+  } else if (t.id === 'cave') {
+    // Low mound with dark entrance
+    const baseY = cy + size * 0.12 * ISO;
+    drawDome(ctx, cx, baseY, size*0.42, size*0.45*ISO, t.color, t.side, t.dark);
+    ctx.beginPath();
+    ctx.ellipse(cx, baseY - size*0.12*ISO, size*0.13, size*0.1*ISO, 0, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,0.7)';
+    ctx.fill();
+  }
+  // city, fortress, wall — no per-hex elevation, only center object draws structure
+}
+
+// Draw named structure marker (city/outpost/gate)
+function drawStructureMarker(ctx, cx, cy, size, struct) {
+  if (struct.type === 'gate') { drawGateIcon(ctx, cx, cy, size, struct); return; }
+  if (struct.type === 'dungeon') { drawDungeonIcon(ctx, cx, cy, size, struct); return; }
+  const radiusMap = { city: size*2.0, outpost: size*0.9 };
+  const oyMap = { city: 0, outpost: 0 };
+  const radius = radiusMap[struct.type] || size*1.5;
+  const centerY = cy + (oyMap[struct.type] || 0);
+
+  // Cluster border ring
+  ctx.beginPath();
+  ctx.ellipse(cx, centerY, radius, radius * ISO_Y, 0, 0, Math.PI * 2);
+  ctx.strokeStyle = struct.border;
+  ctx.lineWidth = 2.5;
+  ctx.setLineDash([6, 3]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Inner glow
+  ctx.beginPath();
+  ctx.ellipse(cx, centerY, radius * 0.85, radius * 0.85 * ISO_Y, 0, 0, Math.PI * 2);
+  ctx.fillStyle = struct.border + '15';
+  ctx.fill();
+
+  // Label — structure name at center
+  const labelSizeMap = { city: size * 0.8, outpost: size * 0.5 };
+  const labelSize = labelSizeMap[struct.type] || size * 0.65;
+  ctx.font = `bold ${labelSize}px 'Segoe UI'`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = struct.color;
+  ctx.shadowColor = '#000';
+  ctx.shadowBlur = 4;
+  ctx.fillText(struct.name, cx, centerY);
+  ctx.shadowBlur = 0;
+}
+
+function drawGateIcon(ctx, cx, cy, size, struct) {
+  const s = size * 0.9;
+  // Left pillar
+  ctx.fillStyle = '#6a6070';
+  ctx.fillRect(cx - s*0.55, cy - s*0.5, s*0.25, s*0.9);
+  // Right pillar
+  ctx.fillRect(cx + s*0.3, cy - s*0.5, s*0.25, s*0.9);
+  // Top bar (lintel)
+  ctx.fillStyle = '#8a7890';
+  ctx.fillRect(cx - s*0.65, cy - s*0.6, s*1.3, s*0.2);
+  // Arch opening
+  ctx.fillStyle = '#1a1a2e';
+  ctx.beginPath();
+  ctx.moveTo(cx - s*0.28, cy + s*0.4);
+  ctx.lineTo(cx - s*0.28, cy - s*0.15);
+  ctx.quadraticCurveTo(cx, cy - s*0.45, cx + s*0.28, cy - s*0.15);
+  ctx.lineTo(cx + s*0.28, cy + s*0.4);
+  ctx.closePath();
+  ctx.fill();
+  // Gate color accent on arch
+  ctx.strokeStyle = struct.border;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(cx - s*0.28, cy + s*0.4);
+  ctx.lineTo(cx - s*0.28, cy - s*0.15);
+  ctx.quadraticCurveTo(cx, cy - s*0.45, cx + s*0.28, cy - s*0.15);
+  ctx.lineTo(cx + s*0.28, cy + s*0.4);
+  ctx.stroke();
+  // Gate number label below
+  const label = struct.name.replace('관문 ','');
+  ctx.font = `bold ${size*0.4}px 'Segoe UI'`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.shadowColor = '#000'; ctx.shadowBlur = 3;
+  ctx.fillStyle = struct.color;
+  ctx.fillText(label, cx, cy + s*0.5);
+  ctx.shadowBlur = 0;
+}
+
+function drawDungeonIcon(ctx, cx, cy, size, struct) {
+  const s = size * 0.9;
+  // Dark cave mouth (descending stairs feel)
+  ctx.fillStyle = '#1a1020';
+  ctx.beginPath();
+  ctx.moveTo(cx - s*0.45, cy + s*0.3);
+  ctx.lineTo(cx - s*0.3, cy - s*0.35);
+  ctx.lineTo(cx + s*0.3, cy - s*0.35);
+  ctx.lineTo(cx + s*0.45, cy + s*0.3);
+  ctx.closePath();
+  ctx.fill();
+  // Stone frame
+  ctx.strokeStyle = struct.border;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  // Skull/danger mark
+  ctx.font = `${size*0.45}px 'Segoe UI'`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('💀', cx, cy - s*0.05);
+  // Label below
+  ctx.font = `bold ${size*0.38}px 'Segoe UI'`;
+  ctx.textBaseline = 'top';
+  ctx.shadowColor = '#000'; ctx.shadowBlur = 3;
+  ctx.fillStyle = struct.color;
+  ctx.fillText(struct.name, cx, cy + s*0.4);
+  ctx.shadowBlur = 0;
+}
+
+
+// ============================================================
+// RENDER
+// ============================================================
+function render() {
+  try { _renderInner(); } catch(e) { console.error('Render error:', e); }
+}
+function _renderInner() {
+  const w = canvas.width, h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = '#11111b';
+  ctx.fillRect(0, 0, w, h);
+
+  ctx.save();
+  ctx.translate(w/2 + camera.x * camera.zoom, h/2 + camera.y * camera.zoom);
+  ctx.scale(camera.zoom, camera.zoom);
+
+  const size = HEX_SIZE;
+  const invZoom = 1 / camera.zoom;
+  const viewW = w * invZoom, viewH = h * invZoom;
+  const camX = -camera.x, camY = -camera.y;
+  const regionCenters = {};
+
+  // Helper: check if hex is in view
+  function inView(p) {
+    return !(p.x < camX - viewW/2 - size*4 || p.x > camX + viewW/2 + size*4 ||
+             p.y < camY - viewH/2 - size*4 || p.y > camY + viewH/2 + size*4);
+  }
+
+  // ====== PASS 1: TERRAIN ======
+  for (let r = 0; r < mapData.rows; r++) {
+    for (let q = 0; q < mapData.cols; q++) {
+      const p = hexToISO(q, r);
+      if (!inView(p)) continue;
+      const hex = mapData.hexes[hexKey(q, r)];
+      if (layers.terrain && hex && hex.terrain) {
+        const t = TERRAINS.find(t => t.id === hex.terrain);
+        if (t) {
+          drawHexISO(ctx, p.x, p.y, size + 0.5, t.color, 'rgba(255,255,255,0.12)', 0.5);
+          if (!t.passable && t.id !== 'water' && t.id !== 'wall') {
+            drawElevatedTerrain(ctx, p.x, p.y, size, t);
+          }
+        }
+      } else {
+        drawHexISO(ctx, p.x, p.y, size + 0.5, '#0d0d15', null);
+      }
+    }
+  }
+
+  // ====== PASS 2: REGION (overlay + labels) ======
+  // Pre-compute region centers from ALL hexes (not view-culled)
+  for (let r = 0; r < mapData.rows; r++) {
+    for (let q = 0; q < mapData.cols; q++) {
+      const hex = mapData.hexes[hexKey(q, r)];
+      if (!hex || !hex.region) continue;
+      const p = hexToISO(q, r);
+      if (!regionCenters[hex.region]) regionCenters[hex.region] = {sx:0,sy:0,n:0};
+      regionCenters[hex.region].sx += p.x;
+      regionCenters[hex.region].sy += p.y;
+      regionCenters[hex.region].n++;
+    }
+  }
+  // Draw region overlay (view-culled)
+  if (layers.region) {
+    for (let r = 0; r < mapData.rows; r++) {
+      for (let q = 0; q < mapData.cols; q++) {
+        const hex = mapData.hexes[hexKey(q, r)];
+        if (!hex || !hex.region) continue;
+        const reg = REGIONS.find(rg => rg.id === hex.region);
+        if (!reg) continue;
+        const p = hexToISO(q, r);
+        if (!inView(p)) continue;
+        drawHexISO(ctx, p.x, p.y, size + 0.5, reg.color + '60', null);
+      }
+    }
+  }
+  // Region name labels
+  if (layers.region && camera.zoom > 0.08) {
+    for (const reg of REGIONS) {
+      const rc = regionCenters[reg.id];
+      if (!rc || rc.n === 0) continue;
+      const cx = rc.sx / rc.n, cy = rc.sy / rc.n;
+      const fontSize = Math.max(8, Math.min(14, size * 0.6));
+      ctx.font = `bold ${fontSize}px 'Segoe UI'`;
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      const tw = ctx.measureText(reg.name).width;
+      ctx.fillStyle = 'rgba(17,17,27,0.85)';
+      ctx.beginPath();
+      const px = cx-tw/2-8, py = cy-fontSize/2-4, pw = tw+16, ph = fontSize+8;
+      if (ctx.roundRect) ctx.roundRect(px,py,pw,ph,5); else ctx.rect(px,py,pw,ph);
+      ctx.fill();
+      ctx.strokeStyle = reg.color + '80';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+      ctx.shadowColor = '#000'; ctx.shadowBlur = 4;
+      ctx.fillStyle = reg.color;
+      ctx.fillText(reg.name, cx, cy);
+      ctx.shadowBlur = 0;
+    }
+  }
+
+  // ====== PASS 3: STRUCTURES ======
+  if (layers.structure) {
+    for (let r = 0; r < mapData.rows; r++) {
+      for (let q = 0; q < mapData.cols; q++) {
+        const hex = mapData.hexes[hexKey(q, r)];
+        if (!hex || !hex.objects || hex.objects.length === 0) continue;
+        const struct = STRUCTURES.find(s => s.id === hex.objects[0]);
+        if (!struct) continue;
+        const p = hexToISO(q, r);
+        if (!inView(p)) continue;
+        drawStructureMarker(ctx, p.x, p.y, size, struct);
+      }
+    }
+  }
+
+  // ====== PASS 4: LEVEL OVERLAY ======
+  const LEVEL_COLORS = ['','#a6e3a140','#f9e2af50','#fab38760','#f38ba870','#cba6f790'];
+  if (layers.level) {
+    for (let r = 0; r < mapData.rows; r++) {
+      for (let q = 0; q < mapData.cols; q++) {
+        const hex = mapData.hexes[hexKey(q, r)];
+        if (!hex || !hex.level) continue;
+        const p = hexToISO(q, r);
+        if (!inView(p)) continue;
+        drawHexISO(ctx, p.x, p.y, size + 0.5, LEVEL_COLORS[hex.level] || '#ffffff40', null);
+        if (camera.zoom > 0.25) {
+          ctx.font = `bold ${Math.max(6, size*0.45)}px 'Segoe UI'`;
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillStyle = '#fff';
+          ctx.shadowColor = '#000'; ctx.shadowBlur = 2;
+          ctx.fillText(hex.level, p.x, p.y);
+          ctx.shadowBlur = 0;
+        }
+      }
+    }
+  }
+
+  // ====== PASS 5: RESOURCE ICONS ======
+  const RES_ICONS = {iron:'⛏',wood:'🪵',stone:'🪨',grain:'🌾',herbs:'🌿',gold:'💰',gem:'💎',mana:'🔮'};
+  if (layers.resource) {
+    for (let r = 0; r < mapData.rows; r++) {
+      for (let q = 0; q < mapData.cols; q++) {
+        const hex = mapData.hexes[hexKey(q, r)];
+        if (!hex || !hex.resource) continue;
+        const p = hexToISO(q, r);
+        if (!inView(p)) continue;
+        const icon = RES_ICONS[hex.resource] || '?';
+        const fs = Math.max(6, size*0.5);
+        ctx.font = `${fs}px 'Segoe UI'`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(icon, p.x, p.y + (layers.level ? size*0.35 : 0));
+      }
+    }
+  }
+
+  // ====== HOVER / SELECTION (always on top) ======
+  if (hoveredHex) {
+    const p = hexToISO(hoveredHex.q, hoveredHex.r);
+    drawHexISO(ctx, p.x, p.y, size - 0.5, 'rgba(255,255,255,0.1)', '#cdd6f4', 1.5);
+  }
+  if (selectedHex) {
+    const p = hexToISO(selectedHex.q, selectedHex.r);
+    drawHexISO(ctx, p.x, p.y, size + 1, null, '#89b4fa', 3);
+  }
+
+  ctx.restore();
+  renderMinimap();
+  updateStatus();
+}
+
+function renderMinimap() {
+  const mw = minimapCanvas.width, mh = minimapCanvas.height;
+  minimapCtx.clearRect(0,0,mw,mh);
+  minimapCtx.fillStyle = '#11111b';
+  minimapCtx.fillRect(0,0,mw,mh);
+  const lastP = hexToISO(mapData.cols-1, mapData.rows-1);
+  const mapW = lastP.x + HEX_SIZE*2, mapH = lastP.y + HEX_SIZE*2;
+  const scale = Math.min(mw/mapW, mh/mapH) * 0.9;
+  const ox = (mw-mapW*scale)/2, oy = (mh-mapH*scale)/2;
+  for (const [key, hex] of Object.entries(mapData.hexes)) {
+    if (!hex.terrain) continue;
+    const [q,r] = key.split(',').map(Number);
+    const p = hexToISO(q,r);
+    const t = TERRAINS.find(t => t.id === hex.terrain);
+    minimapCtx.fillStyle = t ? t.color : '#313244';
+    minimapCtx.fillRect(ox+p.x*scale, oy+p.y*scale, Math.max(2,3*scale), Math.max(2,2*scale));
+  }
+  const vx = -camera.x - canvas.width/2/camera.zoom;
+  const vy = -camera.y - canvas.height/2/camera.zoom;
+  const vw = canvas.width/camera.zoom, vh = canvas.height/camera.zoom;
+  minimapCtx.strokeStyle = '#89b4fa'; minimapCtx.lineWidth = 1.5;
+  minimapCtx.strokeRect(ox+vx*scale, oy+vy*scale, vw*scale, vh*scale);
+}
+
+// ============================================================
+// BUCKET FILL
+// ============================================================
+function bucketFill(startQ, startR, newTerrain) {
+  const startHex = mapData.hexes[hexKey(startQ, startR)];
+  const oldTerrain = startHex ? startHex.terrain : null;
+  if (oldTerrain === newTerrain) return;
+  const visited = new Set(), queue = [{q:startQ, r:startR}];
+  visited.add(hexKey(startQ, startR));
+  while (queue.length > 0) {
+    const {q,r} = queue.shift();
+    const key = hexKey(q,r), hex = mapData.hexes[key];
+    if ((hex ? hex.terrain : null) !== oldTerrain) continue;
+    if (!mapData.hexes[key]) mapData.hexes[key] = {terrain:null,region:null,objects:[],label:''};
+    mapData.hexes[key].terrain = newTerrain;
+    for (const [dq,dr] of getHexDirs(q, r)) {
+      const nq=q+dq, nr=r+dr;
+      if (nq<0||nq>=mapData.cols||nr<0||nr>=mapData.rows) continue;
+      const nk = hexKey(nq,nr);
+      if (!visited.has(nk)) { visited.add(nk); queue.push({q:nq,r:nr}); }
+    }
+  }
+}
+
+// ============================================================
+// INPUT
+// ============================================================
+function screenToWorld(sx, sy) {
+  return {
+    x: (sx - canvas.width/2) / camera.zoom - camera.x,
+    y: (sy - canvas.height/2) / camera.zoom - camera.y
+  };
+}
+
+canvas.addEventListener('mousedown', (e) => {
+  if (e.button===1 || e.button===2 || (e.button===0 && e.altKey)) {
+    isDragging=true; dragStart={x:e.clientX,y:e.clientY}; camStart={x:camera.x,y:camera.y};
+    canvas.style.cursor='grabbing'; return;
+  }
+  if (e.button === 0) { pushUndo(); isPainting = true; handleClick(e); }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+  const rect = canvas.getBoundingClientRect();
+  const sx = e.clientX-rect.left, sy = e.clientY-rect.top;
+  if (isDragging) {
+    camera.x = camStart.x + (e.clientX-dragStart.x)/camera.zoom;
+    camera.y = camStart.y + (e.clientY-dragStart.y)/camera.zoom;
+    render(); return;
+  }
+  const wp = screenToWorld(sx, sy);
+  const hex = pixelToHex(wp.x, wp.y);
+  hoveredHex = (hex.q>=0 && hex.q<mapData.cols && hex.r>=0 && hex.r<mapData.rows) ? hex : null;
+  if (isPainting && ['brush','region','eraser'].includes(currentTool)) handleClick(e);
+  render();
+});
+
+canvas.addEventListener('mouseup', () => { isDragging=false; if(isPainting) scheduleAutoSave(); isPainting=false; canvas.style.cursor='default'; });
+canvas.addEventListener('mouseleave', () => { isDragging=false; isPainting=false; hoveredHex=null; render(); });
+canvas.addEventListener('wheel', (e) => {
+  e.preventDefault();
+  camera.zoom = Math.max(0.15, Math.min(5, camera.zoom * (e.deltaY>0?0.9:1.1)));
+  render();
+}, {passive:false});
+canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+function handleClick(e) {
+  if (!hoveredHex) return;
+  const {q,r} = hoveredHex;
+  if (currentTool === 'fill') { bucketFill(q,r,currentTerrain); render(); return; }
+
+  // Structure stamp (O tool): named city/outpost/gate
+  if (currentTool === 'object' && currentStructure) {
+    const struct = STRUCTURES.find(s => s.id === currentStructure);
+    if (struct) {
+      const terrainMap = { city:'city', outpost:'fortress', gate:'wall', dungeon:'cave' };
+      const terrainId = terrainMap[struct.type];
+      const stamp = struct.size >= 14 ? getStructureStamp(q, r, 'city')
+                  : struct.size >= 7  ? getStructureStamp(q, r, 'outpost')
+                  :                     [{q, r}];
+      for (const h of stamp) {
+        if (h.q<0||h.q>=mapData.cols||h.r<0||h.r>=mapData.rows) continue;
+        const key = hexKey(h.q, h.r);
+        if (!mapData.hexes[key]) mapData.hexes[key] = {terrain:null,region:null,objects:[],label:''};
+        mapData.hexes[key].terrain = terrainId;
+      }
+      const centerKey = hexKey(q, r);
+      if (mapData.hexes[centerKey]) mapData.hexes[centerKey].objects = [struct.id];
+      if (hoveredHex) showProperties(hexKey(hoveredHex.q, hoveredHex.r));
+      render();
+      return;
+    }
+  }
+
+  const targets = brushSize<=1 ? [{q,r}] : hexNeighbors(q,r,brushSize-1);
+  for (const t of targets) {
+    if (t.q<0||t.q>=mapData.cols||t.r<0||t.r>=mapData.rows) continue;
+    const key = hexKey(t.q,t.r);
+    if (!mapData.hexes[key]) mapData.hexes[key] = {terrain:null,region:null,objects:[],label:''};
+    switch(currentTool) {
+      case 'brush': mapData.hexes[key].terrain = currentTerrain; break;
+      case 'region': mapData.hexes[key].region = currentRegion; break; // null = erase
+      case 'eraser':
+        if(e.shiftKey) {
+          // Remove structure + its terrain footprint
+          const objs = mapData.hexes[key].objects || [];
+          if (objs.length) {
+            const struct = STRUCTURES.find(s => s.id === objs[0]);
+            if (struct) {
+              const stamp = struct.size >= 14 ? getStructureStamp(t.q, t.r, 'city')
+                          : struct.size >= 7  ? getStructureStamp(t.q, t.r, 'outpost')
+                          :                     [{q: t.q, r: t.r}];
+              for (const h of stamp) {
+                const hk = hexKey(h.q, h.r);
+                if (mapData.hexes[hk]) { mapData.hexes[hk].terrain = null; }
+              }
+            }
+            mapData.hexes[key].objects = [];
+          }
+        }
+        else if(e.ctrlKey) mapData.hexes[key].region=null;
+        else delete mapData.hexes[key];
+        break;
+      case 'select': selectedHex={q:t.q,r:t.r}; showProperties(key); return;
+    }
+  }
+  if (hoveredHex) showProperties(hexKey(hoveredHex.q, hoveredHex.r));
+  render();
+}
+
+// ============================================================
+// UI
+// ============================================================
+function buildTerrainPalette() {
+  const el = document.getElementById('terrain-palette');
+  el.innerHTML = '';
+  TERRAINS.forEach(t => {
+    const tile = document.createElement('div');
+    tile.className = `t-tile${t.id===currentTerrain?' selected':''}${!t.passable?' impassable':''}`;
+    tile.innerHTML = `<div class="t-swatch" style="background:${t.color}"></div><span class="t-icon">${t.icon}</span><span class="t-name">${t.name}</span>`;
+    tile.addEventListener('click', () => {
+      currentTerrain = t.id;
+      el.querySelectorAll('.t-tile').forEach(b => b.classList.remove('selected'));
+      tile.classList.add('selected');
+    });
+    el.appendChild(tile);
+  });
+}
+
+function buildStructurePalette() {
+  const el = document.getElementById('structure-palette');
+  el.innerHTML = '';
+  const groups = { city:'도시 (14칸)', outpost:'거점 (7칸)', gate:'관문 (1칸)', dungeon:'던전 입구 (1칸)' };
+  for (const [type, label] of Object.entries(groups)) {
+    const header = document.createElement('div');
+    header.style.cssText = 'font-size:10px;color:#585b70;text-transform:uppercase;font-weight:600;padding:6px 4px 3px;letter-spacing:0.5px;';
+    header.textContent = label;
+    el.appendChild(header);
+    STRUCTURES.filter(s => s.type === type).forEach(s => {
+      const item = document.createElement('div');
+      item.className = `r-item${currentStructure===s.id?' selected':''}`;
+      item.innerHTML = `<div class="r-swatch" style="background:${s.color}"></div><span class="r-name">${s.name}</span>`;
+      item.addEventListener('click', () => {
+        currentStructure = s.id;
+        el.querySelectorAll('.r-item').forEach(b => b.classList.remove('selected'));
+        item.classList.add('selected');
+      });
+      el.appendChild(item);
+    });
+  }
+}
+
+function buildRegionPalette() {
+  const el = document.getElementById('region-palette');
+  el.innerHTML = '';
+  // Eraser option
+  const eraseItem = document.createElement('div');
+  eraseItem.className = `r-item${currentRegion===null?' selected':''}`;
+  eraseItem.innerHTML = `<div class="r-swatch" style="background:#313244;display:flex;align-items:center;justify-content:center;font-size:9px;">✕</div><span class="r-name" style="color:#f38ba8;">없음 (지우기)</span>`;
+  eraseItem.addEventListener('click', () => {
+    currentRegion = null;
+    el.querySelectorAll('.r-item').forEach(b => b.classList.remove('selected'));
+    eraseItem.classList.add('selected');
+  });
+  el.appendChild(eraseItem);
+  REGIONS.forEach(reg => {
+    const item = document.createElement('div');
+    item.className = `r-item${reg.id===currentRegion?' selected':''}`;
+    item.innerHTML = `<div class="r-swatch" style="background:${reg.color}"></div><span class="r-name">${reg.name}</span><span class="r-id">#${reg.id}</span>`;
+    item.addEventListener('click', () => {
+      currentRegion = reg.id;
+      el.querySelectorAll('.r-item').forEach(b => b.classList.remove('selected'));
+      item.classList.add('selected');
+    });
+    el.appendChild(item);
+  });
+}
+
+const TOOL_NAMES = { brush:'Brush', fill:'Fill', eraser:'Eraser', object:'Object', region:'Region', select:'Select' };
+document.querySelectorAll('[data-tool]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    currentTool = btn.dataset.tool;
+    document.querySelectorAll('[data-tool]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tb-tool-name').textContent = TOOL_NAMES[currentTool] || '';
+    document.getElementById('palette-terrain').style.display = ['brush','fill'].includes(currentTool) ? '' : 'none';
+    document.getElementById('palette-structure').style.display = currentTool==='object' ? '' : 'none';
+    document.getElementById('palette-region').style.display = currentTool==='region' ? '' : 'none';
+    // Sync layer highlight
+    const layerMap = { brush:'terrain', fill:'terrain', region:'region', object:'structure' };
+    document.querySelectorAll('[data-select-layer]').forEach(i => i.classList.remove('active'));
+    const activeLayer = layerMap[currentTool];
+    if (activeLayer) { const el = document.querySelector(`[data-select-layer="${activeLayer}"]`); if(el) el.classList.add('active'); }
+    if (currentTool !== 'select') selectedHex = null;
+  });
+});
+
+document.querySelectorAll('[data-brush]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    brushSize = parseInt(btn.dataset.brush);
+    document.querySelectorAll('[data-brush]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.layer-eye').forEach(eye => {
+  eye.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const layer = eye.dataset.layer;
+    layers[layer] = !layers[layer];
+    eye.classList.toggle('visible');
+    eye.style.opacity = layers[layer] ? '1' : '0.3';
+    render();
+  });
+});
+
+// Layer item click → switch to corresponding tool & palette
+document.querySelectorAll('[data-select-layer]').forEach(item => {
+  item.addEventListener('click', (e) => {
+    if (e.target.classList.contains('layer-eye')) return; // eye handles its own click
+    const layer = item.dataset.selectLayer;
+    const toolMap = { terrain:'brush', region:'region', structure:'object', level:'select', resource:'select' };
+    const toolBtn = document.querySelector(`[data-tool="${toolMap[layer]}"]`);
+    if (toolBtn) toolBtn.click();
+    // Level/Resource 레이어 선택 시 해당 오버레이 자동 켜기
+    if (layer === 'level' || layer === 'resource') {
+      layers[layer] = true;
+      const eye = item.querySelector('.layer-eye');
+      if (eye) eye.classList.add('visible');
+      render();
+    }
+    document.querySelectorAll('[data-select-layer]').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+  });
+});
+
+document.querySelectorAll('.panel-header').forEach(header => {
+  header.addEventListener('click', () => {
+    const body = header.nextElementSibling;
+    if (body) {
+      body.classList.toggle('collapsed');
+      const toggle = header.querySelector('.toggle');
+      if (toggle) toggle.textContent = body.classList.contains('collapsed') ? '▸' : '▾';
+    }
+  });
+});
+
+// ============================================================
+// PROPERTIES
+// ============================================================
+function showProperties(key) {
+  const el = document.getElementById('props-body');
+  const hex = mapData.hexes[key];
+  const [q,r] = key.split(',').map(Number);
+  if (!hex) {
+    el.innerHTML = `<div class="prop-row"><span class="prop-label">Coord</span><span class="prop-value">(${q}, ${r})</span></div>
+      <div class="prop-row"><span class="prop-value" style="color:#585b70">Empty</span></div>`;
+    return;
+  }
+  const t = TERRAINS.find(t => t.id===hex.terrain);
+  const reg = REGIONS.find(r => r.id===hex.region);
+  const structs = (hex.objects||[]).map(o => STRUCTURES.find(x => x.id===o)).filter(Boolean);
+  el.innerHTML = `
+    <div class="prop-row"><span class="prop-label">Coord</span><span class="prop-value">(${q}, ${r})</span></div>
+    <div class="prop-divider"></div>
+    <div class="prop-row"><span class="prop-label">Terrain</span><span class="prop-value">${t?t.icon+' '+t.name:'—'}</span></div>
+    <div class="prop-row"><span class="prop-label">Pass</span><span class="prop-value" style="color:${t&&t.passable?'#a6e3a1':'#f38ba8'}">${t?(t.passable?'Yes':'No'):'—'}</span></div>
+    <div class="prop-row"><span class="prop-label">Height</span><span class="prop-value">${t?t.height:'—'}</span></div>
+    <div class="prop-divider"></div>
+    <div class="prop-row"><span class="prop-label">Region</span><span class="prop-value" style="color:${reg?reg.color:'#585b70'}">${reg?reg.name:'—'}</span></div>
+    <div class="prop-divider"></div>
+    <div class="prop-row"><span class="prop-label">Structure</span><span class="prop-value">${structs.length?structs.map(s=>s.name+' ('+s.type+')').join(', '):'—'}</span></div>
+    <div class="prop-divider"></div>
+    <div class="prop-row"><span class="prop-label">Level</span>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <select id="prop-level" class="prop-input" style="width:70px">
+          <option value="0" ${!hex.level?'selected':''}>없음</option>
+          <option value="1" ${hex.level===1?'selected':''} style="color:#a6e3a1">★1</option>
+          <option value="2" ${hex.level===2?'selected':''} style="color:#f9e2af">★2</option>
+          <option value="3" ${hex.level===3?'selected':''} style="color:#fab387">★3</option>
+          <option value="4" ${hex.level===4?'selected':''} style="color:#f38ba8">★4</option>
+          <option value="5" ${hex.level===5?'selected':''} style="color:#cba6f7">★5</option>
+        </select>
+        ${hex.level ? '<button id="btn-clear-level" style="padding:2px 6px;background:#f38ba8;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:10px;white-space:nowrap;" title="레벨 삭제">삭제</button>' : ''}
+      </div>
+    </div>
+    <div class="prop-row"><span class="prop-label">Resource</span>
+      <div style="display:flex;align-items:center;gap:4px;">
+        <select id="prop-resource" class="prop-input" style="width:70px">
+          <option value="" ${!hex.resource?'selected':''}>없음</option>
+          <option value="iron" ${hex.resource==='iron'?'selected':''}>⛏ 철광</option>
+          <option value="wood" ${hex.resource==='wood'?'selected':''}>🪵 목재</option>
+          <option value="stone" ${hex.resource==='stone'?'selected':''}>🪨 석재</option>
+          <option value="grain" ${hex.resource==='grain'?'selected':''}>🌾 식량</option>
+          <option value="herbs" ${hex.resource==='herbs'?'selected':''}>🌿 약초</option>
+          <option value="gold" ${hex.resource==='gold'?'selected':''}>💰 금광</option>
+          <option value="gem" ${hex.resource==='gem'?'selected':''}>💎 보석광</option>
+          <option value="mana" ${hex.resource==='mana'?'selected':''}>🔮 마석</option>
+        </select>
+        ${hex.resource ? '<button id="btn-clear-resource" style="padding:2px 6px;background:#f38ba8;color:#fff;border:none;border-radius:3px;cursor:pointer;font-size:10px;white-space:nowrap;" title="자원 삭제">삭제</button>' : ''}
+      </div>
+    </div>
+    <div class="prop-divider"></div>
+    ${(()=>{
+      const e = hex.region ? LEGION_ENEMIES[hex.region] : null;
+      if (!e || !hex.level) return '<div class="prop-row"><span class="prop-label">Enemy</span><span class="prop-value" style="color:#585b70">—</span></div>';
+      const av = AI_VALUE_TABLE[e.str]||'—';
+      return `<div class="prop-row" style="flex-direction:column;align-items:flex-start;gap:4px;">
+        <span class="prop-label" style="width:auto;color:#f38ba8;">Enemy Preview</span>
+        <div style="font-size:10px;line-height:1.6;padding:4px 6px;background:#181825;border-radius:4px;width:100%;">
+          <div><span style="color:#585b70">강도</span> <span style="color:#fab387">${e.str}</span></div>
+          <div><span style="color:#585b70">주력</span> ${e.main}</div>
+          <div><span style="color:#585b70">보조</span> ${e.sub}</div>
+          <div style="color:#f9e2af">Boss: ${e.boss}</div>
+          <div style="margin-top:2px;color:#585b70;font-size:9px">AI Value ${av}</div>
+        </div>
+      </div>`;
+    })()}
+    <div class="prop-divider"></div>
+    <div class="prop-row"><span class="prop-label">Label</span></div>
+    <div class="prop-row"><input class="prop-input" id="prop-label" value="${hex.label||''}" placeholder="Label..."></div>`;
+  el.querySelector('#prop-label').addEventListener('change', function() {
+    if(mapData.hexes[key]) { mapData.hexes[key].label=this.value; render(); scheduleAutoSave(); }
+  });
+  el.querySelector('#prop-level').addEventListener('change', function() {
+    if(mapData.hexes[key]) { mapData.hexes[key].level=parseInt(this.value)||0; render(); scheduleAutoSave(); updateProperties(q,r); }
+  });
+  el.querySelector('#prop-resource').addEventListener('change', function() {
+    if(mapData.hexes[key]) { mapData.hexes[key].resource=this.value||null; render(); scheduleAutoSave(); updateProperties(q,r); }
+  });
+  const btnClearLevel = el.querySelector('#btn-clear-level');
+  if (btnClearLevel) btnClearLevel.addEventListener('click', function() {
+    if(mapData.hexes[key]) { mapData.hexes[key].level=0; render(); scheduleAutoSave(); updateProperties(q,r); }
+  });
+  const btnClearResource = el.querySelector('#btn-clear-resource');
+  if (btnClearResource) btnClearResource.addEventListener('click', function() {
+    if(mapData.hexes[key]) { mapData.hexes[key].resource=null; render(); scheduleAutoSave(); updateProperties(q,r); }
+  });
+}
+
+// ============================================================
+// STATUS
+// ============================================================
+function updateStatus() {
+  document.getElementById('st-pos').textContent = hoveredHex ? `Hex: (${hoveredHex.q}, ${hoveredHex.r})` : 'Hex: —';
+  if (hoveredHex) {
+    const hex = mapData.hexes[hexKey(hoveredHex.q, hoveredHex.r)];
+    if (hex) {
+      const t = TERRAINS.find(t => t.id===hex.terrain);
+      document.getElementById('st-terrain').textContent = t ? `${t.icon} ${t.name}` : '—';
+      const reg = REGIONS.find(r => r.id===hex.region);
+      document.getElementById('st-region').textContent = reg ? reg.name : '—';
+      document.getElementById('st-level').textContent = hex.level ? `Lv${hex.level}` : '—';
+    } else { document.getElementById('st-terrain').textContent = '—'; document.getElementById('st-region').textContent = '—'; document.getElementById('st-level').textContent = '—'; }
+  }
+  document.getElementById('st-zoom').textContent = `${Math.round(camera.zoom*100)}%`;
+  document.getElementById('st-total').textContent = `${Object.keys(mapData.hexes).filter(k=>mapData.hexes[k].terrain).length} hexes`;
+}
+
+// ============================================================
+// AUTO-SAVE (localStorage)
+// ============================================================
+const AUTOSAVE_KEY = 'ge_world_map_autosave';
+const AUTOSAVE_TIME_KEY = 'ge_world_map_autosave_time';
+let _autosaveTimer = null;
+
+function autoSave() {
+  try {
+    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(mapData));
+    localStorage.setItem(AUTOSAVE_TIME_KEY, new Date().toISOString());
+  } catch(e) { console.warn('Autosave failed:', e); }
+}
+
+function scheduleAutoSave() {
+  if (_autosaveTimer) clearTimeout(_autosaveTimer);
+  _autosaveTimer = setTimeout(autoSave, 2000);
+}
+
+function checkAutoSaveRecovery() {
+  const saved = localStorage.getItem(AUTOSAVE_KEY);
+  const savedTime = localStorage.getItem(AUTOSAVE_TIME_KEY);
+  if (!saved) return;
+  const timeStr = savedTime ? new Date(savedTime).toLocaleString() : '알 수 없음';
+  const ov = document.createElement('div'); ov.className='modal-overlay';
+  ov.innerHTML = `<div class="modal"><h3>💾 자동저장 복구</h3>
+    <p style="color:#cdd6f4;font-size:13px;">마지막 자동저장: <b>${timeStr}</b></p>
+    <div class="modal-actions">
+      <button class="btn" id="as-discard">무시</button>
+      <button class="btn btn-primary" id="as-restore">복구</button>
+    </div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#as-discard').addEventListener('click', () => { localStorage.removeItem(AUTOSAVE_KEY); ov.remove(); });
+  ov.querySelector('#as-restore').addEventListener('click', () => {
+    try { mapData = JSON.parse(saved); camera={x:0,y:0,zoom:1.0}; render(); } catch(e) { alert('복구 실패: '+e.message); }
+    ov.remove();
+  });
+}
+
+// Hook into map modifications to trigger autosave
+const _origPushUndo = typeof pushUndo === 'function' ? pushUndo : null;
+
+// ============================================================
+// MAP ACTIONS
+// ============================================================
+document.getElementById('btn-new').addEventListener('click', () => {
+  const ov = document.createElement('div'); ov.className='modal-overlay';
+  ov.innerHTML = `<div class="modal"><h3>New Map</h3>
+    <label>Width: <input id="new-cols" type="number" value="60" min="10" max="200"></label>
+    <label>Height: <input id="new-rows" type="number" value="50" min="10" max="200"></label>
+    <div class="modal-actions"><button class="btn" id="new-cancel">Cancel</button><button class="btn btn-primary" id="new-ok">Create</button><button class="btn" id="new-world" style="background:#a6e3a1;color:#1e1e2e;font-weight:600;">🗺 GE World</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#new-cancel').addEventListener('click', () => ov.remove());
+  ov.querySelector('#new-ok').addEventListener('click', () => {
+    mapData={cols:parseInt(ov.querySelector('#new-cols').value)||60,rows:parseInt(ov.querySelector('#new-rows').value)||50,hexes:{}};
+    camera={x:0,y:0,zoom:1.0}; ov.remove(); render(); autoSave();
+  });
+  ov.querySelector('#new-world').addEventListener('click', () => {
+    ov.remove(); generateWorldMap(); autoSave();
+  });
+});
+
+document.getElementById('btn-save').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(mapData,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='ge_world_map6.json'; a.click();
+});
+
+document.getElementById('btn-load').addEventListener('click', () => document.getElementById('file-input').click());
+
+document.getElementById('file-input').addEventListener('change', (e) => {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => { try{mapData=JSON.parse(ev.target.result);camera={x:0,y:0,zoom:1.0};render();autoSave();}catch(err){alert('Error: '+err.message);} };
+  reader.readAsText(file); e.target.value='';
+});
+
+document.getElementById('btn-stats').addEventListener('click', () => {
+  const stats = {total:0,terrains:{},regions:{},objects:{}};
+  for (const hex of Object.values(mapData.hexes)) {
+    if(hex.terrain){stats.total++;stats.terrains[hex.terrain]=(stats.terrains[hex.terrain]||0)+1;}
+    if(hex.region) stats.regions[hex.region]=(stats.regions[hex.region]||0)+1;
+    for(const o of (hex.objects||[])) stats.objects[o]=(stats.objects[o]||0)+1;
+  }
+  let html = `<h3>Map Stats</h3><p>${mapData.cols}x${mapData.rows} / ${stats.total} hexes</p>`;
+  html += '<h4>Terrain</h4><table><tr><th>Type</th><th>#</th><th>%</th></tr>';
+  for(const t of TERRAINS){const c=stats.terrains[t.id]||0;if(c)html+=`<tr><td>${t.icon} ${t.name}</td><td>${c}</td><td>${(c/stats.total*100).toFixed(1)}%</td></tr>`;}
+  html += '</table><h4>Regions</h4><table><tr><th>Region</th><th>#</th></tr>';
+  for(const r of REGIONS){const c=stats.regions[r.id]||0;if(c)html+=`<tr><td style="color:${r.color}">${r.name}</td><td>${c}</td></tr>`;}
+  html += '</table><h4>Objects</h4><table><tr><th>Type</th><th>#</th></tr>';
+  for(const s of STRUCTURES){const c=stats.objects[s.id]||0;if(c)html+=`<tr><td>${s.name} (${s.type})</td><td>${c}</td></tr>`;}
+  html += '</table>';
+  const ov=document.createElement('div');ov.className='modal-overlay';
+  ov.innerHTML=`<div class="modal">${html}<div class="modal-actions"><button class="btn" onclick="this.closest('.modal-overlay').remove()">Close</button></div></div>`;
+  document.body.appendChild(ov);
+});
+
+document.getElementById('btn-resize').addEventListener('click', () => {
+  const ov = document.createElement('div'); ov.className='modal-overlay';
+  ov.innerHTML = `<div class="modal"><h3>Resize Map</h3>
+    <p style="font-size:11px;color:#a6adc8;">현재: ${mapData.cols} × ${mapData.rows} — 기존 데이터 유지됨</p>
+    <label>Width: <input id="rsz-cols" type="number" value="${mapData.cols}" min="10" max="300"></label>
+    <label>Height: <input id="rsz-rows" type="number" value="${mapData.rows}" min="10" max="300"></label>
+    <div class="modal-actions"><button class="btn" id="rsz-cancel">Cancel</button><button class="btn btn-primary" id="rsz-ok">Resize</button></div></div>`;
+  document.body.appendChild(ov);
+  ov.querySelector('#rsz-cancel').addEventListener('click', () => ov.remove());
+  ov.querySelector('#rsz-ok').addEventListener('click', () => {
+    const newCols = parseInt(ov.querySelector('#rsz-cols').value) || mapData.cols;
+    const newRows = parseInt(ov.querySelector('#rsz-rows').value) || mapData.rows;
+    // Remove hexes outside new bounds
+    for (const k of Object.keys(mapData.hexes)) {
+      const [q, r] = k.split(',').map(Number);
+      if (q >= newCols || r >= newRows) delete mapData.hexes[k];
+    }
+    mapData.cols = newCols;
+    mapData.rows = newRows;
+    ov.remove(); render();
+  });
+});
+
+// ============================================================
+// KEYBOARD
+// ============================================================
+document.addEventListener('keydown', (e) => {
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA') return;
+  const k = e.key.toLowerCase();
+  if(k==='b') document.querySelector('[data-tool="brush"]').click();
+  else if(k==='f') document.querySelector('[data-tool="fill"]').click();
+  else if(k==='e') document.querySelector('[data-tool="eraser"]').click();
+  else if(k==='o') document.querySelector('[data-tool="object"]').click();
+  else if(k==='r') document.querySelector('[data-tool="region"]').click();
+  else if(k==='s'&&!e.ctrlKey) document.querySelector('[data-tool="select"]').click();
+  else if(k==='z'&&e.ctrlKey) { e.preventDefault(); popUndo(); }
+  else if(k==='s'&&e.ctrlKey) { e.preventDefault(); document.getElementById('btn-save').click(); }
+  else if(k>='1'&&k<='5') {
+    const btn=document.querySelector(`[data-brush="${k}"]`); if(btn) btn.click();
+  }
+});
+
+// ============================================================
+// WORLD MAP GENERATOR
+// ============================================================
+function generateWorldMap() {
+  mapData = { cols:60, rows:50, hexes:{} };
+  undoStack.length = 0;
+
+  // Region centers (id, q, r)
+  const RC = [
+    [1, 20,32],[2, 19,36],[3, 18,39],[4, 22,40],[5, 24,44],
+    [6, 29,46],[7, 32,42],[8, 23,35],[9, 30,34],[10,30,27],
+    [11,26,29],[12,22,25],[13,34,35],[14,32,31],[15,30,31],
+    [16,31,23],[17,37,31],[18,39,25],[19,42,19],[20,17,27],
+    [21,16,24],[22,14,21],[23,20,21],[24,17,14],[25,22,16],
+    [26,26,15],[27,36,11],[28,13,16],[29,27,19],[30,12,12],
+    [31,15,8],[32,10,5],[33,8,9],[34,48,33],[35,50,38],
+    [36,29,12],[37,33,10]
+  ];
+
+  // Terrain per region
+  const regionTerrain = {
+    1:'plains',2:'desert',3:'plains',4:'coast',5:'swamp',
+    6:'coast',7:'plains',8:'swamp',9:'ruins',10:'plains',
+    11:'desert',12:'plains',13:'plains',14:'coast',15:'ruins',
+    16:'plains',17:'mountain',18:'coast',19:'coast',20:'plains',
+    21:'swamp',22:'volcano',23:'forest',24:'mountain',25:'ruins',
+    26:'forest',27:'swamp',28:'mountain',29:'forest',30:'mountain',
+    31:'ice',32:'ice',33:'ice',34:'coast',35:'volcano',
+    36:'forest',37:'ruins'
+  };
+
+  // Point-in-polygon test (ray casting)
+  function pip(px, py, poly) {
+    let inside = false;
+    for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+      const xi = poly[i][0], yi = poly[i][1];
+      const xj = poly[j][0], yj = poly[j][1];
+      if ((yi > py) !== (yj > py) && px < (xj - xi) * (py - yi) / (yj - yi) + xi) {
+        inside = !inside;
+      }
+    }
+    return inside;
+  }
+
+  // Main continent outline (q,r polygon — clockwise)
+  const continent = [
+    [3,1],[8,0],[14,1],[18,2],[22,3],[26,5],[30,6],[34,7],
+    [38,7],[42,8],[44,10],[45,12],[45,15],[44,17],[43,19],
+    [44,21],[44,24],[42,26],[41,28],[40,30],[39,32],
+    [38,34],[37,36],[36,38],[35,40],[36,42],[35,44],
+    [33,46],[31,48],[28,48],[26,47],[24,46],[22,44],
+    [20,43],[18,41],[17,40],[16,38],[15,36],[14,34],
+    [13,32],[12,30],[11,28],[10,26],[9,24],[8,22],
+    [7,20],[6,18],[5,16],[5,14],[5,12],[4,10],
+    [3,8],[3,6],[3,4],[3,1]
+  ];
+
+  // 코임브라 반도 (남동 돌출)
+  const coimbra_pen = [
+    [30,31],[34,30],[38,29],[40,30],[41,32],[40,34],
+    [38,36],[36,38],[34,40],[36,42],[35,44],[33,46],
+    [31,48],[28,48],[26,47],[28,45],[30,43],[32,42],
+    [33,40],[32,38],[30,36],[28,34],[28,32],[30,31]
+  ];
+
+  // 포르토벨로 반도 (동쪽 돌출)
+  const porto_pen = [
+    [38,15],[42,14],[45,15],[46,17],[46,20],[45,22],
+    [44,24],[42,26],[40,27],[38,26],[37,24],[37,22],
+    [37,20],[37,18],[38,15]
+  ];
+
+  // 남서쪽 만 (바다 — 대륙에서 빼기)
+  const sw_bay = [
+    [12,30],[14,32],[14,34],[15,36],[16,38],[17,40],
+    [15,42],[13,43],[11,42],[10,40],[10,38],[11,36],
+    [11,34],[12,32],[12,30]
+  ];
+
+  // 남쪽 큰 만 (코임브라~리볼도외 사이)
+  const south_bay = [
+    [20,43],[22,44],[24,46],[26,47],[28,48],[26,49],
+    [22,49],[18,48],[16,46],[18,44],[20,43]
+  ];
+
+  // 동쪽 큰 만 (포르토벨로~코임브라 사이)
+  const east_bay = [
+    [38,26],[40,27],[41,28],[40,30],[39,32],[38,34],
+    [37,33],[36,32],[36,30],[36,28],[37,26],[38,26]
+  ];
+
+  // 기간떼 섬
+  const gigante = [
+    [45,31],[49,30],[51,31],[51,34],[49,35],[45,34],[45,31]
+  ];
+
+  // 불의 섬
+  const fire_isle = [
+    [47,36],[51,35],[53,36],[53,39],[51,40],[47,39],[47,36]
+  ];
+
+  function isLand(q, r) {
+    // Islands
+    if (pip(q, r, gigante)) return true;
+    if (pip(q, r, fire_isle)) return true;
+    // Main continent
+    if (!pip(q, r, continent) && !pip(q, r, coimbra_pen) && !pip(q, r, porto_pen)) return false;
+    // Subtract bays
+    if (pip(q, r, sw_bay)) return false;
+    if (pip(q, r, south_bay)) return false;
+    if (pip(q, r, east_bay)) return false;
+    return true;
+  }
+
+  // Fill hexes
+  for (let r = 0; r < 50; r++) {
+    for (let q = 0; q < 60; q++) {
+      if (!isLand(q, r)) continue;
+      // Nearest region center
+      let nearId = 1, nearD = Infinity;
+      for (const [id, cq, cr] of RC) {
+        const d = (q - cq) ** 2 + (r - cr) ** 2;
+        if (d < nearD) { nearD = d; nearId = id; }
+      }
+      const terrain = regionTerrain[nearId] || 'plains';
+      mapData.hexes[hexKey(q, r)] = { terrain, region: nearId, objects: [], label: '' };
+    }
+  }
+
+  // Add coastal hexes (1-hex border of water adjacent to land)
+  for (let r = 0; r < 50; r++) {
+    for (let q = 0; q < 60; q++) {
+      const k = hexKey(q, r);
+      if (mapData.hexes[k]) continue; // already land
+      const dirs = getHexDirs(q, r);
+      let adj = false;
+      for (const [dq, dr] of dirs) {
+        if (mapData.hexes[hexKey(q + dq, r + dr)]) { adj = true; break; }
+      }
+      if (adj) {
+        mapData.hexes[k] = { terrain: 'water', region: null, objects: [], label: '' };
+      }
+    }
+  }
+
+  // Convert land hexes adjacent to water to 'coast' where appropriate
+  for (let r = 0; r < 50; r++) {
+    for (let q = 0; q < 60; q++) {
+      const k = hexKey(q, r);
+      const hex = mapData.hexes[k];
+      if (!hex || hex.terrain === 'water') continue;
+      const dirs = getHexDirs(q, r);
+      for (const [dq, dr] of dirs) {
+        const nk = hexKey(q + dq, r + dr);
+        const nh = mapData.hexes[nk];
+        if (!nh || nh.terrain === 'water') {
+          if (!['mountain','volcano','ice','city','fortress','wall','cave'].includes(hex.terrain)) {
+            hex.terrain = 'coast';
+          }
+          break;
+        }
+      }
+    }
+  }
+
+  // Place structures
+  const structurePlacements = {
+    'city_reboldoeux': {q:20, r:32},
+    'city_coimbra':    {q:34, r:35},
+    'city_orshu':      {q:29, r:14},
+    'fort_perucho':    {q:18, r:39},
+    'fort_garden':     {q:32, r:42},
+    'fort_tetra_hill': {q:30, r:34},
+    'fort_cracked':    {q:26, r:29},
+    'fort_old_coimbra':{q:32, r:31},
+    'fort_jezebel':    {q:37, r:31},
+    'fort_dock':       {q:42, r:19},
+    'fort_rion':       {q:17, r:27},
+    'fort_bonavista':  {q:16, r:24},
+    'fort_senissa':    {q:17, r:14},
+    'fort_tejado':     {q:26, r:15},
+    'fort_3sisters':   {q:36, r:11},
+    'fort_snowfield':  {q:15, r:8},
+    'dun_alquelt':     {q:16, r:41},
+    'dun_tetra':       {q:28, r:39},
+    'dun_capybara':    {q:27, r:29},
+    'dun_portobello':  {q:41, r:23},
+    'dun_jacq':        {q:14, r:19},
+    'dun_torsche':     {q:33, r:10},
+    'dun_icetower':    {q:5, r:3}
+  };
+
+  for (const [sid, pos] of Object.entries(structurePlacements)) {
+    const struct = STRUCTURES.find(s => s.id === sid);
+    if (!struct) continue;
+    const terrainMap = { city:'city', outpost:'fortress', gate:'wall', dungeon:'cave' };
+    const terrainId = terrainMap[struct.type];
+    const stamp = struct.size >= 14 ? getStructureStamp(pos.q, pos.r, 'city')
+                : struct.size >= 7  ? getStructureStamp(pos.q, pos.r, 'outpost')
+                :                     [{q: pos.q, r: pos.r}];
+    for (const h of stamp) {
+      if (h.q < 0 || h.q >= mapData.cols || h.r < 0 || h.r >= mapData.rows) continue;
+      const k = hexKey(h.q, h.r);
+      if (!mapData.hexes[k]) mapData.hexes[k] = { terrain: null, region: null, objects: [], label: '' };
+      mapData.hexes[k].terrain = terrainId;
+    }
+    const ck = hexKey(pos.q, pos.r);
+    if (mapData.hexes[ck]) mapData.hexes[ck].objects = [sid];
+  }
+
+  // Center camera on continent
+  const center = hexToISO(25, 25);
+  camera.x = -center.x; camera.y = -center.y;
+  camera.zoom = 0.35;
+  render();
+}
+
+// ============================================================
+// INIT
+// ============================================================
+buildTerrainPalette();
+buildStructurePalette();
+buildRegionPalette();
+resizeCanvas();
+
+// 기본 맵 로드: autosave가 없으면 ge_world_map6.json 자동 로드
+const saved = localStorage.getItem(AUTOSAVE_KEY);
+if (saved) {
+  checkAutoSaveRecovery();
+} else {
+  fetch('ge_world_map6.json')
+    .then(r => r.ok ? r.json() : Promise.reject('not found'))
+    .then(data => {
+      mapData = data;
+      const cp = hexToISO(Math.floor(mapData.cols/2), Math.floor(mapData.rows/2));
+      camera.x = -cp.x; camera.y = -cp.y;
+      render();
+    })
+    .catch(() => { /* 파일 없으면 빈 맵 유지 */ });
+}
+const cp = hexToISO(Math.floor(mapData.cols/2), Math.floor(mapData.rows/2));
+camera.x = -cp.x; camera.y = -cp.y;
+render();
+</script>
+</div><!-- /main-content -->
+</body>
+</html>
