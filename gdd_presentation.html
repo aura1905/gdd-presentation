@@ -1995,6 +1995,7 @@
     <a class="nav-item" data-tab="relationship">💞 관계</a>
     <a class="nav-item" data-tab="economy">💰 경제</a>
     <a class="nav-item" data-tab="gacha">🎰 뽑기/성장</a>
+    <a class="nav-item" data-tab="familygrowth">🏛️ 가문성장</a>
     <a class="nav-item" data-tab="ui">📱 UI/온보딩</a>
     <a class="nav-item" data-tab="deep">📖 심화기획</a>
     <a class="nav-item" data-tab="bgart">🎨 배경아트</a>
@@ -5252,6 +5253,212 @@
             <div class="highlight-box green">
               <p><strong>핵심 설계 원칙:</strong> 무과금도 "시간을 들이면" 과금자와 대등한 전력 달성 가능. 과금은 "시간 단축"이지 "벽"이 아님.</p>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- TAB: 가문성장 -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-familygrowth">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(212,168,67,0.12)">🏛️</div>
+            <h2>가문 성장 시스템</h2>
+            <span class="tag">v0.1 2026.04.06</span>
+          </div>
+
+          <div class="highlight-box">
+            <p><strong>핵심 철학:</strong> "가만히 있으면 아무것도 성장하지 않는다." 모든 성장은 유저가 8종 자원을 직접 투자해서 올린다. 자원은 항상 부족 = "뭘 먼저?" 딜레마.</p>
+          </div>
+
+          <!-- 가문 레벨 역할 변경 -->
+          <div class="card">
+            <h3>🔄 가문 레벨 역할 재정의</h3>
+            <p>기존: 가문 레벨이 올라가면 자동으로 스탯/피로도/드롭률 증가 → <strong>유저 선택 없음</strong><br>
+            변경: 가문 레벨 = <strong>해금 게이트 + 레벨 캡</strong>만. 실제 수치는 자원 투자로.</p>
+            <table class="tbl">
+              <tr><th>기존 자동 보너스</th><th>→ 변경</th><th>투자 자원</th></tr>
+              <tr><td>전투 스탯 +0.3%/Lv</td><td><strong>병종 훈련</strong> (5직업 각각)</td><td>직업별 전용 자원</td></tr>
+              <tr><td>피로도 MAX 자동</td><td><strong>체력 단련</strong></td><td>🌾 곡물 + 골드</td></tr>
+              <tr><td>회복속도 자동</td><td><strong>회복력 강화</strong></td><td>🌿 약재 + 골드</td></tr>
+              <tr><td>유지비 자동감소</td><td><strong>경영실 시설 Lv</strong></td><td>비스 + RP</td></tr>
+              <tr><td>드롭률 자동</td><td><strong>탐색 장비 개량</strong></td><td>🪵 목재 + 골드</td></tr>
+              <tr><td>배럭 슬롯 자동</td><td><strong>배럭 확장</strong> (건설)</td><td>🪵 목재 + 🪨 석재</td></tr>
+            </table>
+          </div>
+
+          <!-- 8종 자원 체계 -->
+          <div class="card">
+            <h3>💎 8종 자원 체계</h3>
+            <div class="card-grid">
+              <div>
+                <h4>5대 물자 (일반 헥스)</h4>
+                <table class="tbl">
+                  <tr><th>자원</th><th>역할</th><th>주요 소비처</th></tr>
+                  <tr><td>🪵 목재</td><td>건설/인프라</td><td>시설, Scout 훈련, 배럭 확장</td></tr>
+                  <tr><td>⛏️ 철광석</td><td>전투 강화</td><td>Fighter/Musketeer 훈련, 장비 제작</td></tr>
+                  <tr><td>🪨 석재</td><td>방어/구조물</td><td>성벽, 관문, Musketeer/Warlock 보조</td></tr>
+                  <tr><td>🌾 곡물</td><td>운영/유지</td><td>체력 단련, 음식, 유지비, 징병</td></tr>
+                  <tr><td>🌿 약재</td><td>성장/회복</td><td>회복력, Wizard/Warlock, 치료, 각성</td></tr>
+                </table>
+              </div>
+              <div>
+                <h4>3대 특수자원 (고난이도)</h4>
+                <table class="tbl">
+                  <tr><th>자원</th><th>출현 ★</th><th>적 난이도</th><th>용도</th></tr>
+                  <tr><td>💰 금광 (31곳)</td><td>★3~5</td><td>T7 ×1W</td><td>고급 시설, 교역, 칭호</td></tr>
+                  <tr><td>💎 보석광 (21곳)</td><td>★4~5</td><td>T7 ×2W</td><td>Epic+ 장비, 각인, 세련</td></tr>
+                  <tr><td>🔮 마석 (6곳)</td><td>★5</td><td>T7 ×3W</td><td>비전스킬, 각성, 신화</td></tr>
+                </table>
+                <p style="font-size:12px;color:var(--text-dim)">특수자원 적: 전부 Lv80/★9/T7 최강급. 솔로 불가, 다파티 교대 필수.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- 42개 성장 요건 총괄 -->
+          <div class="card">
+            <h3>📊 42개 성장 요건 총괄</h3>
+            <div class="card-grid">
+              <div>
+                <h4>A. 캐릭터 개인 (10개)</h4>
+                <table class="tbl">
+                  <tr><th>#</th><th>항목</th><th>상태</th></tr>
+                  <tr><td>A1</td><td>캐릭터 레벨 (Lv.1~200)</td><td>기존</td></tr>
+                  <tr><td>A2</td><td>성급 돌파 (★0~★6)</td><td>기존</td></tr>
+                  <tr><td>A3</td><td>각성/초월/신화 (×4.344)</td><td>기존</td></tr>
+                  <tr><td>A4</td><td>고유 스킬 3종</td><td>기존</td></tr>
+                  <tr><td>A5</td><td>비전스킬 2슬롯</td><td>기존</td></tr>
+                  <tr><td>A6</td><td>일반 장비 3슬롯</td><td>기존</td></tr>
+                  <tr><td>A7</td><td>전용장비 3종</td><td>기존</td></tr>
+                  <tr><td>A8</td><td>피로도 관리</td><td>기존</td></tr>
+                  <tr><td>A9</td><td><strong>속성 포인트 분배</strong></td><td><span class="badge badge-gold">NEW</span></td></tr>
+                  <tr><td>A10</td><td><strong>스킬 강화</strong> (분해 재료)</td><td><span class="badge badge-gold">NEW</span></td></tr>
+                </table>
+              </div>
+              <div>
+                <h4>B. 병종 훈련 (6개) — 전부 NEW</h4>
+                <table class="tbl">
+                  <tr><th>직업</th><th>자원</th><th>효과/Lv</th><th>대상</th></tr>
+                  <tr><td>Fighter</td><td>⛏️ 철광석</td><td>ATK+1%, DEF+0.5%</td><td>33명</td></tr>
+                  <tr><td>Scout</td><td>🪵 목재</td><td>SPD+1%, CRI+0.5%</td><td>24명</td></tr>
+                  <tr><td>Musketeer</td><td>⛏️+🪨</td><td>ATK+0.8%, CRI+0.5%</td><td>22명</td></tr>
+                  <tr><td>Wizard</td><td>🌿 약재</td><td>INT+1%, RES+0.5%</td><td>22명</td></tr>
+                  <tr><td>Warlock</td><td>🌿+🪨</td><td>INT+0.8%, PEN+0.5%</td><td>22명</td></tr>
+                  <tr><td>무기 연구</td><td>⛏️+RP</td><td>무기별 ATK+2%/Lv</td><td>20종</td></tr>
+                </table>
+                <p style="font-size:12px;color:var(--text-dim)">Lv.10/20에 직업 전용 패시브 해금. 최대 Lv.30.</p>
+              </div>
+            </div>
+
+            <div class="card-grid" style="margin-top:16px">
+              <div>
+                <h4>C~E. 운영/인프라/방어 (15개)</h4>
+                <table class="tbl">
+                  <tr><th>카테고리</th><th>항목</th><th>자원</th></tr>
+                  <tr><td rowspan="2">C. 피로도</td><td>체력 단련 (MAX +1/Lv)</td><td>🌾+골드</td></tr>
+                  <tr><td>회복력 강화 (+0.1/h/Lv)</td><td>🌿+골드</td></tr>
+                  <tr><td rowspan="3">D. 시설</td><td>8시설 업그레이드 (Lv.15)</td><td>🪵+🪨+비스</td></tr>
+                  <tr><td>배럭 확장 (슬롯 3→9)</td><td>🪵+🪨</td></tr>
+                  <tr><td>시설 Lv.11+ (금광 추가)</td><td>+💰</td></tr>
+                  <tr><td rowspan="4">E. 방어</td><td>거점 성벽 강화</td><td>🪨+⛏️</td></tr>
+                  <tr><td>관문 강화</td><td>🪨</td></tr>
+                  <tr><td>시설 내구도</td><td>🪨+🪵</td></tr>
+                  <tr><td>수비대 징병</td><td>🌾+⛏️</td></tr>
+                </table>
+              </div>
+              <div>
+                <h4>F~H. 탐색/장비/소모품 (9개)</h4>
+                <table class="tbl">
+                  <tr><th>카테고리</th><th>항목</th><th>자원</th></tr>
+                  <tr><td rowspan="3">F. 탐색/경제</td><td>탐색 장비 개량</td><td>🪵+골드</td></tr>
+                  <tr><td>교역 자본</td><td>💰+비스</td></tr>
+                  <tr><td>명예 칭호</td><td>💰+업적</td></tr>
+                  <tr><td rowspan="3">G. 장비 고급화</td><td>Epic+ 장비 제작</td><td>💎+⛏️</td></tr>
+                  <tr><td>전용장비 각인 (+50%)</td><td>💎</td></tr>
+                  <tr><td>장비 세련 (리롤)</td><td>💎 소모품</td></tr>
+                  <tr><td rowspan="3">H. 소모품</td><td>음식 제작</td><td>🌾→식재료</td></tr>
+                  <tr><td>치료제 생산</td><td>🌿→약초</td></tr>
+                  <tr><td>장비 제작</td><td>⛏️+광물</td></tr>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 자원 경쟁 구조 -->
+          <div class="card">
+            <h3>🔥 자원 경쟁 구조 — 핵심 딜레마</h3>
+            <table class="tbl">
+              <tr><th>자원</th><th>경쟁 구도</th><th>딜레마</th></tr>
+              <tr><td>🌾 곡물</td><td>체력 단련 vs 음식 vs 유지비 vs 징병</td><td>"피로도 올릴까, 음식 만들까?"</td></tr>
+              <tr><td>⛏️ 철광석</td><td>Fighter vs Musketeer vs 장비 vs 무기연구</td><td>"전체 +1%? 리더 장비 하나?"</td></tr>
+              <tr><td>🌿 약재</td><td>회복력 vs Wizard vs Warlock vs 각성</td><td><strong>4파전 — 가장 치열!</strong></td></tr>
+              <tr><td>🪵 목재</td><td>시설 vs Scout vs 탐색 vs 배럭</td><td>"시설 올릴까, Scout 키울까?"</td></tr>
+              <tr><td>🪨 석재</td><td>성벽 vs 관문 vs Musketeer vs Warlock</td><td>방어 vs 전투력</td></tr>
+              <tr><td>🔮 마석</td><td>비전스킬 vs 각성 vs 신화</td><td>"6곳뿐... 뭐부터?"</td></tr>
+            </table>
+          </div>
+
+          <!-- Chapter 타임라인 -->
+          <div class="card">
+            <h3>📅 Chapter별 자원 접근 타임라인</h3>
+            <table class="tbl">
+              <tr><th>Chapter</th><th>Strength</th><th>새 자원</th><th>열리는 성장축</th></tr>
+              <tr><td><strong>Ch.1</strong> (S1~2)</td><td>S1~2</td><td>⛏️ 철광석, 🌾 곡물</td><td>체력 단련, Fighter 훈련, 장비 제작</td></tr>
+              <tr><td><strong>Ch.2</strong> (S3~5)</td><td>S3~5</td><td><strong>🌿 약재 첫 확보!</strong></td><td>회복력, Wizard/Warlock, 성벽 기초</td></tr>
+              <tr><td><strong>Ch.3</strong> (S6~9)</td><td>S6~9</td><td><strong>🪵 목재 대량</strong></td><td>시설 러시, Scout 훈련, 배럭 확장</td></tr>
+              <tr><td><strong>Ch.4</strong> (S10~13)</td><td>S10~13</td><td><strong>🪨 석재 대량</strong></td><td>방어 본격화, 관문, Musketeer 가속</td></tr>
+              <tr><td><strong>Ch.5</strong> (S14~16)</td><td>S14~16</td><td><strong>🌿 약재 대량</strong></td><td>각성 정제, 마법 병종 고레벨</td></tr>
+              <tr><td><strong>Ch.6~7</strong> (S17~20)</td><td>S17~20</td><td>⛏️🌾 최종지</td><td>훈련 마무리, 최종 무기 연구</td></tr>
+              <tr><td><strong>특수자원</strong></td><td>—</td><td>💰💎🔮</td><td>고급 시설, 장비 고급화, 각성/신화</td></tr>
+            </table>
+          </div>
+
+          <!-- 신규 A9, A10 -->
+          <div class="card">
+            <h3>🆕 신규 성장 요건</h3>
+            <div class="card-grid">
+              <div>
+                <h4>A9. 속성 포인트 분배</h4>
+                <p>삼전의 핵심 차용. <strong>같은 캐릭터도 빌드가 달라진다.</strong></p>
+                <ul>
+                  <li>레벨업 시 속성 포인트 획득</li>
+                  <li>ATK/DEF/HP/SPD/CRI/RES에 수동 분배</li>
+                  <li>리셋 가능 (골드/보석 비용)</li>
+                  <li>"SPD형 에밀리아" vs "HP형 에밀리아"</li>
+                </ul>
+                <p style="font-size:12px;color:var(--text-dim)">삼전: Lv.10마다 10pt, 최대 50pt. GE: 스케일 TBD.</p>
+              </div>
+              <div>
+                <h4>A10. 스킬 강화 (엔드콘텐츠)</h4>
+                <p>캐릭터 분해 재료로 스킬 <strong>배율/발동률/쿨타임</strong> 강화.</p>
+                <ul>
+                  <li>캐릭터 분해 → 스킬 강화 재료 획득</li>
+                  <li>재료 + RP → 고유 스킬 강화 (+1~+10)</li>
+                  <li>"이 캐릭터를 쓸까, 갈아서 스킬 강화할까?"</li>
+                  <li>뽑기 중복의 새로운 활용처</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- 플레이어 체감 흐름 -->
+          <div class="card">
+            <h3>🎮 플레이어 체감 흐름</h3>
+            <table class="tbl">
+              <tr><th>Phase</th><th>기간</th><th>핵심 성장</th><th>체감</th></tr>
+              <tr><td><strong>Phase 0</strong></td><td>Day 1~5</td><td>🌾 체력 단련 + ⛏️ Fighter 훈련</td><td>"기본을 갖추자"</td></tr>
+              <tr><td><strong>Phase 1</strong></td><td>Day 5~28</td><td>🌿 약재 첫 확보! Wizard 해금</td><td>"선택이 늘어난다"</td></tr>
+              <tr><td><strong>Phase 2</strong></td><td>Day 28~87</td><td>🪵🪨 시설+방어 러시, 각성 해금</td><td>"기지를 키우자"</td></tr>
+              <tr><td><strong>Phase 3</strong></td><td>Day 87~190</td><td>🌿 대량, 각성 본격화</td><td>"최강을 향해"</td></tr>
+              <tr><td><strong>엔드게임</strong></td><td>Day 135+</td><td>💰💎🔮 특수자원 쟁탈</td><td>"희소자원 쟁탈전"</td></tr>
+            </table>
+          </div>
+
+          <div class="highlight-box green">
+            <p><strong>상세 기획:</strong> <code>Planning/gdd_family_growth_system.md</code> — 42개 성장 요건 전체 상세, 레벨별 비용/효과 테이블, Chapter별 자원 맵 포함.</p>
           </div>
         </div>
       </div>
