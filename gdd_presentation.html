@@ -5647,9 +5647,24 @@
 
           <!-- ========== §7. 방어 E1~E4 ========== -->
           <div class="card">
-            <h3>🛡️ E. 거점/방어 성장 (4개) — 거점별 개별 투자</h3>
+            <h3>🛡️ E. 거점/방어 + 영지 확장 (5개)</h3>
 
-            <h4>E1. 거점 성벽 강화 — 🪨+⛏️ | 해금 Lv.15 | 최대 Lv.20</h4>
+            <h4>E5. 영지 확장 <span class="badge badge-gold">NEW</span> — 🪵+🪨+비스 | 해금 Lv.1 | 최대 Lv.33</h4>
+            <p>점령 슬롯을 <strong>자원 투자로 직접 확장</strong>. 기존 가문Lv 자동 증가(10→50) 삭제.</p>
+            <table class="tbl">
+              <tr><th>확장Lv</th><th>총 슬롯</th><th>체감</th></tr>
+              <tr><td>0 (기본)</td><td>15</td><td>Ch.1 시작</td></tr>
+              <tr><td>5</td><td>25</td><td>Ch.2 — Lv2 자원지</td></tr>
+              <tr><td>10</td><td>35</td><td>Ch.3 — 5대 물자 균형</td></tr>
+              <tr><td>15</td><td>45</td><td>Ch.4 — Lv4 자원 진입</td></tr>
+              <tr><td>20</td><td>55</td><td>Ch.5 — Lv5+특수자원</td></tr>
+              <tr><td>25</td><td>65</td><td>Ch.6</td></tr>
+              <tr><td>30</td><td>75</td><td>Ch.7</td></tr>
+              <tr><td>33</td><td><strong>80 (캡)</strong></td><td>엔드게임</td></tr>
+            </table>
+            <p style="font-size:12px;color:var(--text-dim)">삼전 참고: 초기 ~30, 최종 ~130. 싱글 기준 절반=80. 헥스Lv4~5는 슬롯 2개 소모. 목재/석재가 성벽/시설/배럭과 경쟁 → 딜레마.</p>
+
+            <h4 style="margin-top:16px">E1. 거점 성벽 강화 — 🪨+⛏️ | 해금 Lv.15 | 최대 Lv.20</h4>
             <table class="tbl">
               <tr><th>성벽Lv</th><th>🪨(G1)</th><th>⛏️(G1)</th><th>방어DEF</th><th>방어HP</th><th>특수 해금</th></tr>
               <tr><td>1~5</td><td>100~400</td><td>50~200</td><td>+2%/Lv</td><td>+3%/Lv</td><td></td></tr>
@@ -5892,7 +5907,7 @@
               <tr><th>테이블</th><th>행 수</th><th>내용</th><th>상태</th></tr>
               <tr><td><code>TrainingTable.xml</code></td><td>250</td><td>체력 단련 50Lv + 회복력 50Lv + 병종 훈련 5종×30Lv</td><td>100%</td></tr>
               <tr><td><code>ResearchTable.xml</code></td><td>207</td><td>무기 연구 20종×10Lv + 탐색 장비 7행(마일스톤)</td><td>100%</td></tr>
-              <tr><td><code>FortificationTable.xml</code></td><td>46</td><td>성벽 20Lv + 관문 10Lv + 내구도 10Lv + 배럭 확장 6Lv</td><td>100%</td></tr>
+              <tr><td><code>FortificationTable.xml</code></td><td>79</td><td>성벽 20Lv + 관문 10Lv + 내구도 10Lv + 배럭 확장 6Lv + <strong>영지 확장 33Lv</strong></td><td>100%</td></tr>
               <tr><td><code>FamilyLevelTable.xml</code></td><td>100</td><td>가문 Lv.1~100 해금/캡/수용/MCC/거점</td><td>100%</td></tr>
               <tr><td><code>EnergyConfigTable.xml</code></td><td>15</td><td>피로도 기본설정 + 속도보정 5종 + 전투 페널티 5구간</td><td>100%</td></tr>
               <tr><td><code>GachaTable.xml</code></td><td>27</td><td>확률 5등급 + 천장 4단계 + 배너 5종 + 비용/중복/분해</td><td>100%</td></tr>
