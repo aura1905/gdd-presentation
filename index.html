@@ -5472,6 +5472,96 @@
               <p><strong>핵심 설계 원칙:</strong> 무과금도 "시간을 들이면" 과금자와 대등한 전력 달성 가능. 과금은 "시간 단축"이지 "벽"이 아님.</p>
             </div>
           </div>
+
+          <!-- 캐릭터 EXP 시스템 -->
+          <div class="card">
+            <h3>📈 캐릭터 경험치 시스템</h3>
+            <p>레벨업 = <strong>EXP 충족 + 골드 소모</strong>. EXP는 3경로로 획득.</p>
+
+            <h4>EXP 획득 3경로</h4>
+            <table class="tbl">
+              <tr><th>경로</th><th>설명</th><th>대상</th></tr>
+              <tr><td><strong>전투 EXP</strong></td><td>전투 참가 3인에 직접 부여 (DropTable CharEXP)</td><td>주력 캐릭터</td></tr>
+              <tr><td><strong>훈련장 TXP</strong></td><td>배럭 훈련장에서 시간당 생산 (TXP 1 = EXP 1)</td><td>비전투 캐릭터</td></tr>
+              <tr><td><strong>EXP 서적</strong></td><td>소모 아이템으로 즉시 투입 (골드 불필요)</td><td>신규/교체 캐릭터</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">레벨별 필요 EXP/골드 (CharacterExpTable 200행)</h4>
+            <p style="font-size:12px;color:var(--text-dim)">공식: <code>reqEXP(Lv) = 50 × Lv × (1 + floor(Lv/50) × 0.5)</code> / 골드 = EXP × 2</p>
+            <table class="tbl">
+              <tr><th>Lv</th><th>필요 EXP</th><th>골드</th><th>누적 EXP</th><th>구간</th><th>체감</th></tr>
+              <tr><td>1→2</td><td>100</td><td>200</td><td>100</td><td rowspan="2">×1.0</td><td>즉시</td></tr>
+              <tr><td>10→11</td><td>500</td><td>1,000</td><td>2,750</td><td>Day 2</td></tr>
+              <tr><td>30→31</td><td>1,500</td><td>3,000</td><td>23,250</td><td>×1.0</td><td>Day 10</td></tr>
+              <tr><td>50→51</td><td>3,750</td><td>7,500</td><td>63,750</td><td><strong>×1.5</strong></td><td>Day 20 — 1차 벽</td></tr>
+              <tr><td>100→101</td><td>10,000</td><td>20,000</td><td>270,000</td><td><strong>×2.0</strong></td><td>Day 60 — 2차 벽</td></tr>
+              <tr><td>150→151</td><td>18,750</td><td>37,500</td><td>630,000</td><td><strong>×2.5</strong></td><td>Day 110 — 3차 벽</td></tr>
+              <tr><td>180</td><td>22,500</td><td>45,000</td><td>900,000</td><td>×2.5</td><td>Day 140 — 각성 조건</td></tr>
+              <tr><td>200</td><td>25,000</td><td>50,000</td><td>2,083,700</td><td>×2.5</td><td>Day 165 — 초월</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">전투별 EXP (DropTable 기준)</h4>
+            <table class="tbl">
+              <tr><th>전투</th><th>Lv1</th><th>Lv2</th><th>Lv3</th><th>Lv4</th><th>Lv5</th></tr>
+              <tr><td><strong>토벌</strong></td><td>60</td><td>120</td><td>250</td><td>400</td><td>650</td></tr>
+              <tr><td>점령</td><td>50</td><td>100</td><td>200</td><td>350</td><td>600</td></tr>
+              <tr><td>조우전</td><td>30</td><td>60</td><td>120</td><td>200</td><td>350</td></tr>
+              <tr><td>네임드</td><td colspan="3">—</td><td>500</td><td>1,000</td></tr>
+              <tr><td>공성전</td><td colspan="3">—</td><td colspan="2">800~2,000</td></tr>
+            </table>
+            <p style="font-size:12px;color:var(--text-dim)">토벌이 EXP 특화 (레벨업 핵심 경로). 효율등급 SSS~C 배율 적용.</p>
+
+            <h4 style="margin-top:16px">훈련장 TXP</h4>
+            <table class="tbl">
+              <tr><th>항목</th><th>생산량</th></tr>
+              <tr><td>기본</td><td>30 TXP/시간</td></tr>
+              <tr><td>S등급 훈련교관</td><td>×1.5 → 45/시간</td></tr>
+              <tr><td>훈련장 Lv.10</td><td>+100/시간</td></tr>
+              <tr><td>S등급 + Lv.10</td><td>~130/시간 → 하루 ~3,120 EXP</td></tr>
+              <tr><td>오프라인</td><td>70% 효율, 최대 12시간</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">EXP 서적</h4>
+            <table class="tbl">
+              <tr><th>아이템</th><th>EXP</th><th>획득처</th></tr>
+              <tr><td>EXP 서적 (소)</td><td>500</td><td>토벌 드롭, 일일 임무</td></tr>
+              <tr><td>EXP 서적 (중)</td><td>2,000</td><td>레이드, 주간 임무</td></tr>
+              <tr><td>EXP 서적 (대)</td><td>10,000</td><td>네임드 보스, 업적</td></tr>
+              <tr><td>EXP 서적 (특)</td><td>50,000</td><td>공성전, 시즌 보상</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">일일 수급 밸런스 (가문 Lv.40 기준)</h4>
+            <div class="card-grid">
+              <div>
+                <p><strong>주력 캐릭터 (전투)</strong></p>
+                <table class="tbl">
+                  <tr><td>토벌 ×6</td><td>1,500</td></tr>
+                  <tr><td>점령 ×2</td><td>400</td></tr>
+                  <tr><td>조우전 ×3</td><td>360</td></tr>
+                  <tr><td><strong>합계</strong></td><td><strong>~2,260/일</strong></td></tr>
+                </table>
+              </div>
+              <div>
+                <p><strong>비전투 캐릭터 (훈련장)</strong></p>
+                <table class="tbl">
+                  <tr><td>TXP 24시간</td><td>~2,200</td></tr>
+                  <tr><td>서적 (소) ×2</td><td>1,000</td></tr>
+                  <tr><td><strong>합계</strong></td><td><strong>~3,200/일</strong></td></tr>
+                </table>
+              </div>
+            </div>
+
+            <h4 style="margin-top:16px">레벨 싱크</h4>
+            <table class="tbl">
+              <tr><th>규칙</th><th>내용</th></tr>
+              <tr><td>공식</td><td><code>싱크 Lv = floor(상위 5명 평균) - 10</code></td></tr>
+              <tr><td>효과</td><td>나머지 전원이 싱크 레벨 자동 보유</td></tr>
+              <tr><td>제한</td><td>싱크 캐릭은 전투 EXP 미획득 (자동 조정)</td></tr>
+              <tr><td>초과</td><td>싱크 이상 올리려면 직접 EXP/골드 투자</td></tr>
+            </table>
+            <p style="font-size:12px;color:var(--text-dim)">상세: <code>Planning/gdd_character_exp_system.md</code>. 테이블: <code>CharacterExpTable.xml</code> (200행)</p>
+          </div>
+
         </div>
       </div>
     </div>
@@ -5986,6 +6076,8 @@
               <tr><td><code>FamilyLevelTable.xml</code></td><td>100</td><td>가문 Lv.1~100 해금/캡/수용/MCC/거점</td><td>100%</td></tr>
               <tr><td><code>EnergyConfigTable.xml</code></td><td>15</td><td>피로도 기본설정 + 속도보정 5종 + 전투 페널티 5구간</td><td>100%</td></tr>
               <tr><td><code>GachaTable.xml</code></td><td>27</td><td>확률 5등급 + 천장 4단계 + 배너 5종 + 비용/중복/분해</td><td>100%</td></tr>
+              <tr><td><code>DropTable.xml</code></td><td>50</td><td>전투 드롭 3섹션 (기본보상/소재매핑/희귀확률)</td><td>100%</td></tr>
+              <tr><td><code>CharacterExpTable.xml</code></td><td>200</td><td>Lv.1~200 필요 EXP/골드/누적 (구간배수 ×1.0~×2.5)</td><td>100%</td></tr>
             </table>
             <p style="font-size:12px;color:var(--text-dim)">경로: <code>Assets/ClientCore/Resources/Datatables/</code>. 비용 수치는 밸런스 시뮬 후 확정 예정.</p>
           </div>
