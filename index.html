@@ -2542,6 +2542,125 @@
             <p style="font-size:12px;color:var(--text-dim)">물자 Grade = 헥스 Lv (Lv3 헥스 → G3 물자). 탐색 장비 개량 Lv 비례 드롭률 보정. 효율등급 O = SSS×1.5~C×0.8 배율.</p>
           </div>
 
+          <!-- ========== 관문 시스템 상세 ========== -->
+          <div class="card">
+            <h3>🚪 관문 시스템 (Gate) — 28개</h3>
+            <p>관문 = <strong>리전 간 통행 제어</strong>. 관문을 돌파해야 다음 리전에 진입할 수 있음. 공성전으로 함락.</p>
+
+            <h4>관문 핵심 규칙</h4>
+            <table class="tbl">
+              <tr><th>항목</th><th>내용</th></tr>
+              <tr><td>역할</td><td>리전 경계에 위치. ConnectsTo로 두 리전 연결 (예: R5↔R7)</td></tr>
+              <tr><td>공성전 구조</td><td><strong>2단계</strong>: ① 방어병력(Patrol+Garrison) 처치 → ② 관문 HP(내구도) 파괴</td></tr>
+              <tr><td>전투 보정</td><td>관문 DEF <strong>+20%</strong> (TerrainTable ID 12)</td></tr>
+              <tr><td>함락 조건</td><td>방어병력 전멸 + 배치 파티 전멸 + 관문 HP 0</td></tr>
+              <tr><td>릴레이</td><td>1파티 쓰러지면 다음 파티 투입 (피로·HP 이어짐)</td></tr>
+              <tr><td>철수</td><td>공성 도중 철수 가능, 피로 +20%</td></tr>
+              <tr><td>타일 에셋</td><td><code>hex_gate_land</code></td></tr>
+              <tr><td>전투 배경</td><td><code>battle_stage_gate</code> (전 관문 공용)</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">관문 방어 4축 (StructureTable)</h4>
+            <table class="tbl">
+              <tr><th>축</th><th>컬럼</th><th>범위</th><th>내용</th></tr>
+              <tr><td><strong>경비대</strong></td><td>PatrolLv</td><td>1~10</td><td>관문 주변 순찰 파티. StructureDefenseTable Patrol 참조</td></tr>
+              <tr><td><strong>수비대</strong></td><td>GarrisonLv</td><td>1~10</td><td>관문 내부 방어 파티. StructureDefenseTable Garrison 참조</td></tr>
+              <tr><td><strong>주둔군</strong></td><td>StationedLv</td><td>1~10</td><td>추가 배치 파티 (함락 시 플레이어가 배치 가능)</td></tr>
+              <tr><td><strong>내구도</strong></td><td>DurabilityLv</td><td>1~10</td><td>관문 HP. 방어병력 전멸 후 별도로 깎아야 함</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">StructureTable 컬럼 (프로그래머용)</h4>
+            <table class="tbl">
+              <tr><th>컬럼</th><th>타입</th><th>설명</th></tr>
+              <tr><td><code>StructureID</code></td><td>int</td><td>고유 ID (관문: 41~68)</td></tr>
+              <tr><td><code>Name</code></td><td>string</td><td>한국어 이름</td></tr>
+              <tr><td><code>StructureType</code></td><td>string</td><td>"Gate" (관문)</td></tr>
+              <tr><td><code>RegionID</code></td><td>int</td><td>0 (관문은 리전 경계)</td></tr>
+              <tr><td><code>Chapter</code></td><td>int</td><td>1~10 (난이도 챕터)</td></tr>
+              <tr><td><code>ConnectsTo</code></td><td>string</td><td>연결 리전 ID 2개, 콤마 구분 (예: "5,7")</td></tr>
+              <tr><td><code>HexQ</code> / <code>HexR</code></td><td>int</td><td>헥스맵 좌표</td></tr>
+              <tr><td><code>PatrolLv</code></td><td>int</td><td>경비대 레벨 (1~10)</td></tr>
+              <tr><td><code>GarrisonLv</code></td><td>int</td><td>수비대 레벨 (1~10)</td></tr>
+              <tr><td><code>StationedLv</code></td><td>int</td><td>주둔 레벨 (1~10)</td></tr>
+              <tr><td><code>DurabilityLv</code></td><td>int</td><td>내구도 레벨 (1~10)</td></tr>
+              <tr><td><code>BattleBgAsset</code></td><td>string</td><td>"battle_stage_gate"</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">관문 28개 전체 목록</h4>
+            <table class="tbl">
+              <tr><th>ID</th><th>이름</th><th>Ch</th><th>연결</th><th>좌표</th><th>순찰</th><th>수비</th><th>주둔</th><th>내구</th></tr>
+              <tr><td>41</td><td>알비강-세레스테</td><td>2</td><td>R5↔R7</td><td>44,57</td><td>2</td><td>2</td><td>1</td><td>2</td></tr>
+              <tr><td>42</td><td>세레스테-님로드</td><td>3</td><td>R7↔R9</td><td>50,62</td><td>3</td><td>3</td><td>2</td><td>2</td></tr>
+              <tr><td>43</td><td>페루초-알쿠엘트</td><td>1</td><td>R3↔R4</td><td>53,49</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
+              <tr><td>44</td><td>포르토부두-빙마설원</td><td>5</td><td>R15↔R39</td><td>54,55</td><td>5</td><td>5</td><td>4</td><td>4</td></tr>
+              <tr><td>45</td><td>채석장-왕들정원</td><td>5</td><td>R2↔R8</td><td>57,49</td><td>5</td><td>5</td><td>4</td><td>4</td></tr>
+              <tr><td>46</td><td>왕들정원-포르토부두</td><td>5</td><td>R8↔R15</td><td>58,53</td><td>5</td><td>5</td><td>4</td><td>4</td></tr>
+              <tr><td>47</td><td>왕들정원-테트라대유적</td><td>9</td><td>R8↔R11</td><td>67,49</td><td>9</td><td>9</td><td>8</td><td>8</td></tr>
+              <tr><td>48</td><td>포르토절벽-비아플루비알</td><td>4</td><td>R14↔R18</td><td>67,62</td><td>4</td><td>4</td><td>3</td><td>3</td></tr>
+              <tr><td>49</td><td>하비에로-기간떼</td><td>5</td><td>R17↔R41</td><td>67,70</td><td>5</td><td>5</td><td>4</td><td>4</td></tr>
+              <tr><td>50</td><td>보나비스타</td><td>5</td><td>R20</td><td>68,44</td><td>5</td><td>5</td><td>4</td><td>4</td></tr>
+              <tr><td>51</td><td>지저벨-테하도</td><td>6</td><td>R21↔R22</td><td>70,34</td><td>6</td><td>6</td><td>5</td><td>5</td></tr>
+              <tr><td>52</td><td>테트라언덕-비아플루비알</td><td>6</td><td>R10↔R18</td><td>71,62</td><td>6</td><td>6</td><td>5</td><td>5</td></tr>
+              <tr><td>53</td><td>보나비스타-튜링엔</td><td>8</td><td>R20↔R23</td><td>72,43</td><td>8</td><td>8</td><td>7</td><td>7</td></tr>
+              <tr><td>54</td><td>테트라언덕-테트라대유적</td><td>9</td><td>R10↔R11</td><td>72,56</td><td>9</td><td>9</td><td>8</td><td>8</td></tr>
+              <tr><td>55</td><td>코임브라항구-보나비스타</td><td>4</td><td>R12↔R20</td><td>73,47</td><td>4</td><td>4</td><td>3</td><td>3</td></tr>
+              <tr><td>56</td><td>테트라언덕-포르토던전</td><td>8</td><td>R10↔R16</td><td>75,59</td><td>8</td><td>8</td><td>7</td><td>7</td></tr>
+              <tr><td>57</td><td>테하도-불의섬</td><td>7</td><td>R22↔R42</td><td>76,33</td><td>7</td><td>7</td><td>6</td><td>6</td></tr>
+              <tr><td>58</td><td>비아플루비알-리온평원</td><td>5</td><td>R18↔R19</td><td>76,69</td><td>5</td><td>5</td><td>4</td><td>4</td></tr>
+              <tr><td>59</td><td>자캥수용소-불의섬</td><td>7</td><td>R28↔R42</td><td>77,31</td><td>7</td><td>7</td><td>6</td><td>6</td></tr>
+              <tr><td>60</td><td>코임브라항구-티에라</td><td>6</td><td>R12↔R26</td><td>80,50</td><td>6</td><td>6</td><td>5</td><td>5</td></tr>
+              <tr><td>61</td><td>테트라언덕-티에라</td><td>7</td><td>R10↔R26</td><td>80,57</td><td>7</td><td>7</td><td>6</td><td>6</td></tr>
+              <tr><td>62</td><td>세자매호수-불의섬</td><td>7</td><td>R24↔R42</td><td>82,37</td><td>7</td><td>7</td><td>6</td><td>6</td></tr>
+              <tr><td>63</td><td>리온평원</td><td>6</td><td>R19</td><td>82,63</td><td>6</td><td>6</td><td>5</td><td>5</td></tr>
+              <tr><td>64</td><td>토르쉐-티에라</td><td>8</td><td>R25↔R26</td><td>83,47</td><td>8</td><td>8</td><td>7</td><td>7</td></tr>
+              <tr><td>65</td><td>쎄니싸-잊혀진폐허</td><td>9</td><td>R30↔R31</td><td>84,28</td><td>9</td><td>9</td><td>8</td><td>8</td></tr>
+              <tr><td>66</td><td>티에라-페루초방벽</td><td>7</td><td>R26↔R36</td><td>84,53</td><td>7</td><td>7</td><td>6</td><td>6</td></tr>
+              <tr><td>67</td><td>세자매호수-페루초방벽</td><td>7</td><td>R24↔R36</td><td>88,46</td><td>7</td><td>7</td><td>6</td><td>6</td></tr>
+              <tr><td>68</td><td>갈라진땅-빙마탑꼭대기</td><td>10</td><td>R33↔R43</td><td>90,20</td><td>10</td><td>10</td><td>9</td><td>9</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">관문 강화 (FortificationTable gate)</h4>
+            <p>플레이어가 함락한 관문을 자원 투자로 강화. <strong>관문별 개별 투자</strong> (최대 28곳).</p>
+            <table class="tbl">
+              <tr><th>강화Lv</th><th>🪨 석재</th><th>내구도 +%</th><th>침공 경보</th><th>특수 해금</th></tr>
+              <tr><td>1</td><td>150</td><td>+10%</td><td>—</td><td></td></tr>
+              <tr><td>2</td><td>225</td><td>+20%</td><td>—</td><td></td></tr>
+              <tr><td>3</td><td>300</td><td>+30%</td><td>+1시간</td><td></td></tr>
+              <tr><td>4</td><td>400</td><td>+40%</td><td>—</td><td></td></tr>
+              <tr><td>5</td><td>550</td><td>+50%</td><td>—</td><td><strong>보수 자동화</strong></td></tr>
+              <tr><td>6</td><td>700</td><td>+60%</td><td>+1시간</td><td></td></tr>
+              <tr><td>7</td><td>850</td><td>+70%</td><td>—</td><td></td></tr>
+              <tr><td>8</td><td>1,050</td><td>+80%</td><td>—</td><td></td></tr>
+              <tr><td>9</td><td>1,250</td><td>+90%</td><td>+1시간</td><td></td></tr>
+              <tr><td>10</td><td>1,500</td><td>+100%</td><td>—</td><td><strong>철벽 관문</strong> 칭호</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">공성전 진행 플로우</h4>
+            <div class="flow-box">[관문 공성전 — 2단계 구조]
+
+① 순찰 (선택) → 관문 정보 확인 (피로 10, 시간 10분)
+   ↓
+② 공성 시작 → 경비대(Patrol) 전투
+   ↓ (경비대 전멸)
+③ 수비대(Garrison) 전투 (릴레이 — 파티 교대 가능)
+   ↓ (수비대 전멸)
+④ 관문 HP(내구도) 파괴 (별도 전투 or 자동)
+   ↓ (HP 0)
+⑤ 함락! → 다음 리전 진입 가능
+   → 관문에 아군 주둔군 배치 가능
+   → 관문 강화(FortificationTable) 시작 가능</div>
+
+            <h4 style="margin-top:16px">관문 관련 테이블 참조</h4>
+            <table class="tbl">
+              <tr><th>테이블</th><th>내용</th><th>관문 필터</th></tr>
+              <tr><td><code>StructureTable.xml</code></td><td>관문 28개 정의 (ID/이름/연결/좌표/4축Lv)</td><td>StructureType="Gate"</td></tr>
+              <tr><td><code>StructureDefenseTable.xml</code></td><td>관문별 방어 파티 편성 (경비대+수비대)</td><td>StructureID 41~68</td></tr>
+              <tr><td><code>WorldHexTable.xml</code></td><td>관문 헥스 위치</td><td>TerrainID=12</td></tr>
+              <tr><td><code>FortificationTable.xml</code></td><td>관문 강화 레벨 (ID 4101~4110)</td><td>FortType="gate"</td></tr>
+              <tr><td><code>TerrainTable.xml</code></td><td>관문 지형 보정 (DEF+20%)</td><td>TerrainID=12, Code="wall"</td></tr>
+            </table>
+          </div>
+
         </div>
       </div>
     </div>
