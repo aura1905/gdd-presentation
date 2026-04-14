@@ -3372,1405 +3372,278 @@
       <div class="section">
         <div class="section-header">
           <div class="section-icon" style="background:rgba(78,204,163,0.12)">🏠</div>
-          <h2>배럭 라이프</h2>
-          <span class="tag">가문 경영의 심장</span>
+          <h2>배럭 라이프 v2</h2>
+          <span class="tag">양념 콘텐츠 · 2026.04.08 재설계</span>
         </div>
         <div class="highlight-box green">
-          <p><strong>배럭 = 풋볼매니저의 훈련장 + 카이로소프트의 마을 경영.</strong></p>
-          <p>전투 밖에서 캐릭터가 생활하고, 자원을 생산하고, 관계를 쌓는 공간. 게임 플레이 시간의 ~40%를 차지.</p>
+          <p><strong>배럭 = 양념 콘텐츠.</strong> 메인은 필드. 배럭 체류 30초~1분.</p>
+          <p>쿠키런 킹덤이 실패한 이유(왕국 관리 과잉) 반면교사. 자동 배치 + 원탭 수거 + 바로 필드로.</p>
         </div>
 
         <div class="sub-tabs" data-group="barracks">
-          <div class="sub-tab active" data-sub="bar-jobs">생활 직업</div>
-          <div class="sub-tab" data-sub="bar-facility">시설/분위기</div>
-          <div class="sub-tab" data-sub="bar-food">음식 시스템</div>
-          <div class="sub-tab" data-sub="bar-visual">비주얼 레퍼런스</div>
+          <div class="sub-tab active" data-sub="bar-overview">📋 개요</div>
+          <div class="sub-tab" data-sub="bar-ux">🎮 UX 플로우</div>
+          <div class="sub-tab" data-sub="bar-facility">🏗️ 3시설</div>
+          <div class="sub-tab" data-sub="bar-outpost">🏰 거점 관리</div>
+          <div class="sub-tab" data-sub="bar-jobs">👷 생활 직업</div>
+          <div class="sub-tab" data-sub="bar-graphic">🎨 그래픽 가이드</div>
+          <div class="sub-tab" data-sub="bar-assets">📦 에셋 리스트</div>
         </div>
 
-        <div class="sub-content active" data-sub="bar-jobs">
+        <div class="sub-content active" data-sub="bar-overview">
           <div class="card">
-            <h3>👷 8대 생활 직업</h3>
+            <h3>🎯 v1 → v2 변경 요약</h3>
             <table class="tbl">
-              <tr>
-                <th>#</th>
-                <th>직업</th>
-                <th>배치 시설</th>
-                <th>생산물</th>
-                <th>시간당 기본</th>
-              </tr>
-              <tr>
-                <td>1</td>
-                <td>⛏️ <strong>채집꾼</strong></td>
-                <td>필드/거점</td>
-                <td>식재료, 광물, 약초</td>
-                <td>식재료 3, 광물 2</td>
-              </tr>
-              <tr>
-                <td>2</td>
-                <td>🏹 <strong>사냥꾼</strong></td>
-                <td>필드/훈련장</td>
-                <td>골드, 몬스터 소재</td>
-                <td>골드 100, 소재 2개</td>
-              </tr>
-              <tr>
-                <td>3</td>
-                <td>🍳 <strong>요리사</strong></td>
-                <td>식당</td>
-                <td>피로 회복 음식, 버프 음식</td>
-                <td>피로 음식 1.5개</td>
-              </tr>
-              <tr>
-                <td>4</td>
-                <td>🔨 <strong>대장장이</strong></td>
-                <td>대장간</td>
-                <td>장비 제작</td>
-                <td>제작점수 50</td>
-              </tr>
-              <tr>
-                <td>5</td>
-                <td>💰 <strong>상인</strong></td>
-                <td>교역소</td>
-                <td>비스(Vis), 골드</td>
-                <td>비스 80, 골드 50</td>
-              </tr>
-              <tr>
-                <td>6</td>
-                <td>📚 <strong>연구원</strong></td>
-                <td>연구소</td>
-                <td>스킬 포인트, 전술서</td>
-                <td>RP 30</td>
-              </tr>
-              <tr>
-                <td>7</td>
-                <td>🏥 <strong>의무관</strong></td>
-                <td>의무실</td>
-                <td>HP 회복, 치료제</td>
-                <td>HP 회복 촉진</td>
-              </tr>
-              <tr>
-                <td>8</td>
-                <td>🎯 <strong>훈련교관</strong></td>
-                <td>훈련장</td>
-                <td>경험치, 훈련 보너스</td>
-                <td>EXP 생산</td>
-              </tr>
+              <tr><th>항목</th><th>v1 (기존)</th><th>v2 (재설계)</th></tr>
+              <tr><td>시설</td><td>8종 × Lv.15</td><td><strong>3종 × Lv.10</strong></td></tr>
+              <tr><td>생활직업</td><td>8종</td><td><strong>4종</strong></td></tr>
+              <tr><td>숙련도</td><td>Lv.1~10</td><td><strong>삭제</strong></td></tr>
+              <tr><td>분위기 시스템</td><td>5등급</td><td><strong>삭제</strong></td></tr>
+              <tr><td>캐릭터 상호작용</td><td>8종 이벤트</td><td><strong>삭제</strong></td></tr>
+              <tr><td>배치</td><td>수동</td><td><strong>자동 (S등급 우선)</strong></td></tr>
+              <tr><td>거점별 운영</td><td>5거점×8시설=40개</td><td><strong>메인 1거점만</strong></td></tr>
+              <tr><td>거점 관리</td><td>배럭 안에 포함</td><td><strong>월드맵 팝업으로 분리</strong></td></tr>
+              <tr><td>체류 시간</td><td>5~10분</td><td><strong>30초~1분</strong></td></tr>
             </table>
           </div>
+
           <div class="card">
-            <h3>📊 직업 효율 등급 & 숙련도</h3>
-            <table class="tbl">
-              <tr>
-                <th>효율 등급</th>
-                <th>생산량 배율</th>
-                <th>조건</th>
-              </tr>
-              <tr>
-                <td><span class="badge badge-gold">S 최적</span></td>
-                <td>×1.5</td>
-                <td>해당 직업에 가장 적합한 캐릭터</td>
-              </tr>
-              <tr>
-                <td><span class="badge badge-purple">A 적합</span></td>
-                <td>×1.2</td>
-                <td>관련 스킬/스탯 보유</td>
-              </tr>
-              <tr>
-                <td><span class="badge badge-blue">B 보통</span></td>
-                <td>×1.0</td>
-                <td>기본</td>
-              </tr>
-              <tr>
-                <td><span class="badge badge-green">C 비적합</span></td>
-                <td>×0.7</td>
-                <td>전투 특화 캐릭터 강제 배치</td>
-              </tr>
-            </table>
-            <div class="highlight-box">
-              <p>숙련도 Lv.1~10: 누적 활동 시간에 따라 성장. <strong>Lv.5</strong>에 숙련 특수 효과 발동, <strong>Lv.8</strong>에 장인 칭호 + 고유
-                이벤트, <strong>Lv.10</strong>에 전설급 장인 (×1.70 배율).</p>
-              <p>→ 오래 함께한 캐릭터가 <strong>"우리 가문의 핵심 인력"</strong>이 되는 설계.</p>
+            <h3>💡 쿠키런 킹덤에서 배운 것</h3>
+            <div class="card-grid">
+              <div>
+                <h4>✅ 배울 점</h4>
+                <ul>
+                  <li>접속 = 왕국 첫 화면</li>
+                  <li>생산물 수거 원탭</li>
+                  <li>쿠키 돌아다니는 생동감</li>
+                  <li>생산 대시보드</li>
+                </ul>
+              </div>
+              <div>
+                <h4>❌ 피할 점</h4>
+                <ul>
+                  <li>왕국 = 메인 콘텐츠 → 중후반 지루</li>
+                  <li>건물 수십 개 + 꾸미기</li>
+                  <li>생산 체인 복잡 → 노동 느낌</li>
+                  <li>건설 시간 과금 ($19.99)</li>
+                </ul>
+              </div>
             </div>
+          </div>
+        </div>
+
+        <div class="sub-content" data-sub="bar-ux">
+          <div class="card">
+            <h3>🎮 UX 플로우</h3>
+            <pre style="background:var(--bg-card);padding:16px;border-radius:4px;font-size:13px">[앱 실행 / 재접속]
+    ↓
+[거점 뷰] ← 항상 여기서 시작
+  │
+  ├─ 생산 완료 아이콘 확인 → 탭 or [전체 수거]
+  ├─ 피로/HP 회복 상태 확인
+  ├─ 캐릭터 SD 활동 모습 (배경)
+  │
+  └─ 하단 네비게이션:
+       [월드맵] [편성] [가문] [상점]
+            ↓
+       [월드맵] 탭 → 필드 전투 시작</pre>
+          </div>
+
+          <div class="card">
+            <h3>📱 거점 뷰 레이아웃</h3>
+            <pre style="background:var(--bg-card);padding:16px;border-radius:4px;font-size:12px;line-height:1.4">┌─────────────────────────────────────────────────┐
+│  [거점명: 리볼도외]           💰1,200  🪙3,500  │ ← 상단 HUD
+│─────────────────────────────────────────────────│
+│                                                  │
+│          ┌─────────┐                             │
+│          │  🏰 관저 │ (탭 → 거점 관리 팝업)        │
+│          └─────────┘                             │
+│                                                  │
+│       ┌──────┐   ┌──────┐   ┌──────┐            │
+│       │🍳주방│   │🔨공방│   │⚔훈련장│           │
+│       │ +3🍖 │   │ +1⚔ │   │      │            │ ← 생산 완료
+│       └──────┘   └──────┘   └──────┘            │
+│                                                  │
+│      🧑‍🍳판필로     ⚔다리아      😴파이터        │ ← SD 활동
+│                                                  │
+│  ┌──────────────────────────────────────────┐   │
+│  │    [전체 수거 🔔3]       [시설 관리]      │   │ ← 퀵 액션
+│  └──────────────────────────────────────────┘   │
+│                                                  │
+│  [🗺월드맵]  [⚔편성]  [🏛가문]  [🛒상점]      │ ← 하단 네비
+└─────────────────────────────────────────────────┘</pre>
+          </div>
+
+          <div class="card">
+            <h3>🔔 원탭 수거</h3>
+            <p>[전체 수거] 버튼 → 모든 건물 생산물 일괄 수령</p>
+            <table class="tbl">
+              <tr><th>수거 결과</th></tr>
+              <tr><td>🍖 피로 회복 음식 ×3</td></tr>
+              <tr><td>⚔️ 장비 제작점수 +120</td></tr>
+              <tr><td>📘 연구 포인트 +80</td></tr>
+              <tr><td>💰 비스 +450</td></tr>
+            </table>
+            <p style="font-size:12px;color:var(--text-dim)">90%의 유저는 전체 수거만 사용. 건물별 탭 수거도 가능.</p>
           </div>
         </div>
 
         <div class="sub-content" data-sub="bar-facility">
           <div class="card">
-            <h3>🏗️ 거점 시설</h3>
+            <h3>🏗️ 배럭 3시설 (내부 탭 구조)</h3>
             <table class="tbl">
-              <tr>
-                <th>시설</th>
-                <th>기능</th>
-                <th>Max Lv</th>
-                <th>효과</th>
-              </tr>
-              <tr>
-                <td>🍳 식당</td>
-                <td>요리 제작</td>
-                <td>15</td>
-                <td>요리 효율 +10%/Lv</td>
-              </tr>
-              <tr>
-                <td>🔨 대장간</td>
-                <td>장비 제작</td>
-                <td>15</td>
-                <td>제작 품질 +5%/Lv</td>
-              </tr>
-              <tr>
-                <td>📚 연구소</td>
-                <td>스킬 연구</td>
-                <td>15</td>
-                <td>연구 속도 +8%/Lv</td>
-              </tr>
-              <tr>
-                <td>🏥 의무실</td>
-                <td>HP/피로 회복</td>
-                <td>15</td>
-                <td>회복 속도 +10%/Lv</td>
-              </tr>
-              <tr>
-                <td>🎯 훈련장</td>
-                <td>캐릭터 훈련</td>
-                <td>15</td>
-                <td>EXP 획득 +10%/Lv</td>
-              </tr>
-              <tr>
-                <td>💰 교역소</td>
-                <td>교역/판매</td>
-                <td>15</td>
-                <td>교역 수익 +8%/Lv</td>
-              </tr>
-              <tr>
-                <td>📊 경영실</td>
-                <td>유지비 절감</td>
-                <td>10</td>
-                <td>유지비 -3%/Lv</td>
-              </tr>
+              <tr><th>시설</th><th>아이콘</th><th>내부 탭</th><th>배치 직업</th><th>해금</th></tr>
+              <tr><td><strong>주방</strong></td><td>🍳</td><td>음식 제작 / <strong>회복력 강화</strong> / 치료제</td><td>요리사</td><td>Lv.6</td></tr>
+              <tr><td><strong>공방</strong></td><td>🔨</td><td>장비 제작 / <strong>무기 연구</strong> / 전술서</td><td>장인</td><td>Lv.12</td></tr>
+              <tr><td><strong>훈련장</strong></td><td>⚔️</td><td>TXP / <strong>병종 훈련 5종</strong> / <strong>체력 단련</strong></td><td>교관</td><td>Lv.8</td></tr>
             </table>
           </div>
+
           <div class="card">
-            <h3>🌤️ 거점 분위기</h3>
+            <h3>🔗 성장축 → 접근점 매핑</h3>
             <table class="tbl">
-              <tr>
-                <th>분위기</th>
-                <th>등급</th>
-                <th>전체 효과</th>
-              </tr>
-              <tr>
-                <td>90+</td>
-                <td>🌟 <strong>화목</strong></td>
-                <td>생산 효율 +15%, 충성도 +1/일, 특수 이벤트 ×2</td>
-              </tr>
-              <tr>
-                <td>70~89</td>
-                <td>😊 양호</td>
-                <td>생산 효율 +5%</td>
-              </tr>
-              <tr>
-                <td>50~69</td>
-                <td>😐 보통</td>
-                <td>기본</td>
-              </tr>
-              <tr>
-                <td>30~49</td>
-                <td>😟 불안</td>
-                <td>생산 효율 -10%, 갈등 이벤트 ×2</td>
-              </tr>
-              <tr>
-                <td>0~29</td>
-                <td>💀 위기</td>
-                <td>생산 효율 -30%, 탈주 위험!</td>
-              </tr>
+              <tr><th>성장축</th><th>접근점</th><th>위치</th></tr>
+              <tr><td>체력 단련 / 회복력 / 병종 훈련 5종</td><td>훈련장 / 주방</td><td>배럭</td></tr>
+              <tr><td>무기 연구 / 장비 / 전술서</td><td>공방</td><td>배럭</td></tr>
+              <tr><td>음식 / 치료제</td><td>주방</td><td>배럭</td></tr>
+              <tr><td>성벽 / 관문 / 내구도 / 징병</td><td>거점 관리 → 방어</td><td><strong>월드맵 팝업</strong></td></tr>
+              <tr><td>배럭 확장 / 영지 확장</td><td>거점 관리 → 확장</td><td><strong>월드맵 팝업</strong></td></tr>
+              <tr><td>비스 수입 / 유지비 / 교역</td><td>거점 관리 → 경영</td><td><strong>월드맵 팝업</strong></td></tr>
             </table>
           </div>
         </div>
 
-        <div class="sub-content" data-sub="bar-food">
+        <div class="sub-content" data-sub="bar-outpost">
           <div class="card">
-            <h3>🍳 음식 시스템 — 12종+</h3>
+            <h3>🏰 거점 관리 팝업 (월드맵 거점 아이콘 탭)</h3>
+            <p>배럭과 분리된 별도 UI. <strong>전략적 투자</strong>는 월드맵 팝업에서.</p>
             <table class="tbl">
-              <tr>
-                <th>음식</th>
-                <th>재료</th>
-                <th>효과</th>
-                <th>숙련 요구</th>
-              </tr>
-              <tr>
-                <td>🍞 기본 식사</td>
-                <td>식재료 ×1</td>
-                <td>피로 +10</td>
-                <td>Lv.1</td>
-              </tr>
-              <tr>
-                <td>🥘 리볼도외 스튜</td>
-                <td>식재료 ×2</td>
-                <td>피로 +15, HP +5%</td>
-                <td>Lv.1</td>
-              </tr>
-              <tr>
-                <td>🐟 코임브라 해물탕</td>
-                <td>식재료 ×3, 약초 ×1</td>
-                <td>피로 +25, HP +10%</td>
-                <td>Lv.2</td>
-              </tr>
-              <tr>
-                <td>🥩 패루초 바베큐</td>
-                <td>식재료 ×4, 소재 ×1</td>
-                <td>피로 +20, ATK +3%</td>
-                <td>Lv.2</td>
-              </tr>
-              <tr>
-                <td>🍰 오슈 약초케이크</td>
-                <td>식재료 ×3, 약초 ×3</td>
-                <td>피로 +30</td>
-                <td>Lv.4</td>
-              </tr>
-              <tr>
-                <td>🍷 장인의 만찬</td>
-                <td>식재료 ×10, 약초 ×5</td>
-                <td>피로 전회복, 올스탯+5%</td>
-                <td>Lv.7</td>
-              </tr>
+              <tr><th>탭</th><th>기능</th><th>해금</th></tr>
+              <tr><td>🛡 <strong>방어</strong></td><td>성벽 강화 / 관문 강화 / 시설 내구도 / 수비대 징병</td><td>Lv.15</td></tr>
+              <tr><td>📐 <strong>확장</strong></td><td>배럭 슬롯 / 영지 점령 슬롯</td><td>Lv.10</td></tr>
+              <tr><td>💰 <strong>경영</strong></td><td>비스 수입 / 유지비 감소 / 교역 루트</td><td>Lv.15</td></tr>
             </table>
-            <div class="highlight-box">
-              <p>→ 요리사 숙련도가 올라야 고급 음식 제작 가능. <strong>판필로를 3개월 키우면 장인이 되어 "장인의 만찬" 제작 가능</strong> → 대체 불가 인력!</p>
-            </div>
           </div>
         </div>
 
-        <div class="sub-content" data-sub="bar-visual">
-          <div class="barracks-vr">
-
-
-
-
-
-
-<!-- Section 1: Building Visual Progression -->
-<div class="divider"></div>
-<section class="section">
-  <div class="section-title"><span class="num">1</span>건물 비주얼 단계</div>
-  <div class="section-desc">8종 시설 x 4단계(Tier 0~3). 5레벨 단위로 스프라이트 교체. Tier 3 건물은 상시 파티클 이펙트.</div>
-
-  <!-- Chef Hall -->
-  <div class="building-grid">
-    <div class="building-row-label">
-      <span class="emoji">🍳</span>
-      <span class="name">식당</span>
-      <span class="name-en">Chef Hall</span>
-    </div>
-
-    <div class="tier-card">
-      <div class="tier-header">
-        <span class="tier-badge t0">Tier 0</span>
-        <span class="tier-level">미건설</span>
-      </div>
-      <div class="tier-visual t0">
-        <span class="building-icon">🏚️</span>
-      </div>
-      <div class="tier-desc">
-        <strong>빈 터 + 화덕 잔해</strong>
-        <div class="tier-effects">
-          <span class="effect-tag">"건설 가능" 안내판</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="tier-card">
-      <div class="tier-header">
-        <span class="tier-badge t1">Tier 1</span>
-        <span class="tier-level">Lv.1~5</span>
-      </div>
-      <div class="tier-visual t1">
-        <span class="building-icon">🍳</span>
-      </div>
-      <div class="tier-desc">
-        <strong>목조 소형 식당</strong>, 작은 굴뚝
-        <div class="tier-effects">
-          <span class="effect-tag">연기 파티클 (요리 중)</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="tier-card">
-      <div class="tier-header">
-        <span class="tier-badge t2">Tier 2</span>
-        <span class="tier-level">Lv.6~10</span>
-      </div>
-      <div class="tier-visual t2">
-        <span class="building-icon">🍲</span>
-      </div>
-      <div class="tier-desc">
-        <strong>석조 중형</strong>, 테라스 테이블 추가
-        <div class="tier-effects">
-          <span class="effect-tag">연기 상시</span>
-          <span class="effect-tag">김 파티클</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="tier-card t3">
-      <div class="tier-header">
-        <span class="tier-badge t3">Tier 3</span>
-        <span class="tier-level">Lv.11~15</span>
-      </div>
-      <div class="tier-visual t3">
-        <span class="building-icon">🏰</span>
-        <span class="glow-particle" style="left:25%"></span>
-        <span class="glow-particle"></span>
-        <span class="glow-particle"></span>
-        <span class="glow-particle"></span>
-      </div>
-      <div class="tier-desc">
-        <strong>2층 레스토랑</strong>, 금테 간판 "Grand Chef Hall"
-        <div class="tier-effects">
-          <span class="effect-tag gold">연기+김+별 파티클</span>
-          <span class="effect-tag gold">음식 진열대</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Smithy -->
-  <div class="building-grid">
-    <div class="building-row-label">
-      <span class="emoji">🔨</span>
-      <span class="name">대장간</span>
-      <span class="name-en">Smithy</span>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t0">Tier 0</span><span class="tier-level">미건설</span></div>
-      <div class="tier-visual t0"><span class="building-icon">🪨</span></div>
-      <div class="tier-desc"><strong>빈 터 + 깨진 모루</strong></div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t1">Tier 1</span><span class="tier-level">Lv.1~5</span></div>
-      <div class="tier-visual t1"><span class="building-icon">🔨</span></div>
-      <div class="tier-desc"><strong>천막 작업장</strong>, 모루 1개
-        <div class="tier-effects"><span class="effect-tag">불꽃 파티클 (작업 중)</span></div>
-      </div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t2">Tier 2</span><span class="tier-level">Lv.6~10</span></div>
-      <div class="tier-visual t2"><span class="building-icon">⚒️</span></div>
-      <div class="tier-desc"><strong>석조 대장간 + 용광로</strong>, 무기 진열대
-        <div class="tier-effects"><span class="effect-tag">용광로 빛 상시</span><span class="effect-tag">불꽃 (중)</span></div>
-      </div>
-    </div>
-    <div class="tier-card t3">
-      <div class="tier-header"><span class="tier-badge t3">Tier 3</span><span class="tier-level">Lv.11~15</span></div>
-      <div class="tier-visual t3"><span class="building-icon">⚔️</span>
-        <span class="glow-particle" style="left:25%"></span><span class="glow-particle"></span><span class="glow-particle"></span><span class="glow-particle"></span>
-      </div>
-      <div class="tier-desc"><strong>대형 공방</strong>, 굴뚝 2개, 앤빌 3개
-        <div class="tier-effects"><span class="effect-tag gold">용광로 불빛 + 검은 연기</span><span class="effect-tag gold">무기 벽면 진열</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Lab -->
-  <div class="building-grid">
-    <div class="building-row-label">
-      <span class="emoji">🔬</span>
-      <span class="name">연구소</span>
-      <span class="name-en">Lab</span>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t0">Tier 0</span><span class="tier-level">미건설</span></div>
-      <div class="tier-visual t0"><span class="building-icon">📖</span></div>
-      <div class="tier-desc"><strong>빈 터 + 오래된 책 몇 권</strong></div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t1">Tier 1</span><span class="tier-level">Lv.1~5</span></div>
-      <div class="tier-visual t1"><span class="building-icon">📚</span></div>
-      <div class="tier-desc"><strong>작은 서재</strong>, 창문에 촛불
-        <div class="tier-effects"><span class="effect-tag">빛나는 문자 파티클 (작업 중)</span></div>
-      </div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t2">Tier 2</span><span class="tier-level">Lv.6~10</span></div>
-      <div class="tier-visual t2"><span class="building-icon">🏛️</span></div>
-      <div class="tier-desc"><strong>석조 도서관</strong>, 망원경 옥상, 마법진
-        <div class="tier-effects"><span class="effect-tag">마법진 빛 (야간)</span><span class="effect-tag">책 플로팅</span></div>
-      </div>
-    </div>
-    <div class="tier-card t3">
-      <div class="tier-header"><span class="tier-badge t3">Tier 3</span><span class="tier-level">Lv.11~15</span></div>
-      <div class="tier-visual t3"><span class="building-icon">🗼</span>
-        <span class="glow-particle" style="left:25%"></span><span class="glow-particle"></span><span class="glow-particle"></span><span class="glow-particle"></span>
-      </div>
-      <div class="tier-desc"><strong>마법 탑</strong>, 회전 천체의, 고대 문양
-        <div class="tier-effects"><span class="effect-tag gold">상시 마법 파티클</span><span class="effect-tag gold">탑 꼭대기 빛 기둥 (야간)</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Training Ground -->
-  <div class="building-grid">
-    <div class="building-row-label">
-      <span class="emoji">⚔️</span>
-      <span class="name">훈련장</span>
-      <span class="name-en">Training Ground</span>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t0">Tier 0</span><span class="tier-level">미건설</span></div>
-      <div class="tier-visual t0"><span class="building-icon">🎯</span></div>
-      <div class="tier-desc"><strong>빈 터 + 낡은 허수아비</strong></div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t1">Tier 1</span><span class="tier-level">Lv.1~5</span></div>
-      <div class="tier-visual t1"><span class="building-icon">🤺</span></div>
-      <div class="tier-desc"><strong>목재 울타리</strong>, 허수아비 3개, 모래 바닥
-        <div class="tier-effects"><span class="effect-tag">먼지 파티클 (훈련 중)</span></div>
-      </div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t2">Tier 2</span><span class="tier-level">Lv.6~10</span></div>
-      <div class="tier-visual t2"><span class="building-icon">🏟️</span></div>
-      <div class="tier-desc"><strong>석조 아레나</strong>, 관람석, 무기 거치대
-        <div class="tier-effects"><span class="effect-tag">깃발 펄럭임</span><span class="effect-tag">검격 이펙트</span></div>
-      </div>
-    </div>
-    <div class="tier-card t3">
-      <div class="tier-header"><span class="tier-badge t3">Tier 3</span><span class="tier-level">Lv.11~15</span></div>
-      <div class="tier-visual t3"><span class="building-icon">🏛️</span>
-        <span class="glow-particle" style="left:25%"></span><span class="glow-particle"></span><span class="glow-particle"></span><span class="glow-particle"></span>
-      </div>
-      <div class="tier-desc"><strong>원형 투기장</strong>, 2층 관람석, 가문 깃발
-        <div class="tier-effects"><span class="effect-tag gold">횃불 불빛 (야간)</span><span class="effect-tag gold">환호성 SE (훈련 중)</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Trading Post -->
-  <div class="building-grid">
-    <div class="building-row-label">
-      <span class="emoji">💰</span>
-      <span class="name">교역소</span>
-      <span class="name-en">Trading Post</span>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t0">Tier 0</span><span class="tier-level">미건설</span></div>
-      <div class="tier-visual t0"><span class="building-icon">🛒</span></div>
-      <div class="tier-desc"><strong>빈 터 + 깨진 수레</strong></div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t1">Tier 1</span><span class="tier-level">Lv.1~5</span></div>
-      <div class="tier-visual t1"><span class="building-icon">🏪</span></div>
-      <div class="tier-desc"><strong>천막 가판대</strong>, 상자 2~3개
-        <div class="tier-effects"><span class="effect-tag">동전 파티클 (교역 중)</span></div>
-      </div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t2">Tier 2</span><span class="tier-level">Lv.6~10</span></div>
-      <div class="tier-visual t2"><span class="building-icon">🏬</span></div>
-      <div class="tier-desc"><strong>석조 상점</strong>, 창고 추가, 수레 1대
-        <div class="tier-effects"><span class="effect-tag">수레 흔들림 애니</span><span class="effect-tag">동전 (중)</span></div>
-      </div>
-    </div>
-    <div class="tier-card t3">
-      <div class="tier-header"><span class="tier-badge t3">Tier 3</span><span class="tier-level">Lv.11~15</span></div>
-      <div class="tier-visual t3"><span class="building-icon">🏦</span>
-        <span class="glow-particle" style="left:25%"></span><span class="glow-particle"></span><span class="glow-particle"></span><span class="glow-particle"></span>
-      </div>
-      <div class="tier-desc"><strong>2층 상관</strong>, 수레 3대, 교역 깃발
-        <div class="tier-effects"><span class="effect-tag gold">수레 왕래 애니</span><span class="effect-tag gold">금화 파티클</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Infirmary -->
-  <div class="building-grid">
-    <div class="building-row-label">
-      <span class="emoji">🏥</span>
-      <span class="name">의무실</span>
-      <span class="name-en">Infirmary</span>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t0">Tier 0</span><span class="tier-level">미건설</span></div>
-      <div class="tier-visual t0"><span class="building-icon">🌿</span></div>
-      <div class="tier-desc"><strong>빈 터 + 약초 더미</strong></div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t1">Tier 1</span><span class="tier-level">Lv.1~5</span></div>
-      <div class="tier-visual t1"><span class="building-icon">⛺</span></div>
-      <div class="tier-desc"><strong>작은 텐트</strong>, 십자 표시
-        <div class="tier-effects"><span class="effect-tag">녹색 빛 (치료 중)</span></div>
-      </div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t2">Tier 2</span><span class="tier-level">Lv.6~10</span></div>
-      <div class="tier-visual t2"><span class="building-icon">🏥</span></div>
-      <div class="tier-desc"><strong>석조 진료소</strong>, 약장 추가, 침대
-        <div class="tier-effects"><span class="effect-tag">녹색 힐링 파티클 상시</span></div>
-      </div>
-    </div>
-    <div class="tier-card t3">
-      <div class="tier-header"><span class="tier-badge t3">Tier 3</span><span class="tier-level">Lv.11~15</span></div>
-      <div class="tier-visual t3"><span class="building-icon">🏩</span>
-        <span class="glow-particle" style="left:25%"></span><span class="glow-particle"></span><span class="glow-particle"></span><span class="glow-particle"></span>
-      </div>
-      <div class="tier-desc"><strong>대형 병원</strong>, 십자 깃발, 약초 정원
-        <div class="tier-effects"><span class="effect-tag gold">힐링 오라 상시</span><span class="effect-tag gold">약초 정원 흔들림</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Management Office -->
-  <div class="building-grid">
-    <div class="building-row-label">
-      <span class="emoji">🏛️</span>
-      <span class="name">경영실</span>
-      <span class="name-en">Management Office</span>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t0">Tier 0</span><span class="tier-level">미건설</span></div>
-      <div class="tier-visual t0"><span class="building-icon">🪑</span></div>
-      <div class="tier-desc"><strong>빈 터 + 낡은 책상</strong></div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t1">Tier 1</span><span class="tier-level">Lv.1~5</span></div>
-      <div class="tier-visual t1"><span class="building-icon">🏠</span></div>
-      <div class="tier-desc"><strong>작은 사무실</strong>, 창문 1개</div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t2">Tier 2</span><span class="tier-level">Lv.6~10</span></div>
-      <div class="tier-visual t2"><span class="building-icon">🏘️</span></div>
-      <div class="tier-desc"><strong>석조 관저</strong>, 발코니 추가
-        <div class="tier-effects"><span class="effect-tag">창문 불빛 (야간)</span></div>
-      </div>
-    </div>
-    <div class="tier-card t3">
-      <div class="tier-header"><span class="tier-badge t3">Tier 3</span><span class="tier-level">Lv.11~15</span></div>
-      <div class="tier-visual t3"><span class="building-icon">🏰</span>
-        <span class="glow-particle" style="left:25%"></span><span class="glow-particle"></span><span class="glow-particle"></span><span class="glow-particle"></span>
-      </div>
-      <div class="tier-desc"><strong>가문 본관</strong>, 가문 문장 깃발, 시계탑
-        <div class="tier-effects"><span class="effect-tag gold">시계탑 종소리 (매 정시)</span><span class="effect-tag gold">가문 깃발 펄럭임</span></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Warehouse -->
-  <div class="building-grid">
-    <div class="building-row-label">
-      <span class="emoji">📦</span>
-      <span class="name">창고</span>
-      <span class="name-en">Warehouse</span>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t0">Tier 0</span><span class="tier-level">미건설</span></div>
-      <div class="tier-visual t0"><span class="building-icon">📦</span></div>
-      <div class="tier-desc"><strong>빈 터 + 부서진 상자</strong></div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t1">Tier 1</span><span class="tier-level">Lv.1~5</span></div>
-      <div class="tier-visual t1"><span class="building-icon">🏚️</span></div>
-      <div class="tier-desc"><strong>목재 헛간</strong>, 문 하나</div>
-    </div>
-    <div class="tier-card">
-      <div class="tier-header"><span class="tier-badge t2">Tier 2</span><span class="tier-level">Lv.6~10</span></div>
-      <div class="tier-visual t2"><span class="building-icon">🏗️</span></div>
-      <div class="tier-desc"><strong>석조 창고</strong>, 수레 적재 공간
-        <div class="tier-effects"><span class="effect-tag">상자 쌓임 애니 (자원 축적 시)</span></div>
-      </div>
-    </div>
-    <div class="tier-card t3">
-      <div class="tier-header"><span class="tier-badge t3">Tier 3</span><span class="tier-level">Lv.11~15</span></div>
-      <div class="tier-visual t3"><span class="building-icon">🏭</span>
-        <span class="glow-particle" style="left:25%"></span><span class="glow-particle"></span><span class="glow-particle"></span><span class="glow-particle"></span>
-      </div>
-      <div class="tier-desc"><strong>대형 물류창고</strong>, 기중기, 적재 크레인
-        <div class="tier-effects"><span class="effect-tag gold">자동 적재 애니</span><span class="effect-tag gold">자원 아이콘 플로팅</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Section 2: Character FSM -->
-<div class="divider"></div>
-<section class="section">
-  <div class="section-title"><span class="num">2</span>캐릭터 상태 머신 (FSM)</div>
-  <div class="section-desc">배럭 화면의 모든 캐릭터는 11가지 상태로 동작. 우선순위 1(최고) ~ 9(최저).</div>
-
-  <div class="fsm-grid">
-    <div class="fsm-card" style="border-left: 3px solid #888;">
-      <span class="priority-badge priority-5">9</span>
-      <span class="state-emoji">🧍</span>
-      <span class="state-name">대기 <span class="state-name-en">IDLE</span></span>
-      <div class="state-behavior">배럭 공용 공간에서 서있기/앉기 랜덤. 3~30초 반복.</div>
-      <div class="state-duration">지속: 3~30초 (랜덤 루프)</div>
-    </div>
-
-    <div class="fsm-card" style="border-left: 3px solid var(--accent-blue);">
-      <span class="priority-badge priority-4">-</span>
-      <span class="state-emoji">🚶</span>
-      <span class="state-name">이동 <span class="state-name-en">WALKING</span></span>
-      <div class="state-behavior">목적지로 직선 이동. 속도: 60px/sec (교관 80px/sec). 좌우 flip.</div>
-      <div class="state-duration">지속: 거리에 따라 가변</div>
-    </div>
-
-    <div class="fsm-card" style="border-left: 3px solid var(--accent-green);">
-      <span class="priority-badge priority-3">5</span>
-      <span class="state-emoji">🔧</span>
-      <span class="state-name">작업 중 <span class="state-name-en">WORKING</span></span>
-      <div class="state-behavior">배치된 시설에서 직업별 모션 루프. 1사이클 = 게임 내 1시간.</div>
-      <div class="state-duration">지속: 연속 (사이클 사이 3~10초 휴식)</div>
-    </div>
-
-    <div class="fsm-card" style="border-left: 3px solid #6a7aaa;">
-      <span class="priority-badge priority-3">4</span>
-      <span class="state-emoji">😴</span>
-      <span class="state-name">휴식 <span class="state-name-en">RESTING</span></span>
-      <div class="state-behavior">숙소/배럭 공간에서 zzZ 모션. 피로 >= 70 또는 유저 지정 시 진입.</div>
-      <div class="state-duration">지속: 피로 < 30 될 때까지</div>
-    </div>
-
-    <div class="fsm-card" style="border-left: 3px solid #aa8a4a;">
-      <span class="priority-badge priority-4">6</span>
-      <span class="state-emoji">🍽️</span>
-      <span class="state-name">식사 <span class="state-name-en">EATING</span></span>
-      <div class="state-behavior">식당 앞/테라스에서 먹기 모션. 게임 시간 12:00/18:00 자동 트리거.</div>
-      <div class="state-duration">지속: 게임 내 30분</div>
-    </div>
-
-    <div class="fsm-card" style="border-left: 3px solid var(--accent-purple);">
-      <span class="priority-badge priority-4">7</span>
-      <span class="state-emoji">💬</span>
-      <span class="state-name">교류 <span class="state-name-en">SOCIALIZING</span></span>
-      <div class="state-behavior">상대 캐릭터 옆에서 대화 모션. 관계 이벤트 트리거. 일일 0~3회.</div>
-      <div class="state-duration">지속: 게임 내 15~30분</div>
-    </div>
-
-    <div class="fsm-card" style="border-left: 3px solid #c77a30;">
-      <span class="priority-badge priority-2">2</span>
-      <span class="state-emoji">🚀</span>
-      <span class="state-name">출발 <span class="state-name-en">DEPARTING</span></span>
-      <div class="state-behavior">출입구 방향으로 걸어가 페이드 아웃. 사냥/레이드 파견 시.</div>
-      <div class="state-duration">지속: ~3초 (연출)</div>
-    </div>
-
-    <div class="fsm-card" style="border-left: 3px solid #4a9a6a;">
-      <span class="priority-badge priority-4">-</span>
-      <span class="state-emoji">🎒</span>
-      <span class="state-name">귀환 <span class="state-name-en">RETURNING</span></span>
-      <div class="state-behavior">화면 밖에서 출입구로 페이드 인. 사냥/레이드 완료 시.</div>
-      <div class="state-duration">지속: ~3초 (연출)</div>
-    </div>
-
-    <div class="fsm-card" style="border-left: 3px solid var(--accent-red);">
-      <span class="priority-badge priority-1">1</span>
-      <span class="state-emoji">🤕</span>
-      <span class="state-name">부상 <span class="state-name-en">INJURED</span></span>
-      <div class="state-behavior">의무실에서 누워있기 + 붕대 모션. HP = 0 시 최우선 진입.</div>
-      <div class="state-duration">지속: 치료 완료까지 (의무관 의존)</div>
-    </div>
-
-    <div class="fsm-card" style="border-left: 3px solid #555;">
-      <span class="priority-badge priority-2">3</span>
-      <span class="state-emoji">🗺️</span>
-      <span class="state-name">이동 중 <span class="state-name-en">TRAVELING</span></span>
-      <div class="state-behavior">화면에 미표시. 거점 간 이동 명령 시 진입. 도착까지 비활성.</div>
-      <div class="state-duration">지속: 이동 시간 (거점 거리 비례)</div>
-    </div>
-
-    <div class="fsm-card" style="border-left: 3px solid var(--gold);">
-      <span class="priority-badge priority-4">-</span>
-      <span class="state-emoji">🎉</span>
-      <span class="state-name">축하 <span class="state-name-en">CELEBRATING</span></span>
-      <div class="state-behavior">현위치에서 점프/손 흔들기. 이벤트/레벨업 시 트리거.</div>
-      <div class="state-duration">지속: ~2초 (연출)</div>
-    </div>
-  </div>
-
-  <!-- Priority Table -->
-  <table class="priority-table" style="margin-top: 32px;">
-    <thead>
-      <tr><th>우선순위</th><th>조건</th><th>전환 상태</th><th>비고</th></tr>
-    </thead>
-    <tbody>
-      <tr><td><span class="priority-badge priority-1" style="display:inline-flex">1</span></td><td>HP = 0 (부상)</td><td>INJURED</td><td>최우선. 현재 상태 즉시 중단</td></tr>
-      <tr><td><span class="priority-badge priority-2" style="display:inline-flex">2</span></td><td>유저 파견 명령</td><td>DEPARTING</td><td>유저 조작</td></tr>
-      <tr><td><span class="priority-badge priority-2" style="display:inline-flex">3</span></td><td>유저 거점 이동 명령</td><td>DEPARTING -> TRAVELING</td><td>유저 조작</td></tr>
-      <tr><td><span class="priority-badge priority-3" style="display:inline-flex">4</span></td><td>피로 >= 90</td><td>RESTING (강제)</td><td>자동. 작업 중단 후 이동</td></tr>
-      <tr><td><span class="priority-badge priority-3" style="display:inline-flex">5</span></td><td>유저 배치 변경</td><td>WALKING -> WORKING</td><td>유저 조작</td></tr>
-      <tr><td><span class="priority-badge priority-4" style="display:inline-flex">6</span></td><td>식사 시간 트리거</td><td>WALKING -> EATING</td><td>12:00 / 18:00 (게임 시간)</td></tr>
-      <tr><td><span class="priority-badge priority-4" style="display:inline-flex">7</span></td><td>관계 이벤트 트리거</td><td>WALKING -> SOCIALIZING</td><td>일일 0~3회 랜덤</td></tr>
-      <tr><td><span class="priority-badge priority-5" style="display:inline-flex">8</span></td><td>작업 사이클 완료</td><td>IDLE (3~10초) -> WORKING</td><td>짧은 휴식 후 재작업</td></tr>
-      <tr><td><span class="priority-badge priority-5" style="display:inline-flex">9</span></td><td>아무 조건 없음</td><td>IDLE 유지</td><td>기본 상태</td></tr>
-    </tbody>
-  </table>
-
-  <!-- FSM Diagram -->
-  <div class="fsm-diagram">
-    <pre>
-                         ┌──────────┐
-              ┌──────────│  <span class="highlight">IDLE</span>    │←─────────────────────────┐
-              │          └─┬──┬──┬─┘                          │
-              │            │  │  │                             │
-         [배치 명령]  [이동] [식사] [관계이벤트]           [작업 완료]
-              │            │  │  │                             │
-              v            v  v  v                             │
-         ┌────────┐  ┌───────┐ ┌────────┐ ┌───────────┐      │
-         │<span class="highlight">WALKING</span> │─>│<span class="highlight">WORKING</span>│ │<span class="highlight">EATING</span>  │ │<span class="highlight">SOCIALIZING</span>│      │
-         │(시설로) │  └───┬───┘ └───┬────┘ └─────┬─────┘      │
-         └────────┘      │         │             │             │
-                         │    <span class="condition">[식사 끝]</span>     <span class="condition">[대화 끝]</span>          │
-                         └─────────┴─────────────┴─────────────┘
-
-    <span class="condition">[파견 명령]</span>            <span class="condition">[귀환]</span>                <span class="condition">[HP=0]</span>
-         │                  │                     │
-         v                  v                     v
-    ┌──────────┐     ┌──────────┐          ┌──────────┐
-    │<span class="highlight">DEPARTING</span> │     │<span class="highlight">RETURNING</span> │          │ <span class="highlight">INJURED</span>  │
-    │->화면 밖  │     │->화면 안  │          │->의무실   │
-    └──────────┘     └────┬─────┘          └────┬─────┘
-         │                │                     │
-    <span class="condition">[거점 이동]</span>        <span class="condition">[도착]</span>              <span class="condition">[치료 완료]</span>
-         │                │                     │
-         v                v                     v
-    ┌──────────┐     ┌──────────┐          ┌──────────┐
-    │<span class="highlight">TRAVELING</span> │     │  <span class="highlight">IDLE</span>    │          │ <span class="highlight">RESTING</span>  │──<span class="condition">[피로 회복]</span>──> <span class="highlight">IDLE</span>
-    │(화면 밖)  │     └──────────┘          └──────────┘
-    └──────────┘</pre>
-  </div>
-</section>
-
-<!-- Section 3: Screen Flow -->
-<div class="divider"></div>
-<section class="section">
-  <div class="section-title"><span class="num">3</span>화면 플로우</div>
-  <div class="section-desc">주요 화면 전환 흐름. 앱 시작부터 배럭 진입, 영입, 업그레이드, 거점 이동까지.</div>
-
-  <div class="flow-container">
-    <!-- Flow 1: App Launch -->
-    <div class="flow-card">
-      <h3>앱 시작 -> 배럭 진입</h3>
-      <div class="flow-steps">
-        <div class="flow-step">
-          <div class="step-icon">📱</div>
-          <div class="step-content">
-            <div class="step-title">앱 실행</div>
-            <div class="step-desc">스플래시 화면 -> 로그인/자동 로그인</div>
-          </div>
-        </div>
-        <div class="flow-step">
-          <div class="step-icon">📥</div>
-          <div class="step-content">
-            <div class="step-title">오프라인 수령 팝업</div>
-            <div class="step-desc">축적 자원 목록 표시, "수령" 버튼</div>
-          </div>
-        </div>
-        <div class="flow-step">
-          <div class="step-icon">🔔</div>
-          <div class="step-content">
-            <div class="step-title">알림 큐 표시</div>
-            <div class="step-desc">부재 중 발생한 이벤트: 관계, 생산, 갈등 등</div>
-          </div>
-        </div>
-        <div class="flow-step active">
-          <div class="step-icon">🏠</div>
-          <div class="step-content">
-            <div class="step-title">배럭 메인 뷰</div>
-            <div class="step-desc">캐릭터 활동 화면 표시. 상단 HUD, 하단 네비</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Flow 2: Character Recruit -->
-    <div class="flow-card">
-      <h3>캐릭터 영입 -> 배럭 등장</h3>
-      <div class="flow-steps">
-        <div class="flow-step">
-          <div class="step-icon">🎰</div>
-          <div class="step-content">
-            <div class="step-title">가챠/영입 완료</div>
-            <div class="step-desc">캐릭터 획득 연출 (등급별 차등)</div>
-          </div>
-        </div>
-        <div class="flow-step">
-          <div class="step-icon">✨</div>
-          <div class="step-content">
-            <div class="step-title">소개 컷씬</div>
-            <div class="step-desc">캐릭터 일러스트 + 대사 + 생활 직업 안내</div>
-          </div>
-        </div>
-        <div class="flow-step">
-          <div class="step-icon">🚪</div>
-          <div class="step-content">
-            <div class="step-title">배럭 진입 연출</div>
-            <div class="step-desc">출입구에서 걸어 들어옴. 다른 캐릭터들 반응</div>
-          </div>
-        </div>
-        <div class="flow-step active">
-          <div class="step-icon">📋</div>
-          <div class="step-content">
-            <div class="step-title">배치 안내</div>
-            <div class="step-desc">"이 캐릭터를 어디에 배치할까요?" 시설 선택 UI</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Flow 3: Building Upgrade -->
-    <div class="flow-card">
-      <h3>건물 업그레이드 -> 비주얼 변화</h3>
-      <div class="flow-steps">
-        <div class="flow-step">
-          <div class="step-icon">🏗️</div>
-          <div class="step-content">
-            <div class="step-title">업그레이드 요청</div>
-            <div class="step-desc">시설 롱프레스 -> 업그레이드 메뉴 -> 비용 확인</div>
-          </div>
-        </div>
-        <div class="flow-step">
-          <div class="step-icon">⏳</div>
-          <div class="step-content">
-            <div class="step-title">건설 중 상태</div>
-            <div class="step-desc">시설에 건설 애니 + 진행 바 표시 (Lv x 30분)</div>
-          </div>
-        </div>
-        <div class="flow-step">
-          <div class="step-icon">⬆️</div>
-          <div class="step-content">
-            <div class="step-title">완공 연출</div>
-            <div class="step-desc">줌인 -> 빛 플래시 -> 스프라이트 교체 -> 축하 파티클</div>
-          </div>
-        </div>
-        <div class="flow-step active">
-          <div class="step-icon">🎊</div>
-          <div class="step-content">
-            <div class="step-title">토스트 알림</div>
-            <div class="step-desc">"식당이 Tier 2로 변모했습니다!" 효과 안내</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Flow 4: Outpost Travel -->
-    <div class="flow-card">
-      <h3>거점 이동 -> 화면 전환</h3>
-      <div class="flow-steps">
-        <div class="flow-step">
-          <div class="step-icon">🗺️</div>
-          <div class="step-content">
-            <div class="step-title">월드맵 열기</div>
-            <div class="step-desc">12거점 표시. 해금/미해금 구분. 이동 비용/시간 표시</div>
-          </div>
-        </div>
-        <div class="flow-step">
-          <div class="step-icon">👆</div>
-          <div class="step-content">
-            <div class="step-title">거점 선택</div>
-            <div class="step-desc">목적지 거점 탭 -> 이동할 캐릭터 선택 -> 확인</div>
-          </div>
-        </div>
-        <div class="flow-step">
-          <div class="step-icon">🚶</div>
-          <div class="step-content">
-            <div class="step-title">이동 연출</div>
-            <div class="step-desc">캐릭터 DEPARTING -> 월드맵 경로 애니 -> TRAVELING</div>
-          </div>
-        </div>
-        <div class="flow-step active">
-          <div class="step-icon">🏠</div>
-          <div class="step-content">
-            <div class="step-title">도착 / 화면 전환</div>
-            <div class="step-desc">목적지 배럭 뷰 로딩. 캐릭터 RETURNING 연출</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Section 4: Day/Night Cycle -->
-<div class="divider"></div>
-<section class="section">
-  <div class="section-title"><span class="num">4</span>주야간 변화</div>
-  <div class="section-desc">게임 내 시간에 따른 하늘/조명/환경 변화. 시설 창문은 밤에 캐릭터가 있을 때만 불이 켜짐.</div>
-
-  <div class="daynight-grid">
-    <div class="daynight-card">
-      <div class="daynight-sky dawn">🌅</div>
-      <div class="daynight-info">
-        <h4>새벽</h4>
-        <div class="time">05:00 ~ 07:00</div>
-        <div class="desc">
-          분홍 -> 하늘색 그라디언트<br>
-          부드러운 핑크빛 조명<br>
-          새 지저귐 사운드<br>
-          이슬 파티클 (풀/나무)
-        </div>
-      </div>
-    </div>
-
-    <div class="daynight-card">
-      <div class="daynight-sky day">☀️</div>
-      <div class="daynight-info">
-        <h4>낮</h4>
-        <div class="time">07:00 ~ 17:00</div>
-        <div class="desc">
-          맑은 파란 하늘 그라디언트<br>
-          밝은 자연광 조명<br>
-          풀/나무 흔들림, 새 소리<br>
-          구름 천천히 이동 애니
-        </div>
-      </div>
-    </div>
-
-    <div class="daynight-card">
-      <div class="daynight-sky dusk">🌇</div>
-      <div class="daynight-info">
-        <h4>황혼</h4>
-        <div class="time">17:00 ~ 19:00</div>
-        <div class="desc">
-          주황 -> 보라 그라디언트<br>
-          따뜻한 주황빛 조명<br>
-          석양 렌즈 플레어<br>
-          까마귀 실루엣 날아감
-        </div>
-      </div>
-    </div>
-
-    <div class="daynight-card">
-      <div class="daynight-sky night">
-        🌙
-        <span class="star" style="top:15%;left:20%;animation-delay:0s"></span>
-        <span class="star" style="top:30%;left:70%;animation-delay:0.5s"></span>
-        <span class="star" style="top:10%;left:50%;animation-delay:1s"></span>
-        <span class="star" style="top:45%;left:35%;animation-delay:1.5s"></span>
-        <span class="star" style="top:20%;left:80%;animation-delay:0.8s"></span>
-        <span class="star" style="top:55%;left:15%;animation-delay:1.2s"></span>
-        <span class="star" style="top:35%;left:90%;animation-delay:0.3s"></span>
-      </div>
-      <div class="daynight-info">
-        <h4>밤</h4>
-        <div class="time">19:00 ~ 05:00</div>
-        <div class="desc">
-          짙은 남색 하늘<br>
-          건물 창문 노란 불빛 (캐릭터 있는 시설만)<br>
-          별/반딧불 파티클<br>
-          귀뚜라미 사운드
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- Section 5: Outpost Layout -->
-<div class="divider"></div>
-<section class="section">
-  <div class="section-title"><span class="num">5</span>거점 맵 레이아웃</div>
-  <div class="section-desc">거점 내부 시설 배치도. 9:16 세로 모바일 기준. 거점당 2~4개 시설 슬롯.</div>
-
-  <div class="outpost-layout">
-    <div class="layout-title">거점: 리볼도외 (Reboldoeux) — 시설 배치 예시</div>
-
-    <div class="layout-grid">
-      <div class="layout-cell">
-        <span class="cell-emoji">🏛️</span>
-        <span class="cell-name">경영실</span>
-        <span class="cell-sub">Lv.3 / 유지비 감소</span>
-      </div>
-      <div class="layout-cell">
-        <span class="cell-emoji">🍳</span>
-        <span class="cell-name">식당</span>
-        <span class="cell-sub">Lv.5 / 판필로 배치</span>
-      </div>
-      <div class="layout-cell">
-        <span class="cell-emoji">⚔️</span>
-        <span class="cell-name">훈련장</span>
-        <span class="cell-sub">Lv.4 / 다리아 배치</span>
-      </div>
-      <div class="layout-cell">
-        <span class="cell-emoji">📦</span>
-        <span class="cell-name">창고</span>
-        <span class="cell-sub">Lv.3 / 자원 보관</span>
-      </div>
-
-      <div class="layout-cell">
-        <span class="cell-emoji">🔨</span>
-        <span class="cell-name">대장간</span>
-        <span class="cell-sub">Lv.3 / 잭 배치</span>
-      </div>
-      <div class="layout-cell common">
-        <span class="cell-emoji">🏡</span>
-        <span class="cell-name">공용 공간 / 숙소</span>
-        <span class="cell-sub">캐릭터 IDLE, 휴식, 교류 영역</span>
-      </div>
-      <div class="layout-cell">
-        <span class="cell-emoji">🏥</span>
-        <span class="cell-name">의무실</span>
-        <span class="cell-sub">Lv.2 / 에밀리아 배치</span>
-      </div>
-
-      <div class="layout-cell">
-        <span class="cell-emoji">🔬</span>
-        <span class="cell-name">연구소</span>
-        <span class="cell-sub">Lv.2 / 빈센트 배치</span>
-      </div>
-      <div class="layout-cell">
-        <span class="cell-emoji">💰</span>
-        <span class="cell-name">교역소</span>
-        <span class="cell-sub">Lv.2 / 잇지 배치</span>
-      </div>
-      <div class="layout-cell gate" style="grid-column: span 2;">
-        <span class="cell-emoji">🚪</span>
-        <span class="cell-name">출입구 (Gate)</span>
-        <span class="cell-sub">사냥 출발/귀환, 레이드 파견, 거점 이동</span>
-      </div>
-    </div>
-
-    <div class="layout-legend">
-      <span class="leg-production">생산 시설 (식당, 대장간, 연구소)</span>
-      <span class="leg-growth">성장 시설 (훈련장)</span>
-      <span class="leg-economy">경제 시설 (교역소, 경영실)</span>
-      <span class="leg-support">지원 시설 (의무실, 창고)</span>
-    </div>
-  </div>
-</section>
-
-<!-- Section 6: Tier Transition -->
-<div class="divider"></div>
-<section class="section">
-  <div class="section-title"><span class="num">6</span>Tier 전환 연출</div>
-  <div class="section-desc">업그레이드 완료 시 Tier 변경 연출 시퀀스. 총 소요시간 약 3초.</div>
-
-  <div class="transition-steps">
-    <div class="trans-step">
-      <div class="step-num">1</div>
-      <div class="step-body">
-        <h4>"업그레이드!" 텍스트 팝업</h4>
-        <p>건물 위에 텍스트가 페이드 인으로 나타남</p>
-        <div class="timing">0.5초 fade in</div>
-      </div>
-    </div>
-
-    <div class="trans-step">
-      <div class="step-num">2</div>
-      <div class="step-body">
-        <h4>화면 줌인 1.2x</h4>
-        <p>해당 건물 중심으로 카메라가 살짝 확대</p>
-        <div class="timing">0.3초 ease-out</div>
-      </div>
-    </div>
-
-    <div class="trans-step">
-      <div class="step-num">3</div>
-      <div class="step-body">
-        <h4>하얀 빛 플래시</h4>
-        <p>건물 영역에 화이트 오버레이가 번쩍 나타남</p>
-        <div class="timing">0.2초</div>
-      </div>
-    </div>
-
-    <div class="trans-step">
-      <div class="step-num">4</div>
-      <div class="step-body">
-        <h4>스프라이트 교체</h4>
-        <p>플래시가 가장 밝을 때 이전 Tier 스프라이트를 새 Tier로 즉시 교체</p>
-        <div class="timing">즉시 (0프레임)</div>
-      </div>
-    </div>
-
-    <div class="trans-step">
-      <div class="step-num">5</div>
-      <div class="step-body">
-        <h4>플래시 페이드 아웃</h4>
-        <p>화이트 오버레이가 서서히 사라지며 새 건물이 드러남</p>
-        <div class="timing">0.5초 fade out</div>
-      </div>
-    </div>
-
-    <div class="trans-step">
-      <div class="step-num">6</div>
-      <div class="step-body">
-        <h4>화면 줌 복귀</h4>
-        <p>카메라가 원래 스케일(1.0x)로 돌아옴</p>
-        <div class="timing">0.3초 ease-in-out</div>
-      </div>
-    </div>
-
-    <div class="trans-step">
-      <div class="step-num">7</div>
-      <div class="step-body">
-        <h4>축하 파티클</h4>
-        <p>별/반짝이 파티클이 건물 주변에서 퍼져나감</p>
-        <div class="timing">2초 재생</div>
-      </div>
-    </div>
-
-    <div class="trans-step">
-      <div class="step-num">8</div>
-      <div class="step-body">
-        <h4>토스트 알림</h4>
-        <p>"식당이 Tier 2로 변모했습니다!" 등 결과 메시지 표시</p>
-        <div class="timing">3초 유지 후 자동 사라짐</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Preview -->
-  <div class="transition-preview">
-    <div class="preview-building before">🍳</div>
-    <div class="preview-arrow">-></div>
-    <div class="preview-building flash">💫</div>
-    <div class="preview-arrow">-></div>
-    <div class="preview-building after">🍲</div>
-    <div style="width: 100%; text-align: center; font-size: 12px; color: var(--text-dim); margin-top: 8px;">
-      Tier 1 (목조 소형) -> 빛 플래시 -> Tier 2 (석조 중형)
-    </div>
-  </div>
-</section>
-
-<!-- Section 7: Sprite Naming -->
-<div class="divider"></div>
-<section class="section">
-  <div class="section-title"><span class="num">7</span>스프라이트 네이밍 규칙</div>
-  <div class="section-desc">시설 스프라이트 파일명 컨벤션. 아티스트 작업 시 반드시 이 규칙을 따를 것.</div>
-
-  <div class="naming-box">
-    <div class="naming-pattern">fac_{시설코드}_{거점코드}_{tier}.png</div>
-
-    <table class="naming-table">
-      <thead>
-        <tr><th>분류</th><th>코드</th><th>설명</th></tr>
-      </thead>
-      <tbody>
-        <tr><td colspan="3" style="color: var(--gold); font-weight: 500; background: rgba(212,168,67,0.05);">시설코드 (8종)</td></tr>
-        <tr><td>식당</td><td><code>chef</code></td><td>Chef Hall</td></tr>
-        <tr><td>대장간</td><td><code>smithy</code></td><td>Smithy</td></tr>
-        <tr><td>연구소</td><td><code>lab</code></td><td>Lab</td></tr>
-        <tr><td>훈련장</td><td><code>train</code></td><td>Training Ground</td></tr>
-        <tr><td>교역소</td><td><code>trade</code></td><td>Trading Post</td></tr>
-        <tr><td>의무실</td><td><code>infirm</code></td><td>Infirmary</td></tr>
-        <tr><td>경영실</td><td><code>office</code></td><td>Management Office</td></tr>
-        <tr><td>창고</td><td><code>ware</code></td><td>Warehouse</td></tr>
-
-        <tr><td colspan="3" style="color: var(--gold); font-weight: 500; background: rgba(212,168,67,0.05);">거점코드 (12개)</td></tr>
-        <tr><td>리볼도외</td><td><code>rvd</code></td><td>Reboldoeux</td></tr>
-        <tr><td>코임브라</td><td><code>cmb</code></td><td>Coimbra</td></tr>
-        <tr><td>오슈</td><td><code>osu</code></td><td>Auch</td></tr>
-        <tr><td>바하마르</td><td><code>bhm</code></td><td>Bahama</td></tr>
-        <tr><td colspan="3" style="font-size:11px; color:#666;">+ 나머지 8개 거점 (해금 순서에 따라 추가)</td></tr>
-
-        <tr><td colspan="3" style="color: var(--gold); font-weight: 500; background: rgba(212,168,67,0.05);">Tier 접미사 (4단계)</td></tr>
-        <tr><td>미건설</td><td><code>t0</code></td><td>빈 터 + 잡초/잔해</td></tr>
-        <tr><td>Tier 1</td><td><code>t1</code></td><td>Lv.1~5, 목조 소규모</td></tr>
-        <tr><td>Tier 2</td><td><code>t2</code></td><td>Lv.6~10, 석조 중규모</td></tr>
-        <tr><td>Tier 3</td><td><code>t3</code></td><td>Lv.11~15, 화려한 대규모</td></tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="naming-box">
-    <h4 style="color: var(--gold); font-size: 14px; margin-bottom: 12px;">예시</h4>
-    <table class="naming-table">
-      <thead><tr><th>파일명</th><th>설명</th></tr></thead>
-      <tbody>
-        <tr><td><code>fac_chef_rvd_t0.png</code></td><td>리볼도외 식당 미건설</td></tr>
-        <tr><td><code>fac_chef_rvd_t1.png</code></td><td>리볼도외 식당 Tier 1 (Lv.1~5)</td></tr>
-        <tr><td><code>fac_chef_rvd_t2.png</code></td><td>리볼도외 식당 Tier 2 (Lv.6~10)</td></tr>
-        <tr><td><code>fac_chef_rvd_t3.png</code></td><td>리볼도외 식당 Tier 3 (Lv.11~15)</td></tr>
-        <tr><td><code>fac_smithy_cmb_t2.png</code></td><td>코임브라 대장간 Tier 2</td></tr>
-        <tr><td><code>fac_lab_osu_t3.png</code></td><td>오슈 연구소 Tier 3</td></tr>
-        <tr><td><code>fac_trade_bhm_t1.png</code></td><td>바하마르 교역소 Tier 1</td></tr>
-      </tbody>
-    </table>
-  </div>
-</section>
-
-<!-- Section 8: Asset Checklist -->
-<div class="divider"></div>
-<section class="section">
-  <div class="section-title"><span class="num">8</span>에셋 체크리스트</div>
-  <div class="section-desc">배럭 비주얼 구현에 필요한 전체 에셋 목록과 수량.</div>
-
-  <div class="checklist-grid">
-    <div class="checklist-card">
-      <h4>시설 스프라이트</h4>
-      <div class="checklist-item"><span class="item-name">원본 스프라이트 (8시설 x 4단계)</span><span class="item-count">32장</span></div>
-      <div class="checklist-item"><span class="item-name">거점 팔레트 변형 (12거점)</span><span class="item-count">384장</span></div>
-      <div class="checklist-item"><span class="item-name">건설 중 상태 스프라이트</span><span class="item-count">8장</span></div>
-      <div class="checklist-total">
-        <span class="total-label">소계</span>
-        <span class="total-count">424장</span>
-      </div>
-    </div>
-
-    <div class="checklist-card">
-      <h4>캐릭터 애니메이션</h4>
-      <div class="checklist-item"><span class="item-name">공통 상태 (IDLE, WALKING, RESTING 등)</span><span class="item-count">11종</span></div>
-      <div class="checklist-item"><span class="item-name">직업별 작업 모션 (8직업)</span><span class="item-count">8종</span></div>
-      <div class="checklist-item"><span class="item-name">터치 반응 모션</span><span class="item-count">8종</span></div>
-      <div class="checklist-item"><span class="item-name">상호작용 모션 (식사, 대화, 대련 등)</span><span class="item-count">6종</span></div>
-      <div class="checklist-total">
-        <span class="total-label">소계</span>
-        <span class="total-count">33종</span>
-      </div>
-    </div>
-
-    <div class="checklist-card">
-      <h4>이펙트 / 파티클</h4>
-      <div class="checklist-item"><span class="item-name">시설별 작업 이펙트 (연기, 불꽃, 힐링 등)</span><span class="item-count">8종</span></div>
-      <div class="checklist-item"><span class="item-name">Tier 3 상시 이펙트</span><span class="item-count">8종</span></div>
-      <div class="checklist-item"><span class="item-name">Tier 전환 연출 이펙트</span><span class="item-count">3종</span></div>
-      <div class="checklist-item"><span class="item-name">주야간 환경 이펙트 (별, 반딧불, 이슬 등)</span><span class="item-count">5종</span></div>
-      <div class="checklist-item"><span class="item-name">상태 이펙트 (zzZ, 하트, 느낌표 등)</span><span class="item-count">6종</span></div>
-      <div class="checklist-total">
-        <span class="total-label">소계</span>
-        <span class="total-count">30종</span>
-      </div>
-    </div>
-
-    <div class="checklist-card">
-      <h4>환경 / UI</h4>
-      <div class="checklist-item"><span class="item-name">주야간 하늘 그라디언트 (4시간대)</span><span class="item-count">4종</span></div>
-      <div class="checklist-item"><span class="item-name">거점별 배경 (12거점)</span><span class="item-count">12장</span></div>
-      <div class="checklist-item"><span class="item-name">HUD 아이콘 (자원, 분위기 등)</span><span class="item-count">15종</span></div>
-      <div class="checklist-item"><span class="item-name">토스트/알림 프레임</span><span class="item-count">4종</span></div>
-      <div class="checklist-item"><span class="item-name">월드맵 UI</span><span class="item-count">1장</span></div>
-      <div class="checklist-total">
-        <span class="total-label">소계</span>
-        <span class="total-count">36종</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Summary -->
-  <table class="summary-table">
-    <thead>
-      <tr><th>카테고리</th><th>종류</th><th>수량</th><th>비고</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>시설 스프라이트</td><td>건물 이미지</td><td>424장</td><td>32장 원본 + 팔레트 변형 384장 + 건설 중 8장</td></tr>
-      <tr><td>캐릭터 애니메이션</td><td>모션 시퀀스</td><td>33종</td><td>123캐릭터 공용 프레임 (캐릭터별 리색)</td></tr>
-      <tr><td>이펙트 / 파티클</td><td>VFX 프리팹</td><td>30종</td><td>시설별 + 환경 + 전환 연출</td></tr>
-      <tr><td>환경 / UI</td><td>배경 + HUD</td><td>36종</td><td>주야간, 거점 배경, HUD 아이콘</td></tr>
-      <tr class="total-row"><td>합계</td><td></td><td>523종+</td><td>팔레트 스왑 활용 시 실작업량 약 130종 원본</td></tr>
-    </tbody>
-  </table>
-</section>
-
-
+        <div class="sub-content" data-sub="bar-jobs">
+          <div class="card">
+            <h3>👷 생활 직업 4종 (v1 8종 → 4종)</h3>
+            <table class="tbl">
+              <tr><th>직업</th><th>배치 건물</th><th>생산물</th></tr>
+              <tr><td><strong>요리사</strong></td><td>주방</td><td>음식, 치료제</td></tr>
+              <tr><td><strong>장인</strong></td><td>공방</td><td>장비, 전술서, 무기 연구</td></tr>
+              <tr><td><strong>교관</strong></td><td>훈련장</td><td>TXP, 병종 훈련</td></tr>
+              <tr><td><strong>관리자</strong></td><td>거점 관리 팝업</td><td>비스, 유지비 감소</td></tr>
+            </table>
           </div>
 
-<div class="sub-content" data-sub="field-factions">
-
-  <h3>🏰 NPC 5대 세력</h3>
-  <p>필드에서 마주치는 적 세력. 외교·전투·경제가 결합된 세력 다이나믹.</p>
-
-  <div class="card-grid">
-    <div class="card">
-      <h3><span style="color:#f38ba8">⚔️</span> NOCC</h3>
-      <p><strong>신대륙 질서 통제 위원회</strong></p>
-      <p>관료적, 권위적 — 개척 활동 규제</p>
-      <p>채굴권 허가제, 통행세 부과</p>
-      <p style="color:var(--text-dim);font-size:13px">전투 스타일: 지구전 + 탱커</p>
-    </div>
-    <div class="card">
-      <h3><span style="color:#fab387">🦊</span> 십인 귀족</h3>
-      <p><strong>Los Diez Nobles</strong></p>
-      <p>교활, 계산적 — 경제 지배층</p>
-      <p>교역 수수료, 배신 높음</p>
-      <p style="color:var(--text-dim);font-size:13px">전투 스타일: 디버프 + 경제전</p>
-    </div>
-    <div class="card">
-      <h3><span style="color:#cba6f7">📚</span> 오슈 학파</h3>
-      <p><strong>Auch Academy</strong></p>
-      <p>오만, 지적 — 연구 자원 독점</p>
-      <p>연구 지역 접근 제한</p>
-      <p style="color:var(--text-dim);font-size:13px">전투 스타일: 속성 마법 + CC</p>
-    </div>
-    <div class="card">
-      <h3><span style="color:#a6adc8">🗡️</span> 버론</h3>
-      <p><strong>Los Barón</strong></p>
-      <p>무법자·해적·용병 연합</p>
-      <p>교역로 습격, 약탈</p>
-      <p style="color:var(--text-dim);font-size:13px">전투 스타일: 속도 + 암살</p>
-    </div>
-    <div class="card">
-      <h3><span style="color:#89b4fa">🛡️</span> 브리스티아 원정군</h3>
-      <p><strong>Bristia Expeditionary Force</strong></p>
-      <p>정의감, 완고 — 독립을 꿈꾸는 북방</p>
-      <p>자원 경쟁 (미워하기 어려운 적)</p>
-      <p style="color:var(--text-dim);font-size:13px">전투 스타일: 미사일 + 속도</p>
-    </div>
-  </div>
-
-  <h4 style="margin-top:24px">세력 관계</h4>
-  <div class="highlight-box">
-    <p><strong>적의 적은 친구</strong> — 세력 간 관계에 따라 외교 선택지 변화. 한 세력과 적대하면 상대 세력과 우호도 상승.</p>
-  </div>
-  <table class="tbl">
-    <tr><th>상호작용</th><th>효과</th></tr>
-    <tr><td>적대</td><td>해당 세력 영토에서 조우전·방어전 발생</td></tr>
-    <tr><td>중립</td><td>통행 가능, 전투 없음</td></tr>
-    <tr><td>우호</td><td>교역 가능, 세력 상점 이용</td></tr>
-    <tr><td>동맹</td><td>합동 공성, 영토 공유</td></tr>
-  </table>
-</div>
-
-<div class="sub-content" data-sub="field-economy">
-
-  <h3>🗡️ 토벌 시스템</h3>
-  <table class="tbl">
-    <tr><th>비교</th><th>점령 토벌</th><th>반복 토벌 (파밍)</th></tr>
-    <tr><td>대상</td><td>미점령 헥스</td><td>점령 완료 헥스</td></tr>
-    <tr><td>횟수</td><td>1회 (점령 시)</td><td>무제한 반복</td></tr>
-    <tr><td>보상</td><td>헥스 점령 → 물자 생산</td><td>EXP, 골드, 소재</td></tr>
-    <tr><td>적 편성</td><td colspan="2">EnemyPartyTable (119파티, 43리전 전체 커버)</td></tr>
-  </table>
-
-  <h4 style="margin-top:16px">피로도 효율 트레이드오프</h4>
-  <table class="tbl">
-    <tr><th>조합 스타일</th><th>클리어 턴</th><th>피로</th><th>효율</th></tr>
-    <tr><td>미사일 (속공)</td><td>~12턴</td><td>17</td><td>★★★★★</td></tr>
-    <tr><td>일반 조합</td><td>~20턴</td><td>25</td><td>★★★</td></tr>
-    <tr><td>지구전 (안전)</td><td>~28턴</td><td>33</td><td>★★</td></tr>
-  </table>
-  <div class="highlight-box" style="margin-top:8px">
-    <p>미사일은 빠르지만 위험. 지구전은 안전하지만 피로 많이 먹음. <strong>트레이드오프가 전략.</strong></p>
-  </div>
-
-  <h3 style="margin-top:32px">💀 인간 적 파티 (5개 세력)</h3>
-  <table class="tbl">
-    <tr><th>적</th><th>세력</th><th>출현</th><th>특징</th></tr>
-    <tr><td>해적단</td><td>버론</td><td>항구, 해안</td><td>속도 제압</td></tr>
-    <tr><td>산적단</td><td>독립</td><td>산길, 숲</td><td>매복, 기습</td></tr>
-    <tr><td>암살자 길드</td><td>십인 귀족</td><td>도시 근교</td><td>타겟 제거</td></tr>
-    <tr><td>용병단</td><td>독립/고용</td><td>다양</td><td>매수 가능</td></tr>
-    <tr><td>원정 정찰대</td><td>NOCC</td><td>국경, 전초</td><td>정규군</td></tr>
-  </table>
-
-  <h3 style="margin-top:32px">🌾 5대 물자</h3>
-  <table class="tbl">
-    <tr><th>물자</th><th>주요 용도</th><th>생산 지형</th></tr>
-    <tr><td>🪵 목재</td><td>건설, 기본 제작</td><td>숲</td></tr>
-    <tr><td>⛏️ 철광석</td><td>무기/방어구 제작</td><td>동굴, 산지 인접</td></tr>
-    <tr><td>🪨 석재</td><td>거점 건설/강화, 성벽</td><td>사막, 화산</td></tr>
-    <tr><td>🌾 곡물</td><td>부대 유지, 피로 회복</td><td>초원, 해안</td></tr>
-    <tr><td>🌿 약재</td><td>포션, 각성 소재</td><td>늪지, 빙설</td></tr>
-  </table>
-
-  <h4 style="margin-top:16px">자원 생산 규칙</h4>
-  <table class="tbl">
-    <tr><th>항목</th><th>규칙</th></tr>
-    <tr><td>생산 조건</td><td>자원 헥스 점령 시 자동 생산</td></tr>
-    <tr><td>수거</td><td>거점에서 관할 헥스 일괄 수거</td></tr>
-    <tr><td>최대 저장</td><td>24시간치 누적 (AFK 상한)</td></tr>
-    <tr><td>생산량 보정</td><td>헥스 Lv에 비례 (Lv1=×1.0, Lv5=×5.0)</td></tr>
-    <tr><td>빼앗긴 헥스</td><td>즉시 생산 중단</td></tr>
-  </table>
-</div>
-
+          <div class="card">
+            <h3>⭐ 효율 등급 + 자동 배치</h3>
+            <p><strong>유저가 배치할 필요 없음.</strong> 적성에 따라 자동.</p>
+            <table class="tbl">
+              <tr><th>등급</th><th>배율</th><th>자동 배치</th></tr>
+              <tr><td><strong>S</strong></td><td>×1.5</td><td>최우선 배치</td></tr>
+              <tr><td>A</td><td>×1.2</td><td>S 없으면 배치</td></tr>
+              <tr><td>B</td><td>×1.0</td><td>A도 없으면 배치</td></tr>
+              <tr><td>C</td><td>×0.7</td><td><strong>휴식으로 빠짐</strong></td></tr>
+            </table>
+            <p style="font-size:12px;color:var(--text-dim)">유저 선택 = "전투에 쓸까 말까" 하나뿐. 배치는 알아서.</p>
+          </div>
         </div>
+
+        <div class="sub-content" data-sub="bar-graphic">
+          <div class="card">
+            <h3>🎨 배경 아트 가이드</h3>
+            <table class="tbl">
+              <tr><th>항목</th><th>사양</th></tr>
+              <tr><td>시점</td><td>쿼터뷰 (아이소메트릭) — 45도 하향</td></tr>
+              <tr><td>톤</td><td>GE 세계관 — 중세 식민지 + 신대륙 탐험</td></tr>
+              <tr><td>크기</td><td>2560×1440px (2K)</td></tr>
+              <tr><td>레이어</td><td>원경(하늘+산) / 중경(마을) / 근경(건물)</td></tr>
+              <tr><td>시간 변화</td><td>3단계 (낮/저녁/밤)</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">거점별 배경 컨셉</h4>
+            <table class="tbl">
+              <tr><th>거점</th><th>컨셉</th><th>색감</th></tr>
+              <tr><td>리볼도외 (시작)</td><td>작은 항구 마을, 목조 건물</td><td>따뜻한 갈색+하늘색</td></tr>
+              <tr><td>코임브라</td><td>항구 도시, 석조 건물</td><td>파랑+흰색 (지중해풍)</td></tr>
+              <tr><td>오슈</td><td>학원 도시, 마법탑</td><td>보라+은색</td></tr>
+              <tr><td>바하마르</td><td>사막 전초기지</td><td>주황+적갈색</td></tr>
+              <tr><td>토르쉐</td><td>눈 덮인 연구소</td><td>청백색</td></tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>🏢 건물 에셋 가이드 (Tier 3단계)</h3>
+            <p><strong>공통</strong>: 쿼터뷰 45도, GE 원작 참고, 200×250px</p>
+            <table class="tbl">
+              <tr><th>건물</th><th>Tier 0 (Lv.1~3)</th><th>Tier 1 (Lv.4~6)</th><th>Tier 2 (Lv.7~10)</th></tr>
+              <tr><td>🍳 주방</td><td>나무 화덕</td><td>벽돌 부엌 + 연기</td><td>석조 레스토랑 + 파티클</td></tr>
+              <tr><td>🔨 공방</td><td>나무 작업대</td><td>벽돌 대장간 + 용광로</td><td>석조 공방 + 마법 이펙트</td></tr>
+              <tr><td>⚔ 훈련장</td><td>허수아비 + 모래밭</td><td>돌담 + 마네킹</td><td>석조 콜로세움 + 깃발</td></tr>
+              <tr><td>🏰 관저</td><td colspan="3">거점 상징 (300×350), 레벨 변화 없이 장식용</td></tr>
+            </table>
+            <p style="font-size:12px;color:var(--text-dim)">Tier 2만 애니메이션. 쿠키런 킹덤과 달리 <strong>자유 배치/꾸미기 없음</strong> — 고정 레이아웃.</p>
+          </div>
+
+          <div class="card">
+            <h3>🧍 캐릭터 SD</h3>
+            <table class="tbl">
+              <tr><th>항목</th><th>사양</th></tr>
+              <tr><td>크기</td><td>80×120px, 2등신</td></tr>
+              <tr><td>모션</td><td>대기/이동/작업/휴식 (4종)</td></tr>
+              <tr><td>터치 반응</td><td>대사 말풍선 (1~2초)</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <div class="sub-content" data-sub="bar-assets">
+          <div class="card">
+            <h3>📦 에셋 제작 리스트</h3>
+
+            <h4>건물 에셋 (P0 런칭 필수)</h4>
+            <table class="tbl">
+              <tr><th>에셋명</th><th>크기</th><th>수량</th></tr>
+              <tr><td>주방 Tier 0/1/2</td><td>200×250 ×3</td><td>3장</td></tr>
+              <tr><td>공방 Tier 0/1/2</td><td>200×250 ×3</td><td>3장</td></tr>
+              <tr><td>훈련장 Tier 0/1/2</td><td>200×250 ×3</td><td>3장</td></tr>
+              <tr><td>관저/성 (장식용)</td><td>300×350</td><td>1장</td></tr>
+              <tr><td><strong>합계</strong></td><td></td><td><strong>10장</strong></td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">UI 에셋 (P0)</h4>
+            <table class="tbl">
+              <tr><th>에셋명</th><th>수량</th></tr>
+              <tr><td>생산 완료 말풍선 (건물별)</td><td>3종</td></tr>
+              <tr><td>전체 수거 버튼</td><td>1장</td></tr>
+              <tr><td>건물 탭 팝업 프레임</td><td>1장</td></tr>
+              <tr><td>거점 관리 팝업 프레임 (3탭)</td><td>1장</td></tr>
+              <tr><td>하단 네비게이션</td><td>1세트</td></tr>
+              <tr><td>상단 HUD</td><td>1세트</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">에셋 총 수량</h4>
+            <table class="tbl">
+              <tr><th>카테고리</th><th>P0 (런칭)</th><th>P1</th><th>P2~3</th></tr>
+              <tr><td>배경</td><td>1장 (리볼도외 낮)</td><td>2장 (저녁/밤)</td><td>4장 (서브 거점)</td></tr>
+              <tr><td>건물</td><td>10장</td><td>—</td><td>—</td></tr>
+              <tr><td>SD</td><td>—</td><td>40장 (10캐릭×4모션)</td><td>추가</td></tr>
+              <tr><td>UI</td><td>6세트</td><td>—</td><td>—</td></tr>
+              <tr><td><strong>합계</strong></td><td><strong>~17장+6세트</strong></td><td><strong>42장</strong></td><td><strong>4장+</strong></td></tr>
+            </table>
+          </div>
+
+          <div class="highlight-box green">
+            <p><strong>상세 기획:</strong> <code>Planning/gdd_barracks_life_v2.md</code> — v2 전면 재설계 전체.</p>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════ -->
   <!-- TAB: 관계 시스템 -->
   <!-- ══════════════════════════════════════════════ -->
   <div class="tab-content" id="tab-relationship">
