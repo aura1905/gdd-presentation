@@ -12,415 +12,670 @@
     min-height: 100vh;
     padding: 20px;
   }
-  .wrap {
-    max-width: 500px;
-    margin: 0 auto;
-  }
-  h1 {
-    text-align: center;
-    color: #d4a843;
-    margin-bottom: 8px;
-    font-size: 22px;
-  }
-  .subtitle {
-    text-align: center;
-    color: #888;
-    margin-bottom: 24px;
-    font-size: 13px;
-  }
+  .wrap { max-width: 500px; margin: 0 auto; }
+  h1 { text-align: center; color: #d4a843; margin-bottom: 8px; font-size: 22px; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 24px; font-size: 13px; }
 
-  /* 모바일 프레임 */
+  /* ───── 모바일 프레임 ───── */
   .phone {
     width: 100%;
     max-width: 420px;
     height: 760px;
     margin: 0 auto;
-    background: linear-gradient(180deg, #4a7ba8 0%, #6a9bc8 40%, #c4a878 70%, #a68856 100%);
     border-radius: 24px;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     position: relative;
     display: flex;
     flex-direction: column;
+    background: #1a1a1a;
   }
 
-  /* 상단 HUD */
+  /* ───── 상단 HUD ───── */
   .hud {
-    background: rgba(0,0,0,0.6);
-    padding: 12px 16px;
+    background: linear-gradient(180deg, rgba(10,14,24,0.92) 0%, rgba(10,14,24,0.75) 100%);
+    padding: 10px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     color: white;
-    font-size: 13px;
-    backdrop-filter: blur(10px);
+    font-size: 12px;
+    z-index: 10;
+    border-bottom: 1px solid rgba(212,168,67,0.3);
   }
   .location {
-    font-weight: bold;
-    color: #f0c850;
+    display: flex; align-items: center; gap: 4px;
+    font-weight: bold; color: #f0c850;
+    background: rgba(0,0,0,0.4);
+    padding: 4px 10px;
+    border-radius: 12px;
+    border: 1px solid rgba(240,200,80,0.3);
   }
-  .currencies {
-    display: flex;
-    gap: 12px;
-  }
+  .currencies { display: flex; gap: 6px; }
   .currency {
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    display: flex; align-items: center; gap: 3px;
+    background: rgba(0,0,0,0.5);
+    padding: 4px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    border: 1px solid rgba(255,255,255,0.1);
   }
 
-  /* 거점 뷰 본체 */
+  /* ───── 스테이지 ───── */
   .stage {
     flex: 1;
     position: relative;
     overflow: hidden;
+    background:
+      radial-gradient(ellipse at 50% 20%, #ffd89a 0%, transparent 40%),
+      linear-gradient(180deg,
+        #2a4570 0%,
+        #4a7ba8 15%,
+        #7cb0dc 30%,
+        #f5c4a0 45%,
+        #e8a878 55%,
+        #a8c878 58%,
+        #7fa858 70%,
+        #5c8840 85%,
+        #3e6028 100%);
+  }
+
+  /* 해 */
+  .sun {
+    position: absolute;
+    top: 30px;
+    right: 50px;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff8d0 0%, #ffd06a 60%, transparent 70%);
+    box-shadow: 0 0 40px rgba(255,220,120,0.8);
   }
 
   /* 구름 */
   .cloud {
     position: absolute;
-    top: 30px;
-    font-size: 40px;
-    opacity: 0.7;
-    animation: float 20s infinite ease-in-out;
+    background: white;
+    border-radius: 50px;
+    opacity: 0.85;
+    filter: drop-shadow(0 3px 6px rgba(0,0,0,0.1));
   }
-  .cloud.c1 { left: 20px; }
-  .cloud.c2 { right: 30px; top: 60px; animation-delay: -10s; }
+  .cloud::before, .cloud::after {
+    content: '';
+    position: absolute;
+    background: white;
+    border-radius: 50%;
+  }
+  .c1 {
+    width: 70px; height: 18px; top: 50px; left: 30px;
+    animation: float 25s infinite ease-in-out;
+  }
+  .c1::before { width: 28px; height: 28px; top: -14px; left: 12px; }
+  .c1::after { width: 22px; height: 22px; top: -10px; left: 38px; }
+  .c2 {
+    width: 55px; height: 15px; top: 85px; right: 60px;
+    animation: float 30s infinite ease-in-out -15s;
+  }
+  .c2::before { width: 22px; height: 22px; top: -12px; left: 8px; }
+  .c2::after { width: 18px; height: 18px; top: -8px; left: 28px; }
   @keyframes float {
     0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(30px); }
+    50% { transform: translateX(40px); }
   }
 
-  /* 관저 (중앙 상단) */
+  /* 원경 산 */
+  .mountain {
+    position: absolute;
+    top: 110px;
+    width: 0; height: 0;
+    opacity: 0.5;
+  }
+  .mountain.m1 {
+    left: 30px;
+    border-left: 60px solid transparent;
+    border-right: 60px solid transparent;
+    border-bottom: 55px solid #5a6a7c;
+  }
+  .mountain.m2 {
+    left: 140px;
+    border-left: 80px solid transparent;
+    border-right: 80px solid transparent;
+    border-bottom: 70px solid #4a5a6c;
+  }
+  .mountain.m3 {
+    right: 20px;
+    border-left: 50px solid transparent;
+    border-right: 50px solid transparent;
+    border-bottom: 48px solid #5a6a7c;
+  }
+
+  /* ───── 관저 (중앙 상단) ───── */
   .castle {
     position: absolute;
-    top: 70px;
+    top: 145px;
     left: 50%;
     transform: translateX(-50%);
-    width: 130px;
+    width: 140px;
     height: 130px;
-    background: linear-gradient(180deg, #8b4513 0%, #5c2d0a 100%);
-    border-radius: 8px 8px 4px 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 70px;
-    cursor: default;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    z-index: 3;
   }
-  .castle::before {
-    content: '🏰';
+  .castle-body {
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    width: 100px;
+    height: 80px;
+    background: linear-gradient(180deg, #e8d5a8 0%, #c9a878 100%);
+    border: 2px solid #7a5a30;
+    border-radius: 3px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.35);
+  }
+  .castle-body::before {
+    /* 문 */
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 22px; height: 32px;
+    background: linear-gradient(180deg, #5a3820 0%, #3a2010 100%);
+    border-radius: 11px 11px 0 0;
+    border: 1.5px solid #2a1808;
+  }
+  .castle-body::after {
+    /* 창문들 */
+    content: '';
+    position: absolute;
+    top: 14px; left: 12px;
+    width: 14px; height: 14px;
+    background: #6ec8f0;
+    border: 1.5px solid #4a3218;
+    box-shadow:
+      60px 0 0 #6ec8f0, 60px 0 0 1.5px #4a3218,
+      0 28px 0 #6ec8f0, 0 28px 0 1.5px #4a3218,
+      60px 28px 0 #6ec8f0, 60px 28px 0 1.5px #4a3218;
+  }
+  .castle-roof {
+    position: absolute;
+    top: 30px;
+    left: 10px;
+    width: 0; height: 0;
+    border-left: 60px solid transparent;
+    border-right: 60px solid transparent;
+    border-bottom: 40px solid #a04030;
+    filter: drop-shadow(0 -2px 0 #802a20);
+  }
+  .castle-tower {
+    position: absolute;
+    top: 20px;
+    width: 28px; height: 60px;
+    background: linear-gradient(180deg, #d8c098 0%, #b89868 100%);
+    border: 2px solid #7a5a30;
+    border-radius: 2px;
+  }
+  .castle-tower::before {
+    content: '';
+    position: absolute;
+    top: -20px; left: -4px;
+    width: 0; height: 0;
+    border-left: 16px solid transparent;
+    border-right: 16px solid transparent;
+    border-bottom: 22px solid #a04030;
+  }
+  .castle-tower.left { left: 6px; }
+  .castle-tower.right { right: 6px; }
+  .castle-flag {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px; height: 22px;
+    background: #6a4010;
+  }
+  .castle-flag::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 2px;
+    width: 16px; height: 10px;
+    background: #d94a5c;
+    clip-path: polygon(0 0, 100% 0, 70% 50%, 100% 100%, 0 100%);
+    animation: wave 2s infinite ease-in-out;
+    transform-origin: left;
+  }
+  @keyframes wave {
+    0%, 100% { transform: scaleX(1); }
+    50% { transform: scaleX(0.85) skewY(-5deg); }
   }
   .castle-label {
     position: absolute;
-    top: 205px;
+    bottom: -14px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(0,0,0,0.6);
-    color: white;
-    padding: 3px 10px;
+    background: rgba(0,0,0,0.7);
+    color: #f0c850;
+    padding: 2px 10px;
     border-radius: 10px;
-    font-size: 11px;
+    font-size: 10px;
     white-space: nowrap;
+    border: 1px solid rgba(240,200,80,0.4);
   }
 
-  /* 건물 3개 (하단) */
+  /* ───── 지면 장식 ───── */
+  .path {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px; height: 30px;
+    background: linear-gradient(180deg, #b89860 0%, #8a6840 100%);
+    border-radius: 50%;
+    opacity: 0.5;
+  }
+  .fence {
+    position: absolute;
+    bottom: 88px;
+    height: 14px;
+    width: 60px;
+    background:
+      repeating-linear-gradient(90deg,
+        #7a4a20 0 3px,
+        transparent 3px 10px);
+    opacity: 0.8;
+  }
+  .fence::before, .fence::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: #7a4a20;
+  }
+  .fence::before { top: 3px; }
+  .fence::after { bottom: 3px; }
+  .fence.f1 { left: 15px; }
+  .fence.f2 { right: 15px; }
+
+  .tree {
+    position: absolute;
+    width: 30px; height: 40px;
+    z-index: 2;
+  }
+  .tree::before {
+    /* 둥치 */
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px; height: 14px;
+    background: #5a3820;
+  }
+  .tree::after {
+    /* 잎 */
+    content: '';
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 28px;
+    background: radial-gradient(circle, #6ab048 0%, #4a8830 70%);
+    border-radius: 50%;
+    box-shadow: inset -3px -3px 6px rgba(0,0,0,0.2);
+  }
+  .tree.t1 { bottom: 100px; left: 10px; }
+  .tree.t2 { bottom: 108px; right: 8px; width: 26px; height: 36px; }
+  .tree.t3 { bottom: 160px; left: 25px; width: 22px; height: 30px; opacity: 0.85; }
+  .tree.t4 { bottom: 170px; right: 30px; width: 24px; height: 32px; opacity: 0.85; }
+
+  /* 꽃 */
+  .flower {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: radial-gradient(circle, #ffd060 0%, #ff6080 60%);
+    border-radius: 50%;
+  }
+
+  /* ───── 건물 3개 ───── */
   .buildings {
     position: absolute;
-    bottom: 140px;
-    left: 0;
-    right: 0;
+    bottom: 110px;
+    left: 0; right: 0;
     display: flex;
     justify-content: space-around;
-    padding: 0 20px;
+    padding: 0 14px;
+    z-index: 4;
   }
   .building {
     position: relative;
-    width: 90px;
-    height: 100px;
-    background: linear-gradient(180deg, #a0826d 0%, #5c4033 100%);
-    border-radius: 6px 6px 4px 4px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    width: 98px;
+    height: 110px;
     cursor: pointer;
-    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
     transition: transform 0.2s;
   }
   .building:hover { transform: translateY(-4px); }
-  .building-icon {
-    font-size: 40px;
-    margin-top: -10px;
-  }
-  .building-name {
-    font-size: 11px;
-    color: white;
-    background: rgba(0,0,0,0.5);
-    padding: 2px 6px;
-    border-radius: 8px;
-    margin-top: 4px;
-  }
+  .building:active { transform: translateY(-2px) scale(0.98); }
 
-  /* 생산 완료 알림 */
+  .bld-base {
+    position: absolute;
+    bottom: 0;
+    left: 4px;
+    width: 90px; height: 70px;
+    border-radius: 3px;
+    box-shadow: 0 6px 10px rgba(0,0,0,0.4);
+    border: 2px solid #5a3820;
+  }
+  .bld-roof {
+    position: absolute;
+    top: 20px;
+    left: -3px;
+    width: 0; height: 0;
+    border-left: 52px solid transparent;
+    border-right: 52px solid transparent;
+    border-bottom: 36px solid #a04030;
+    filter: drop-shadow(0 -2px 0 #802a20);
+  }
+  .bld-door {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 20px; height: 28px;
+    background: linear-gradient(180deg, #5a3820 0%, #3a2010 100%);
+    border-radius: 10px 10px 0 0;
+    border: 1.5px solid #2a1808;
+  }
+  .bld-window {
+    position: absolute;
+    top: 18px;
+    width: 12px; height: 12px;
+    background: #ffd060;
+    border: 1.5px solid #4a3218;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.3);
+  }
+  .bld-window.left { left: 12px; }
+  .bld-window.right { right: 12px; }
+  .bld-sign {
+    position: absolute;
+    top: -4px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 22px;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+    z-index: 2;
+  }
+  .bld-nameplate {
+    position: absolute;
+    bottom: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #3a2a18 0%, #2a1e10 100%);
+    color: white;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 10px;
+    white-space: nowrap;
+    border: 1px solid rgba(240,200,80,0.4);
+    font-weight: 600;
+  }
+  .bld-nameplate .lv { color: #f0c850; }
+
+  /* 건물별 색상 */
+  .building.kitchen .bld-base { background: linear-gradient(180deg, #f5d5a8 0%, #d4a878 100%); }
+  .building.workshop .bld-base { background: linear-gradient(180deg, #c8b088 0%, #a08858 100%); }
+  .building.training .bld-base { background: linear-gradient(180deg, #b0b8c8 0%, #808898 100%); }
+
+  /* 굴뚝 연기 */
+  .smoke {
+    position: absolute;
+    top: 14px;
+    right: 15px;
+    width: 6px; height: 6px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 50%;
+    animation: smokeRise 3s infinite;
+  }
+  @keyframes smokeRise {
+    0% { opacity: 0.8; transform: translateY(0) scale(0.5); }
+    50% { opacity: 0.5; }
+    100% { opacity: 0; transform: translateY(-30px) scale(1.5); }
+  }
+  .smoke.s2 { animation-delay: -1s; }
+  .smoke.s3 { animation-delay: -2s; }
+
+  /* 알림 배지 */
   .notif {
     position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #d94a5c;
+    top: -4px;
+    right: 0;
+    background: linear-gradient(180deg, #ff6070 0%, #d94a5c 100%);
     color: white;
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
+    width: 24px; height: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: bold;
     animation: bounce 1s infinite;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    border: 2px solid white;
+    z-index: 5;
   }
   @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+  }
+
+  /* ───── 캐릭터 SD (걷기) ───── */
+  .char {
+    position: absolute;
+    font-size: 22px;
+    pointer-events: none;
+    z-index: 4;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4));
+  }
+  .char .bubble {
+    position: absolute;
+    top: -14px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: white;
+    color: #333;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    white-space: nowrap;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+    font-weight: 600;
+  }
+  .char.ch1 { bottom: 95px; animation: walk1 8s infinite linear; }
+  .char.ch2 { bottom: 95px; animation: walk2 12s infinite linear -3s; }
+  .char.ch3 { bottom: 180px; left: 160px; animation: bob 2s infinite ease-in-out; }
+  .char.ch4 { bottom: 95px; right: 30px; animation: bob 2.5s infinite ease-in-out -0.5s; }
+
+  @keyframes walk1 {
+    0% { left: 20px; transform: scaleX(1); }
+    48% { left: 330px; transform: scaleX(1); }
+    50% { left: 330px; transform: scaleX(-1); }
+    98% { left: 20px; transform: scaleX(-1); }
+    100% { left: 20px; transform: scaleX(1); }
+  }
+  @keyframes walk2 {
+    0% { left: 300px; transform: scaleX(-1); }
+    48% { left: 40px; transform: scaleX(-1); }
+    50% { left: 40px; transform: scaleX(1); }
+    98% { left: 300px; transform: scaleX(1); }
+    100% { left: 300px; transform: scaleX(-1); }
+  }
+  @keyframes bob {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-4px); }
   }
 
-  /* 캐릭터 SD */
-  .characters {
-    position: absolute;
-    bottom: 110px;
-    left: 0;
-    right: 0;
-    display: flex;
-    justify-content: space-around;
-    padding: 0 30px;
-    pointer-events: none;
-  }
-  .char {
-    font-size: 32px;
-    animation: idle 3s infinite ease-in-out;
-    position: relative;
-  }
-  .char:nth-child(2) { animation-delay: -1s; }
-  .char:nth-child(3) { animation-delay: -2s; }
-  @keyframes idle {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-  }
-
-  /* 퀵 액션 */
+  /* ───── 퀵 액션 ───── */
   .quick-actions {
     position: absolute;
-    bottom: 60px;
-    left: 16px;
-    right: 16px;
+    bottom: 14px;
+    left: 12px; right: 12px;
     display: flex;
     gap: 8px;
+    z-index: 6;
   }
   .btn {
     flex: 1;
-    padding: 12px;
+    padding: 11px;
     border: none;
-    border-radius: 12px;
+    border-radius: 14px;
     font-size: 13px;
     font-weight: bold;
     cursor: pointer;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.4);
     transition: transform 0.15s;
-  }
-  .btn:active { transform: scale(0.95); }
-  .btn-collect {
-    background: linear-gradient(180deg, #f0c850 0%, #d4a843 100%);
-    color: #3a2a00;
     position: relative;
+  }
+  .btn:active { transform: scale(0.96); }
+  .btn-collect {
+    background: linear-gradient(180deg, #ffd870 0%, #d4a843 100%);
+    color: #3a2a00;
+    border: 2px solid #8a6020;
   }
   .btn-collect::after {
     content: '3';
     position: absolute;
-    top: -6px;
-    right: -6px;
+    top: -6px; right: -6px;
     background: #d94a5c;
     color: white;
     border-radius: 50%;
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    width: 22px; height: 22px;
+    display: flex; align-items: center; justify-content: center;
     font-size: 11px;
+    border: 2px solid white;
   }
   .btn-mgmt {
-    background: linear-gradient(180deg, #5a7fc0 0%, #3d5f9e 100%);
+    background: linear-gradient(180deg, #7aa0e0 0%, #3d5f9e 100%);
     color: white;
+    border: 2px solid #2a4080;
   }
 
-  /* 하단 네비 */
+  /* ───── 하단 네비 ───── */
   .nav {
-    background: rgba(0,0,0,0.7);
+    background: linear-gradient(180deg, #1a1a22 0%, #0a0a12 100%);
     display: flex;
     justify-content: space-around;
-    padding: 8px 0 12px;
-    backdrop-filter: blur(10px);
+    padding: 6px 0 10px;
+    border-top: 2px solid rgba(212,168,67,0.4);
   }
   .nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 2px;
-    color: #aaa;
+    color: #888;
     font-size: 10px;
     cursor: pointer;
-    padding: 4px 12px;
+    padding: 4px 10px;
     border-radius: 8px;
   }
   .nav-item.active {
     color: #f0c850;
+    background: rgba(240,200,80,0.1);
   }
-  .nav-item .icon {
-    font-size: 22px;
-  }
+  .nav-item .icon { font-size: 20px; }
 
-  /* 팝업 오버레이 */
+  /* ───── 팝업 ───── */
   .overlay {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.6);
     display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 100;
     align-items: center;
     justify-content: center;
-    z-index: 100;
-    animation: fadein 0.2s;
-  }
-  .overlay.show { display: flex; }
-  @keyframes fadein {
-    from { opacity: 0; }
-    to { opacity: 1; }
-  }
-  .popup {
-    width: 90%;
-    max-width: 380px;
-    background: linear-gradient(180deg, #2a2a3a 0%, #1a1a26 100%);
-    border: 2px solid #d4a843;
-    border-radius: 16px;
     padding: 20px;
-    color: #e0ddd5;
+  }
+  .overlay.open { display: flex; }
+  .popup {
+    background: #1a1a22;
+    border: 1px solid #3a3a48;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 380px;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 16px;
+    color: #ddd;
   }
   .popup h2 {
     color: #f0c850;
     margin-bottom: 12px;
+    font-size: 16px;
+    border-bottom: 1px solid #3a3a48;
+    padding-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
   .close-btn {
-    background: none;
+    background: #3a3a48;
+    color: white;
     border: none;
-    color: #888;
-    font-size: 24px;
+    border-radius: 50%;
+    width: 26px; height: 26px;
     cursor: pointer;
-  }
-  .popup-tabs {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 12px;
-    border-bottom: 1px solid #3a3a4a;
-    padding-bottom: 8px;
-  }
-  .popup-tab {
-    padding: 6px 12px;
-    background: #2a2a3a;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    color: #888;
-  }
-  .popup-tab.active {
-    background: #d4a843;
-    color: #1a1a26;
-    font-weight: bold;
-  }
-  .popup-content {
-    font-size: 13px;
-    line-height: 1.8;
+    font-size: 14px;
   }
   .popup-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0;
-    border-bottom: 1px dashed #3a3a4a;
+    padding: 10px 8px;
+    border-bottom: 1px solid #2a2a32;
+    font-size: 13px;
   }
-  .popup-row:last-child { border-bottom: none; }
   .popup-row .cost {
     color: #888;
     font-size: 11px;
+    margin: 0 8px;
   }
   .popup-row button {
-    padding: 4px 12px;
-    background: #4a9;
+    background: linear-gradient(180deg, #d4a843 0%, #a08030 100%);
+    color: #2a1a00;
     border: none;
-    border-radius: 4px;
-    color: white;
+    padding: 5px 12px;
+    border-radius: 6px;
     cursor: pointer;
     font-size: 11px;
+    font-weight: bold;
   }
-
-  /* 주석 */
-  .note {
-    position: absolute;
-    background: rgba(0,0,0,0.8);
-    color: #f0c850;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 10px;
-    pointer-events: none;
-    white-space: nowrap;
-    z-index: 50;
-  }
-  .note::after {
-    content: '';
-    position: absolute;
-    border: 6px solid transparent;
-  }
-
-  /* 콜렉션 결과 */
   .result {
-    background: rgba(0,0,0,0.9);
+    background: #1a1a22;
     border: 2px solid #f0c850;
     border-radius: 12px;
     padding: 20px;
     text-align: center;
-    min-width: 260px;
+    max-width: 280px;
   }
-  .result h3 {
-    color: #f0c850;
-    margin-bottom: 12px;
-  }
+  .result h3 { color: #f0c850; margin-bottom: 12px; }
   .result-item {
-    font-size: 14px;
-    padding: 4px 0;
-    color: white;
+    padding: 6px;
+    border-bottom: 1px dashed #3a3a48;
+    font-size: 13px;
   }
 
-  /* 설명 사이드 */
   .explain {
-    max-width: 420px;
-    margin: 20px auto 0;
-    background: rgba(212, 168, 67, 0.08);
+    margin-top: 20px;
+    padding: 16px;
+    background: rgba(212,168,67,0.08);
     border-left: 3px solid #d4a843;
-    padding: 12px 16px;
-    font-size: 13px;
-    line-height: 1.6;
-    color: #ccc;
     border-radius: 4px;
+    font-size: 12px;
+    line-height: 1.7;
+    color: #c8c0a8;
   }
-  .explain strong { color: #f0c850; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>🏠 배럭 v2 — 내 마을 뷰 UX 목업</h1>
-  <p class="subtitle">배럭 = 내 마을(건물 3시설 + 관저) · 거점 관리는 분리(월드맵에서 접근)</p>
+  <p class="subtitle">내 마을(배럭) = 관저 + 3건물 + 걷는 주민들 · 쿠키런 킹덤 참고</p>
 
   <div class="phone">
     <!-- 상단 HUD -->
@@ -433,37 +688,86 @@
       </div>
     </div>
 
-    <!-- 거점 뷰 -->
+    <!-- 스테이지 -->
     <div class="stage">
-      <div class="cloud c1">☁️</div>
-      <div class="cloud c2">☁️</div>
+      <div class="sun"></div>
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <div class="mountain m1"></div>
+      <div class="mountain m2"></div>
+      <div class="mountain m3"></div>
 
-      <div class="castle"></div>
-      <div class="castle-label">🏰 관저 (내 저택 · 장식)</div>
+      <!-- 원경 나무 -->
+      <div class="tree t3"></div>
+      <div class="tree t4"></div>
 
+      <!-- 관저 (그래픽) -->
+      <div class="castle">
+        <div class="castle-tower left"><div class="castle-flag"></div></div>
+        <div class="castle-tower right"></div>
+        <div class="castle-body"></div>
+        <div class="castle-roof"></div>
+        <div class="castle-label">🏰 관저 (내 저택 · 장식)</div>
+      </div>
+
+      <!-- 지면 장식 -->
+      <div class="path"></div>
+      <div class="fence f1"></div>
+      <div class="fence f2"></div>
+      <div class="tree t1"></div>
+      <div class="tree t2"></div>
+      <div class="flower" style="bottom:80px;left:120px"></div>
+      <div class="flower" style="bottom:78px;left:200px;background:radial-gradient(circle,#fff 0%,#f08090 60%)"></div>
+      <div class="flower" style="bottom:82px;right:110px"></div>
+
+      <!-- 건물 3개 (CSS 그래픽) -->
       <div class="buildings">
-        <div class="building" onclick="openPopup('kitchen')">
+        <div class="building kitchen" onclick="openPopup('kitchen')">
+          <div class="bld-base">
+            <div class="bld-window left"></div>
+            <div class="bld-window right"></div>
+            <div class="bld-door"></div>
+          </div>
+          <div class="bld-roof"></div>
+          <div class="smoke s1"></div>
+          <div class="smoke s2"></div>
+          <div class="smoke s3"></div>
+          <div class="bld-sign">🍳</div>
           <div class="notif">3</div>
-          <div class="building-icon">🍳</div>
-          <div class="building-name">주방 Lv.5</div>
+          <div class="bld-nameplate">주방 <span class="lv">Lv.5</span></div>
         </div>
-        <div class="building" onclick="openPopup('workshop')">
+
+        <div class="building workshop" onclick="openPopup('workshop')">
+          <div class="bld-base">
+            <div class="bld-window left"></div>
+            <div class="bld-window right"></div>
+            <div class="bld-door"></div>
+          </div>
+          <div class="bld-roof"></div>
+          <div class="bld-sign">🔨</div>
           <div class="notif">1</div>
-          <div class="building-icon">🔨</div>
-          <div class="building-name">공방 Lv.3</div>
+          <div class="bld-nameplate">공방 <span class="lv">Lv.3</span></div>
         </div>
-        <div class="building" onclick="openPopup('training')">
-          <div class="building-icon">⚔️</div>
-          <div class="building-name">훈련장 Lv.4</div>
+
+        <div class="building training" onclick="openPopup('training')">
+          <div class="bld-base">
+            <div class="bld-window left"></div>
+            <div class="bld-window right"></div>
+            <div class="bld-door"></div>
+          </div>
+          <div class="bld-roof"></div>
+          <div class="bld-sign">⚔️</div>
+          <div class="bld-nameplate">훈련장 <span class="lv">Lv.4</span></div>
         </div>
       </div>
 
-      <div class="characters">
-        <div class="char">🧑‍🍳</div>
-        <div class="char">⚔️</div>
-        <div class="char">😴</div>
-      </div>
+      <!-- 걷는 캐릭터 -->
+      <div class="char ch1">🧑‍🍳<span class="bubble">요리 중</span></div>
+      <div class="char ch2">🧑‍🔧</div>
+      <div class="char ch3">🚶</div>
+      <div class="char ch4">😴</div>
 
+      <!-- 퀵 액션 -->
       <div class="quick-actions">
         <button class="btn btn-collect" onclick="collectAll()">🔔 전체 수거</button>
         <button class="btn btn-mgmt" onclick="openPopup('facility')">🛠️ 시설 관리</button>
@@ -472,41 +776,26 @@
 
     <!-- 하단 네비 -->
     <div class="nav">
-      <div class="nav-item active">
-        <span class="icon">🏠</span>
-        <span>거점</span>
-      </div>
-      <div class="nav-item">
-        <span class="icon">🗺️</span>
-        <span>월드맵</span>
-      </div>
-      <div class="nav-item">
-        <span class="icon">⚔️</span>
-        <span>편성</span>
-      </div>
-      <div class="nav-item">
-        <span class="icon">🏛️</span>
-        <span>가문</span>
-      </div>
-      <div class="nav-item">
-        <span class="icon">🛒</span>
-        <span>상점</span>
-      </div>
+      <div class="nav-item active"><span class="icon">🏠</span><span>마을</span></div>
+      <div class="nav-item"><span class="icon">🗺️</span><span>월드맵</span></div>
+      <div class="nav-item"><span class="icon">⚔️</span><span>편성</span></div>
+      <div class="nav-item"><span class="icon">🏛️</span><span>가문</span></div>
+      <div class="nav-item"><span class="icon">🛒</span><span>상점</span></div>
     </div>
   </div>
 
   <div class="explain">
     <strong>핵심 UX:</strong><br>
-    • 접속 → <strong>내 마을(배럭)</strong> 뷰가 첫 화면 — 관저 + 3시설 건물 형태<br>
-    • 🏰 관저 = 장식용 (내 저택 보여주기, 탭 액션 없음)<br>
-    • 빨간 알림(🔔) = 생산 완료 → <strong>[전체 수거]</strong> 한 번 누르면 끝<br>
-    • 건물 탭 → 내부 탭으로 세부 조작 (주방/공방/훈련장)<br>
-    • <strong>거점 관리(방어/확장/경영)는 분리</strong> — 월드맵 탭 → 내 거점 아이콘 탭에서 접근<br>
-    • 유저의 유일한 선택 = "어떤 캐릭터를 전투에 보낼까" · 배치는 자동
+    • 접속 → <strong>내 마을(배럭)</strong> 뷰가 첫 화면 — 관저 + 3건물 + 걷는 주민들로 살아있는 느낌<br>
+    • 🏰 관저 = 장식 (내 저택)<br>
+    • 빨간 알림(🔔) = 생산 완료 → <strong>[전체 수거]</strong> 한 번으로 끝<br>
+    • 건물 탭 → 세부 조작 (주방/공방/훈련장 내부 탭 구조)<br>
+    • <strong>거점 관리(방어/확장/경영)는 분리</strong> — 월드맵에서 내 거점 아이콘 탭하여 접근<br>
+    • 유저의 유일한 선택 = "어떤 캐릭터를 전투에 보낼까" · 배치는 자동(S→A→B→C 휴식)
   </div>
 </div>
 
-<!-- 팝업들 -->
+<!-- 팝업 -->
 <div class="overlay" id="popup-result" onclick="closePopup(event)">
   <div class="result">
     <h3>📦 수거 완료!</h3>
@@ -519,137 +808,56 @@
   </div>
 </div>
 
-<div class="overlay" id="popup-outpost" onclick="closePopup(event)">
-  <div class="popup">
-    <h2>🏰 리볼도외 거점 관리 <button class="close-btn" onclick="closeAll()">×</button></h2>
-    <div class="popup-tabs">
-      <div class="popup-tab active" onclick="switchOutpostTab(this, 'defense')">🛡 방어</div>
-      <div class="popup-tab" onclick="switchOutpostTab(this, 'expand')">📐 확장</div>
-      <div class="popup-tab" onclick="switchOutpostTab(this, 'economy')">💰 경영</div>
-    </div>
-    <div class="popup-content" id="outpost-body">
-      <div class="popup-row"><span>거점 성벽 Lv.8</span><span class="cost">석재 800+철 400</span><button>강화</button></div>
-      <div class="popup-row"><span>관문 강화 Lv.5</span><span class="cost">석재 550</span><button>강화</button></div>
-      <div class="popup-row"><span>시설 내구도 Lv.3</span><span class="cost">석재 200+목 100</span><button>강화</button></div>
-      <div class="popup-row"><span>수비대 징병</span><span class="cost">곡물 800+철 500</span><button>징병</button></div>
-    </div>
-  </div>
-</div>
-
 <div class="overlay" id="popup-kitchen" onclick="closePopup(event)">
   <div class="popup">
     <h2>🍳 주방 Lv.5 <button class="close-btn" onclick="closeAll()">×</button></h2>
-    <div style="color:#888;font-size:12px;margin-bottom:8px">배치: 판필로 (요리사 S)</div>
-    <div class="popup-tabs">
-      <div class="popup-tab active">🍞 요리</div>
-      <div class="popup-tab">❤️ 회복력</div>
-      <div class="popup-tab">💊 치료</div>
-    </div>
-    <div class="popup-content">
-      <div class="popup-row"><span>생산중: 코임브라 해물탕</span><span class="cost">12분 남음</span></div>
-      <div class="popup-row"><span>재고</span><span>🍞×5 🍲×3 🥘×1</span></div>
-      <div class="popup-row"><span>대성공 확률</span><span>+5%</span></div>
-      <br>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-mgmt" style="flex:1;font-size:12px">생산 변경</button>
-        <button class="btn btn-collect" style="flex:1;font-size:12px">Lv.6 업그레이드</button>
-      </div>
-    </div>
+    <div class="popup-row"><span>🍖 피로 회복 음식 ×3</span><span class="cost">완료</span><button>수거</button></div>
+    <div class="popup-row"><span>🥘 요리 중 (2/4)</span><span class="cost">남은 시간 12분</span><button disabled>대기</button></div>
+    <div class="popup-row"><span>주방 Lv.5 → Lv.6</span><span class="cost">곡물 500 + 목재 300</span><button>업그레이드</button></div>
   </div>
 </div>
 
 <div class="overlay" id="popup-workshop" onclick="closePopup(event)">
   <div class="popup">
     <h2>🔨 공방 Lv.3 <button class="close-btn" onclick="closeAll()">×</button></h2>
-    <div style="color:#888;font-size:12px;margin-bottom:8px">배치: 잭 (대장장이 S)</div>
-    <div class="popup-tabs">
-      <div class="popup-tab active">⚔️ 장비</div>
-      <div class="popup-tab">🔬 무기 연구</div>
-      <div class="popup-tab">📘 전술서</div>
-    </div>
-    <div class="popup-content">
-      <div class="popup-row"><span>제작 가능 등급</span><span>Uncommon까지</span></div>
-      <div class="popup-row"><span>장비 제작점수</span><span>120 / 250</span></div>
-      <div class="popup-row"><span>부 스탯 보정</span><span>+0%</span></div>
-    </div>
+    <div class="popup-row"><span>⚔️ 장비 제작점수 +120</span><span class="cost">완료</span><button>수거</button></div>
+    <div class="popup-row"><span>📘 연구: 궁병 훈련</span><span class="cost">진행 65%</span><button disabled>대기</button></div>
+    <div class="popup-row"><span>공방 Lv.3 → Lv.4</span><span class="cost">철 400 + 석재 200</span><button>업그레이드</button></div>
   </div>
 </div>
 
 <div class="overlay" id="popup-training" onclick="closePopup(event)">
   <div class="popup">
     <h2>⚔️ 훈련장 Lv.4 <button class="close-btn" onclick="closeAll()">×</button></h2>
-    <div style="color:#888;font-size:12px;margin-bottom:8px">배치: 다리아 (교관 S)</div>
-    <div class="popup-tabs">
-      <div class="popup-tab">📊 TXP</div>
-      <div class="popup-tab active">⚔️ 병종 훈련</div>
-      <div class="popup-tab">💪 체력</div>
-    </div>
-    <div class="popup-content">
-      <div class="popup-row"><span>Fighter Lv.12</span><span class="cost">⛏️ 250</span><button>+1</button></div>
-      <div class="popup-row"><span>Scout Lv.8</span><span class="cost">🪵 180</span><button>+1</button></div>
-      <div class="popup-row"><span>Musketeer Lv.6</span><span class="cost">⛏️+🪨 140</span><button>+1</button></div>
-      <div class="popup-row"><span>Wizard Lv.3</span><span class="cost">🌿 90</span><button>+1</button></div>
-      <div class="popup-row"><span>Warlock Lv.2</span><span class="cost">🌿+🪨 70</span><button>+1</button></div>
-    </div>
+    <div class="popup-row"><span>👥 병사 모집 (3/5)</span><span class="cost">남은 시간 45분</span><button disabled>대기</button></div>
+    <div class="popup-row"><span>📊 훈련 보너스 +8%</span><span class="cost">적용 중</span><button disabled>-</button></div>
+    <div class="popup-row"><span>훈련장 Lv.4 → Lv.5</span><span class="cost">철 600 + 곡물 400</span><button>업그레이드</button></div>
   </div>
 </div>
 
 <div class="overlay" id="popup-facility" onclick="closePopup(event)">
   <div class="popup">
     <h2>🛠️ 시설 관리 <button class="close-btn" onclick="closeAll()">×</button></h2>
-    <div class="popup-content">
-      <div class="popup-row"><span>🍳 주방 Lv.5</span><span class="cost">🪵 5,000 + 비스 10,000</span><button>Lv.6</button></div>
-      <div class="popup-row"><span>🔨 공방 Lv.3</span><span class="cost">🪵 2,000 + ⛏️ 1,000</span><button>Lv.4</button></div>
-      <div class="popup-row"><span>⚔️ 훈련장 Lv.4</span><span class="cost">🪵 3,000 + 비스 8,000</span><button>Lv.5</button></div>
-    </div>
+    <div class="popup-row"><span>🍳 주방 Lv.5</span><span class="cost">다음 Lv.6</span><button>업그레이드</button></div>
+    <div class="popup-row"><span>🔨 공방 Lv.3</span><span class="cost">다음 Lv.4</span><button>업그레이드</button></div>
+    <div class="popup-row"><span>⚔️ 훈련장 Lv.4</span><span class="cost">다음 Lv.5</span><button>업그레이드</button></div>
   </div>
 </div>
 
 <script>
-function openPopup(id) {
-  document.querySelectorAll('.overlay').forEach(o => o.classList.remove('show'));
-  document.getElementById('popup-' + id).classList.add('show');
-}
-function closePopup(e) {
-  if (e.target.classList.contains('overlay')) {
-    e.target.classList.remove('show');
+  function openPopup(id) {
+    closeAll();
+    document.getElementById('popup-' + id).classList.add('open');
   }
-}
-function closeAll() {
-  document.querySelectorAll('.overlay').forEach(o => o.classList.remove('show'));
-}
-function collectAll() {
-  openPopup('result');
-  // 알림 뱃지 제거
-  document.querySelectorAll('.notif').forEach(n => n.style.display = 'none');
-  document.querySelector('.btn-collect::after');
-}
-function switchOutpostTab(tab, type) {
-  tab.parentElement.querySelectorAll('.popup-tab').forEach(t => t.classList.remove('active'));
-  tab.classList.add('active');
-  const body = document.getElementById('outpost-body');
-  if (type === 'defense') {
-    body.innerHTML = `
-      <div class="popup-row"><span>거점 성벽 Lv.8</span><span class="cost">석재 800+철 400</span><button>강화</button></div>
-      <div class="popup-row"><span>관문 강화 Lv.5</span><span class="cost">석재 550</span><button>강화</button></div>
-      <div class="popup-row"><span>시설 내구도 Lv.3</span><span class="cost">석재 200+목 100</span><button>강화</button></div>
-      <div class="popup-row"><span>수비대 징병</span><span class="cost">곡물 800+철 500</span><button>징병</button></div>
-    `;
-  } else if (type === 'expand') {
-    body.innerHTML = `
-      <div class="popup-row"><span>배럭 슬롯: 6/9</span><span class="cost">🪵 2,000 + 🪨 1,000</span><button>+1 확장</button></div>
-      <div class="popup-row"><span>영지 슬롯: 35/80</span><span class="cost">🪵 624 + 🪨 312 + 비스 5,600</span><button>+1 확장</button></div>
-    `;
-  } else {
-    body.innerHTML = `
-      <div class="popup-row"><span>비스 수입</span><span>+350/시간</span></div>
-      <div class="popup-row"><span>유지비 감소</span><span>-20%</span></div>
-      <div class="popup-row"><span>교역 루트</span><span>1개</span><button>추가</button></div>
-      <div class="popup-row"><span>경영 업그레이드 Lv.5 → 6</span><span class="cost">비스 20,000 + RP 500</span><button>강화</button></div>
-    `;
+  function closePopup(e) {
+    if (e.target.classList.contains('overlay')) closeAll();
   }
-}
+  function closeAll() {
+    document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
+  }
+  function collectAll() {
+    openPopup('result');
+  }
 </script>
-
 </body>
 </html>
