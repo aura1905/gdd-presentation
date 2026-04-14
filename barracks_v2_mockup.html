@@ -105,11 +105,9 @@
     align-items: center;
     justify-content: center;
     font-size: 70px;
-    cursor: pointer;
+    cursor: default;
     box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-    transition: transform 0.2s;
   }
-  .castle:hover { transform: translateX(-50%) translateY(-4px); }
   .castle::before {
     content: '🏰';
   }
@@ -421,8 +419,8 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>🏠 배럭 v2 — 거점 뷰 UX 목업</h1>
-  <p class="subtitle">쿠키런 킹덤 참고 · 자동 배치 + 원탭 수거 · 체류 30초~1분</p>
+  <h1>🏠 배럭 v2 — 내 마을 뷰 UX 목업</h1>
+  <p class="subtitle">배럭 = 내 마을(건물 3시설 + 관저) · 거점 관리는 분리(월드맵에서 접근)</p>
 
   <div class="phone">
     <!-- 상단 HUD -->
@@ -440,8 +438,8 @@
       <div class="cloud c1">☁️</div>
       <div class="cloud c2">☁️</div>
 
-      <div class="castle" onclick="openPopup('outpost')"></div>
-      <div class="castle-label">탭 → 거점 관리 팝업</div>
+      <div class="castle"></div>
+      <div class="castle-label">🏰 관저 (내 저택 · 장식)</div>
 
       <div class="buildings">
         <div class="building" onclick="openPopup('kitchen')">
@@ -499,12 +497,12 @@
 
   <div class="explain">
     <strong>핵심 UX:</strong><br>
-    • 접속 → 거점 뷰가 첫 화면<br>
+    • 접속 → <strong>내 마을(배럭)</strong> 뷰가 첫 화면 — 관저 + 3시설 건물 형태<br>
+    • 🏰 관저 = 장식용 (내 저택 보여주기, 탭 액션 없음)<br>
     • 빨간 알림(🔔) = 생산 완료 → <strong>[전체 수거]</strong> 한 번 누르면 끝<br>
-    • 🏰 관저 탭 → 거점 관리 팝업 (방어/확장/경영)<br>
-    • 건물 탭 → 내부 탭으로 세부 조작<br>
-    • 유저의 유일한 선택 = "어떤 캐릭터를 전투에 보낼까"<br>
-    • 배치는 자동 (S등급 우선 → A → B → C는 휴식)
+    • 건물 탭 → 내부 탭으로 세부 조작 (주방/공방/훈련장)<br>
+    • <strong>거점 관리(방어/확장/경영)는 분리</strong> — 월드맵 탭 → 내 거점 아이콘 탭에서 접근<br>
+    • 유저의 유일한 선택 = "어떤 캐릭터를 전투에 보낼까" · 배치는 자동
   </div>
 </div>
 
