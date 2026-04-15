@@ -4370,28 +4370,32 @@
           <!-- 캐릭터 EXP 시스템 -->
           <div class="card">
             <h3>📈 캐릭터 경험치 시스템</h3>
-            <p>레벨업 = <strong>EXP 충족 + 골드 소모</strong>. EXP는 3경로로 획득.</p>
+            <p>레벨업 = <strong>EXP 충족만</strong> (골드 소모 없음). EXP는 3경로로 획득. <span style="color:#f0c850">v2: 삼전 기반 — 레벨 싱크/골드 비용 삭제</span></p>
+
+            <div class="highlight-box green" style="margin:12px 0">
+              <p style="font-size:12px"><strong>v1 → v2 변경:</strong> ① 골드 레벨업 비용 <strong>삭제</strong> (삼전처럼 EXP만) · ② 레벨 싱크 <strong>삭제</strong> (각 장수 독립 성장, "쓸 장수만 키운다") · ③ 훈련장 TXP <strong>+50% 상향</strong> (비전투 구제 역할 단독 담당)</p>
+            </div>
 
             <h4>EXP 획득 3경로</h4>
             <table class="tbl">
               <tr><th>경로</th><th>설명</th><th>대상</th></tr>
               <tr><td><strong>전투 EXP</strong></td><td>전투 참가 3인에 직접 부여 (DropTable CharEXP)</td><td>주력 캐릭터</td></tr>
-              <tr><td><strong>훈련장 TXP</strong></td><td>배럭 훈련장에서 시간당 생산 (TXP 1 = EXP 1)</td><td>비전투 캐릭터</td></tr>
-              <tr><td><strong>EXP 서적</strong></td><td>소모 아이템으로 즉시 투입 (골드 불필요)</td><td>신규/교체 캐릭터</td></tr>
+              <tr><td><strong>훈련장 TXP</strong></td><td>배럭 훈련장에서 시간당 생산, 원하는 캐릭터에 수동 투입 (TXP 1 = EXP 1)</td><td>비전투 캐릭터</td></tr>
+              <tr><td><strong>EXP 서적</strong></td><td>소모 아이템으로 즉시 투입</td><td>신규/교체 캐릭터</td></tr>
             </table>
 
-            <h4 style="margin-top:16px">레벨별 필요 EXP/골드 (CharacterExpTable 200행)</h4>
-            <p style="font-size:12px;color:var(--text-dim)">공식: <code>reqEXP(Lv) = 50 × Lv × (1 + floor(Lv/50) × 0.5)</code> / 골드 = EXP × 2</p>
+            <h4 style="margin-top:16px">레벨별 필요 EXP (CharacterExpTable 200행)</h4>
+            <p style="font-size:12px;color:var(--text-dim)">공식: <code>reqEXP(Lv) = 50 × Lv × (1 + floor(Lv/50) × 0.5)</code></p>
             <table class="tbl">
-              <tr><th>Lv</th><th>필요 EXP</th><th>골드</th><th>누적 EXP</th><th>구간</th><th>체감</th></tr>
-              <tr><td>1→2</td><td>100</td><td>200</td><td>100</td><td rowspan="2">×1.0</td><td>즉시</td></tr>
-              <tr><td>10→11</td><td>500</td><td>1,000</td><td>2,750</td><td>Day 2</td></tr>
-              <tr><td>30→31</td><td>1,500</td><td>3,000</td><td>23,250</td><td>×1.0</td><td>Day 10</td></tr>
-              <tr><td>50→51</td><td>3,750</td><td>7,500</td><td>63,750</td><td><strong>×1.5</strong></td><td>Day 20 — 1차 벽</td></tr>
-              <tr><td>100→101</td><td>10,000</td><td>20,000</td><td>270,000</td><td><strong>×2.0</strong></td><td>Day 60 — 2차 벽</td></tr>
-              <tr><td>150→151</td><td>18,750</td><td>37,500</td><td>630,000</td><td><strong>×2.5</strong></td><td>Day 110 — 3차 벽</td></tr>
-              <tr><td>180</td><td>22,500</td><td>45,000</td><td>900,000</td><td>×2.5</td><td>Day 140 — 각성 조건</td></tr>
-              <tr><td>200</td><td>25,000</td><td>50,000</td><td>2,083,700</td><td>×2.5</td><td>Day 165 — 초월</td></tr>
+              <tr><th>Lv</th><th>필요 EXP</th><th>누적 EXP</th><th>구간</th><th>체감</th></tr>
+              <tr><td>1→2</td><td>50</td><td>50</td><td rowspan="2">×1.0</td><td>즉시</td></tr>
+              <tr><td>10→11</td><td>500</td><td>2,750</td><td>Day 2</td></tr>
+              <tr><td>30→31</td><td>1,500</td><td>23,250</td><td>×1.0</td><td>Day 10</td></tr>
+              <tr><td>50→51</td><td>3,750</td><td>63,750</td><td><strong>×1.5</strong></td><td>Day 20 — 1차 벽</td></tr>
+              <tr><td>100→101</td><td>10,000</td><td>270,000</td><td><strong>×2.0</strong></td><td>Day 60 — 2차 벽</td></tr>
+              <tr><td>150→151</td><td>18,750</td><td>630,000</td><td><strong>×2.5</strong></td><td>Day 110 — 3차 벽</td></tr>
+              <tr><td>180</td><td>22,500</td><td>900,000</td><td>×2.5</td><td>Day 140 — 각성 조건</td></tr>
+              <tr><td>200</td><td>25,000</td><td>1,125,000</td><td>×2.5</td><td>Day 165 — 초월</td></tr>
             </table>
 
             <h4 style="margin-top:16px">전투별 EXP (DropTable 기준)</h4>
@@ -4405,15 +4409,16 @@
             </table>
             <p style="font-size:12px;color:var(--text-dim)">토벌이 EXP 특화 (레벨업 핵심 경로). 효율등급 SSS~C 배율 적용.</p>
 
-            <h4 style="margin-top:16px">훈련장 TXP</h4>
+            <h4 style="margin-top:16px">훈련장 TXP <span style="color:#f0c850;font-size:12px">(v2 +50% 상향)</span></h4>
             <table class="tbl">
-              <tr><th>항목</th><th>생산량</th></tr>
-              <tr><td>기본</td><td>30 TXP/시간</td></tr>
-              <tr><td>S등급 훈련교관</td><td>×1.5 → 45/시간</td></tr>
-              <tr><td>훈련장 Lv.10</td><td>+100/시간</td></tr>
-              <tr><td>S등급 + Lv.10</td><td>~130/시간 → 하루 ~3,120 EXP</td></tr>
-              <tr><td>오프라인</td><td>70% 효율, 최대 12시간</td></tr>
+              <tr><th>항목</th><th>v1</th><th><strong>v2 생산량</strong></th></tr>
+              <tr><td>기본</td><td>30/h</td><td><strong>45 TXP/시간</strong></td></tr>
+              <tr><td>S등급 훈련교관</td><td>45/h</td><td><strong>×1.5 → 68/시간</strong></td></tr>
+              <tr><td>훈련장 Lv.10 시설</td><td>+100/h</td><td><strong>+150/시간</strong></td></tr>
+              <tr><td>S등급 + Lv.10</td><td>~130/h</td><td><strong>~218/시간 → 하루 ~3,660 EXP</strong></td></tr>
+              <tr><td>오프라인</td><td colspan="2">70% 효율, 최대 12시간</td></tr>
             </table>
+            <p style="font-size:12px;color:var(--text-dim)">유저가 원하는 캐릭터에 <strong>수동 투입</strong> (자동 배분 없음 = 선택과 집중). 레벨 싱크 삭제로 비전투 구제 역할이 훈련장에 집중됨.</p>
 
             <h4 style="margin-top:16px">EXP 서적</h4>
             <table class="tbl">
@@ -4436,24 +4441,25 @@
                 </table>
               </div>
               <div>
-                <p><strong>비전투 캐릭터 (훈련장)</strong></p>
+                <p><strong>비전투 캐릭터 (훈련장 지정 투입)</strong></p>
                 <table class="tbl">
-                  <tr><td>TXP 24시간</td><td>~2,200</td></tr>
+                  <tr><td>TXP 24시간 (v2)</td><td>~2,562</td></tr>
                   <tr><td>서적 (소) ×2</td><td>1,000</td></tr>
-                  <tr><td><strong>합계</strong></td><td><strong>~3,200/일</strong></td></tr>
+                  <tr><td><strong>합계</strong></td><td><strong>~3,562/일</strong></td></tr>
                 </table>
+                <p style="font-size:11px;color:var(--text-dim)">훈련장은 1~2명 집중 투입. 5명 육성 시 로테이션.</p>
               </div>
             </div>
 
-            <h4 style="margin-top:16px">레벨 싱크</h4>
-            <table class="tbl">
-              <tr><th>규칙</th><th>내용</th></tr>
-              <tr><td>공식</td><td><code>싱크 Lv = floor(상위 5명 평균) - 10</code></td></tr>
-              <tr><td>효과</td><td>나머지 전원이 싱크 레벨 자동 보유</td></tr>
-              <tr><td>제한</td><td>싱크 캐릭은 전투 EXP 미획득 (자동 조정)</td></tr>
-              <tr><td>초과</td><td>싱크 이상 올리려면 직접 EXP/골드 투자</td></tr>
-            </table>
-            <p style="font-size:12px;color:var(--text-dim)">상세: <code>Planning/gdd_character_exp_system.md</code>. 테이블: <code>CharacterExpTable.xml</code> (200행)</p>
+            <div class="highlight-box" style="margin-top:16px">
+              <p style="font-size:13px"><strong>⚠️ v1 → v2에서 삭제된 것:</strong></p>
+              <ul style="font-size:12px;line-height:1.8">
+                <li><strong>레벨 싱크</strong> (AFK 아레나식 자동 공유) — 삭제. 삼전처럼 각 장수 독립 성장, 쓸 장수만 키움</li>
+                <li><strong>골드 레벨업 비용</strong> (EXP × 2) — 삭제. EXP만 충족하면 즉시 레벨업 (삼전 방식)</li>
+                <li>두 기능은 AFK RPG 잔재였음. GE: 개척시대는 삼전 기반 가문 경영 전략 게임</li>
+              </ul>
+            </div>
+            <p style="font-size:12px;color:var(--text-dim)">상세: <code>Planning/gdd_character_exp_system.md</code> v2.0. 테이블: <code>CharacterExpTable.xml</code> (200행, GoldCost 컬럼 제거)</p>
           </div>
 
         </div>
@@ -4527,7 +4533,7 @@
             <h3>👤 A. 캐릭터 개인 성장 (10개)</h3>
 
             <h4>A1. 캐릭터 레벨 (기존 확정)</h4>
-            <p>범위: Lv.1→200 (초월 시 220). 비용: <code>goldCost(Lv) = 100 × Lv × (1 + floor(Lv/50) × 0.5)</code>. 레벨 싱크: 상위 5명 평균 Lv -10을 나머지 전원이 공유.</p>
+            <p>범위: Lv.1→200 (초월 시 220). 레벨업 = <strong>EXP 충족만</strong> (골드 비용 없음, 레벨 싱크 없음 — 삼전 기반).</p>
             <table class="tbl">
               <tr><th>등급</th><th>ATK/Lv</th><th>HP/Lv</th><th>DEF/Lv</th><th>Lv.200 ATK</th></tr>
               <tr><td>★★</td><td>+2.0</td><td>+12</td><td>+1.0</td><td>408</td></tr>
