@@ -1,0 +1,271 @@
+[
+  {
+    "ID": 101,
+    "ConfigType": "rate",
+    "Name": "Legendary 확률",
+    "Grade": "legend",
+    "Rate": 1.5,
+    "Remark": "★★★★★ C6~C7"
+  },
+  {
+    "ID": 102,
+    "ConfigType": "rate",
+    "Name": "Unique 확률",
+    "Grade": "unique",
+    "Rate": 8.0,
+    "Remark": "★★★★★ C5"
+  },
+  {
+    "ID": 103,
+    "ConfigType": "rate",
+    "Name": "Rare 확률",
+    "Grade": "rare",
+    "Rate": 30.0,
+    "Remark": "★★★★"
+  },
+  {
+    "ID": 104,
+    "ConfigType": "rate",
+    "Name": "High 확률",
+    "Grade": "high",
+    "Rate": 40.0,
+    "Remark": "★★★"
+  },
+  {
+    "ID": 105,
+    "ConfigType": "rate",
+    "Name": "Normal 확률",
+    "Grade": "normal",
+    "Rate": 20.5,
+    "Remark": "★★"
+  },
+  {
+    "ID": 201,
+    "ConfigType": "pity",
+    "Name": "소천장",
+    "PityCount": 10,
+    "GuaranteeGrade": "rare",
+    "Remark": "10연차마다 ★★★★ 이상 1체 확정"
+  },
+  {
+    "ID": 202,
+    "ConfigType": "pity",
+    "Name": "중천장",
+    "PityCount": 50,
+    "GuaranteeGrade": "unique",
+    "Remark": "50회 시 ★★★★★ C5 이상 1체"
+  },
+  {
+    "ID": 203,
+    "ConfigType": "pity",
+    "Name": "대천장",
+    "PityCount": 80,
+    "GuaranteeGrade": "legend",
+    "Remark": "80회 시 Legendary 1체"
+  },
+  {
+    "ID": 204,
+    "ConfigType": "pity",
+    "Name": "확정 천장",
+    "PityCount": 160,
+    "GuaranteeGrade": "pickup",
+    "Remark": "160회 시 픽업 캐릭터 확정 (삼전 참고)"
+  },
+  {
+    "ID": 301,
+    "ConfigType": "banner",
+    "Name": "상설 모집",
+    "BannerType": "standard",
+    "Duration": "permanent",
+    "PickupRate": 0,
+    "Remark": "전체 캐릭터 풀, 기본 확률"
+  },
+  {
+    "ID": 302,
+    "ConfigType": "banner",
+    "Name": "이벤트 모집",
+    "BannerType": "event",
+    "Duration": "14d",
+    "PickupRate": 50,
+    "Remark": "특정 캐릭터 확률 UP (Legendary 중 50%)"
+  },
+  {
+    "ID": 303,
+    "ConfigType": "banner",
+    "Name": "시즌 한정 모집",
+    "BannerType": "season",
+    "Duration": "season",
+    "PickupRate": 50,
+    "Remark": "시즌 전용 캐릭터, 해당 시즌에만"
+  },
+  {
+    "ID": 304,
+    "ConfigType": "banner",
+    "Name": "소속 모집",
+    "BannerType": "faction",
+    "Duration": "7d",
+    "PickupRate": 30,
+    "Remark": "특정 소속 캐릭터 확률 UP"
+  },
+  {
+    "ID": 305,
+    "ConfigType": "banner",
+    "Name": "직분 모집",
+    "BannerType": "job",
+    "Duration": "7d",
+    "PickupRate": 30,
+    "Remark": "특정 생활 직업 캐릭터 확률 UP"
+  },
+  {
+    "ID": 401,
+    "ConfigType": "cost",
+    "Name": "단일 뽑기 (보석)",
+    "CurrencyType": "gem",
+    "Amount": 280,
+    "Remark": "보석 280개 = 1회"
+  },
+  {
+    "ID": 402,
+    "ConfigType": "cost",
+    "Name": "10연차 (보석)",
+    "CurrencyType": "gem",
+    "Amount": 2800,
+    "Remark": "보석 2800개 = 10연차"
+  },
+  {
+    "ID": 403,
+    "ConfigType": "cost",
+    "Name": "단일 뽑기 (서찰)",
+    "CurrencyType": "scroll",
+    "Amount": 1,
+    "Remark": "모집 서찰 1장 = 1회"
+  },
+  {
+    "ID": 404,
+    "ConfigType": "cost",
+    "Name": "10연차 (서찰)",
+    "CurrencyType": "scroll",
+    "Amount": 10,
+    "Remark": "모집 서찰 10장 = 10연차"
+  },
+  {
+    "ID": 501,
+    "ConfigType": "dupe_shard",
+    "Name": "★★ 중복 조각",
+    "Grade": "normal",
+    "ShardCount": 10,
+    "Remark": "★★ 캐릭터 중복 획득 시"
+  },
+  {
+    "ID": 502,
+    "ConfigType": "dupe_shard",
+    "Name": "★★★ 중복 조각",
+    "Grade": "high",
+    "ShardCount": 15,
+    "Remark": "★★★ 캐릭터 중복 획득 시"
+  },
+  {
+    "ID": 503,
+    "ConfigType": "dupe_shard",
+    "Name": "★★★★ 중복 조각",
+    "Grade": "rare",
+    "ShardCount": 20,
+    "Remark": "★★★★ 캐릭터 중복 획득 시"
+  },
+  {
+    "ID": 504,
+    "ConfigType": "dupe_shard",
+    "Name": "C5 중복 조각",
+    "Grade": "unique",
+    "ShardCount": 30,
+    "Remark": "★★★★★ C5 중복 획득 시"
+  },
+  {
+    "ID": 505,
+    "ConfigType": "dupe_shard",
+    "Name": "C6 중복 조각",
+    "Grade": "legend_c6",
+    "ShardCount": 30,
+    "Remark": "★★★★★ C6 중복 획득 시"
+  },
+  {
+    "ID": 506,
+    "ConfigType": "dupe_shard",
+    "Name": "C7 중복 조각",
+    "Grade": "legend_c7",
+    "ShardCount": 50,
+    "Remark": "★★★★★ C7 중복 획득 시"
+  },
+  {
+    "ID": 601,
+    "ConfigType": "disassemble",
+    "Name": "★★ 분해",
+    "Grade": "normal",
+    "SkillShard": 1,
+    "SkillChoice": "main_only",
+    "StarStone": 1,
+    "StarStoneGrade": "normal",
+    "Vis": 500,
+    "DocPoint": 50
+  },
+  {
+    "ID": 602,
+    "ConfigType": "disassemble",
+    "Name": "★★★ 분해",
+    "Grade": "high",
+    "SkillShard": 1,
+    "SkillChoice": "main_only",
+    "StarStone": 2,
+    "StarStoneGrade": "normal",
+    "Vis": 1000,
+    "DocPoint": 100
+  },
+  {
+    "ID": 603,
+    "ConfigType": "disassemble",
+    "Name": "★★★★ 분해",
+    "Grade": "rare",
+    "SkillShard": 1,
+    "SkillChoice": "select",
+    "StarStone": 1,
+    "StarStoneGrade": "high",
+    "Vis": 2500,
+    "DocPoint": 200
+  },
+  {
+    "ID": 604,
+    "ConfigType": "disassemble",
+    "Name": "C5 분해",
+    "Grade": "unique",
+    "SkillShard": 1,
+    "SkillChoice": "select",
+    "StarStone": 1,
+    "StarStoneGrade": "special",
+    "Vis": 5000,
+    "DocPoint": 500
+  },
+  {
+    "ID": 605,
+    "ConfigType": "disassemble",
+    "Name": "C6 분해",
+    "Grade": "legend_c6",
+    "SkillShard": 1,
+    "SkillChoice": "select",
+    "StarStone": 1,
+    "StarStoneGrade": "special",
+    "Vis": 5000,
+    "DocPoint": 500
+  },
+  {
+    "ID": 606,
+    "ConfigType": "disassemble",
+    "Name": "C7 분해",
+    "Grade": "legend_c7",
+    "SkillShard": 1,
+    "SkillChoice": "select",
+    "StarStone": 3,
+    "StarStoneGrade": "special",
+    "Vis": 15000,
+    "DocPoint": 1000
+  }
+]

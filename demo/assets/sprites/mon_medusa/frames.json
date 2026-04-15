@@ -1,0 +1,22 @@
+{
+  "frames": [
+    {
+      "filename": "idle",
+      "frame": {
+        "x": 0,
+        "y": 0,
+        "w": 64,
+        "h": 64
+      },
+      "duration": 800
+    }
+  ],
+  "meta": {
+    "size": {
+      "w": 64,
+      "h": 64
+    },
+    "placeholder": true,
+    "class": "E"
+  }
+}

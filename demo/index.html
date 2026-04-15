@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>GE 개척시대 - 웹 플레이 데모</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <canvas id="worldmap"></canvas>
+
+    <!-- 상단 HUD -->
+    <header id="hud-top">
+      <div class="hud-group hud-resources">
+        <span class="res"><i class="res-icon grain"></i><span id="res-grain">0</span></span>
+        <span class="res"><i class="res-icon gold"></i><span id="res-gold">0</span></span>
+        <span class="res"><i class="res-icon vis"></i><span id="res-vis">0</span></span>
+      </div>
+      <div class="hud-group hud-turn">
+        <span>턴 <span id="turn-num">1</span></span>
+        <button id="btn-end-turn" type="button" disabled>턴 종료</button>
+      </div>
+    </header>
+
+    <!-- 우측 미니 컨트롤 -->
+    <aside id="controls-right">
+      <button id="btn-zoom-strat" type="button" title="전략맵">▣</button>
+      <button id="btn-zoom-tile" type="button" title="타일맵">◉</button>
+    </aside>
+
+    <!-- 하단 액션 바 (접힌 상태로 시작) -->
+    <section id="hex-panel" hidden>
+      <div class="hex-info">
+        <strong id="hex-title">—</strong>
+        <div id="hex-meta"></div>
+      </div>
+      <div class="hex-actions" id="hex-actions"></div>
+      <button class="close" id="btn-close-panel" type="button">✕</button>
+    </section>
+
+    <!-- 하단 탭 도크 -->
+    <nav id="tab-dock">
+      <button data-tab="worldmap" class="active">월드맵</button>
+      <button data-tab="family" disabled>가문</button>
+      <button data-tab="growth" disabled>성장</button>
+      <button data-tab="mailbox" disabled>우편</button>
+    </nav>
+
+    <div id="splash">
+      <div class="splash-inner">
+        <h1>GE 개척시대</h1>
+        <p>웹 플레이 데모 — M1 월드맵 렌더</p>
+        <p id="loading-status">데이터 로드 중…</p>
+      </div>
+    </div>
+  </div>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

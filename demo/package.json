@@ -1,0 +1,14 @@
+{
+  "name": "ge-web-demo",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "serve": "python -m http.server 8080"
+  },
+  "devDependencies": {
+    "vitest": "^1.6.0"
+  }
+}

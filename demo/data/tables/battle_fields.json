@@ -1,0 +1,26 @@
+[
+  {
+    "ID": 1,
+    "FieldName": "기본 전투 필드",
+    "FieldPrefab": "BattleFields/field_default",
+    "GridWidth": 10,
+    "GridHeight": 10,
+    "Description": "10x10 기본 아이소메트릭 전투 필드"
+  },
+  {
+    "ID": 2,
+    "FieldName": "main_field",
+    "FieldPrefab": "BattleFields/main_field",
+    "FieldType": "World",
+    "GridWidth": 101,
+    "GridHeight": 100,
+    "CellLayout": "Hexagon",
+    "CellSwizzle": "YXZ",
+    "StructureCount": 51,
+    "RespawnZoneCount": 0,
+    "RespawnZones": null,
+    "PlayerSpawnCount": 0,
+    "EnemySpawnCount": 0,
+    "Description": "101x100 헥사 월드 필드"
+  }
+]

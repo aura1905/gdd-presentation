@@ -1,0 +1,148 @@
+{
+  "tables": [
+    {
+      "xml": "BattleFieldTable.xml",
+      "out": "battle_fields.json",
+      "rows": 2,
+      "issues": 0
+    },
+    {
+      "xml": "BondTable.xml",
+      "out": "bonds.json",
+      "rows": 236,
+      "issues": 0
+    },
+    {
+      "xml": "CharacterExpTable.xml",
+      "out": "character_exp.json",
+      "rows": 200,
+      "issues": 0
+    },
+    {
+      "xml": "DropTable.xml",
+      "out": "drops.json",
+      "rows": 50,
+      "issues": 0
+    },
+    {
+      "xml": "EnemyPartyTable.xml",
+      "out": "enemy_parties.json",
+      "rows": 187,
+      "issues": 0
+    },
+    {
+      "xml": "EnergyConfigTable.xml",
+      "out": "energy.json",
+      "rows": 32,
+      "issues": 0
+    },
+    {
+      "xml": "EquipmentTable.xml",
+      "out": "equipment.json",
+      "rows": 130,
+      "issues": 0
+    },
+    {
+      "xml": "FamilyLevelTable.xml",
+      "out": "family_level.json",
+      "rows": 100,
+      "issues": 0
+    },
+    {
+      "xml": "FieldObjectTable.xml",
+      "out": "field_objects.json",
+      "rows": 375,
+      "issues": 0
+    },
+    {
+      "xml": "FortificationTable.xml",
+      "out": "fortification.json",
+      "rows": 79,
+      "issues": 0
+    },
+    {
+      "xml": "GachaTable.xml",
+      "out": "gacha.json",
+      "rows": 30,
+      "issues": 0
+    },
+    {
+      "xml": "QuestTable.xml",
+      "out": "quests.json",
+      "rows": 35,
+      "issues": 0
+    },
+    {
+      "xml": "RegionTable.xml",
+      "out": "regions.json",
+      "rows": 43,
+      "issues": 0
+    },
+    {
+      "xml": "ResearchTable.xml",
+      "out": "research.json",
+      "rows": 207,
+      "issues": 0
+    },
+    {
+      "xml": "ResourceTable.xml",
+      "out": "resources.json",
+      "rows": 25,
+      "issues": 0
+    },
+    {
+      "xml": "SkillTable.xml",
+      "out": "skills.json",
+      "rows": 709,
+      "issues": 0
+    },
+    {
+      "xml": "StageTable.xml",
+      "out": "stages.json",
+      "rows": 540,
+      "issues": 0
+    },
+    {
+      "xml": "StringTable_KR.xml",
+      "out": "strings_kr.json",
+      "rows": 1590,
+      "issues": 0
+    },
+    {
+      "xml": "StructureDefenseTable.xml",
+      "out": "structure_defense.json",
+      "rows": 252,
+      "issues": 0
+    },
+    {
+      "xml": "StructureTable.xml",
+      "out": "structures.json",
+      "rows": 51,
+      "issues": 0
+    },
+    {
+      "xml": "TerrainTable.xml",
+      "out": "terrains.json",
+      "rows": 14,
+      "issues": 0
+    },
+    {
+      "xml": "TrainingTable.xml",
+      "out": "training.json",
+      "rows": 250,
+      "issues": 0
+    },
+    {
+      "xml": "WorldHexTable.xml",
+      "out": "world_hex.json",
+      "rows": 10049,
+      "issues": 0
+    }
+  ],
+  "issues": [],
+  "totals": {
+    "xml_files": 23,
+    "json_files": 24,
+    "rows": 15186
+  }
+}

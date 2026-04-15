@@ -1,0 +1,276 @@
+[
+  {
+    "ID": 1,
+    "ConfigType": "base",
+    "Name": "피로도 기본 설정",
+    "BaseMaxFatigue": 100,
+    "BaseRecoveryPerMin": 1,
+    "BaseCombatCost": 5,
+    "CostPerRound": 1,
+    "MoveCostPerHex": 1
+  },
+  {
+    "ID": 2,
+    "ConfigType": "location_recovery",
+    "Name": "필드 (기본)",
+    "LocationType": "field",
+    "InstantRecovery": 0,
+    "RecoveryPerMin": 1
+  },
+  {
+    "ID": 3,
+    "ConfigType": "location_recovery",
+    "Name": "벙커",
+    "LocationType": "bunker",
+    "InstantRecovery": 30,
+    "RecoveryPerMin": 2
+  },
+  {
+    "ID": 4,
+    "ConfigType": "location_recovery",
+    "Name": "거점 (Fort)",
+    "LocationType": "fort",
+    "InstantRecovery": 50,
+    "RecoveryPerMin": 2
+  },
+  {
+    "ID": 5,
+    "ConfigType": "location_recovery",
+    "Name": "도시 (City)",
+    "LocationType": "city",
+    "InstantRecovery": -1,
+    "RecoveryPerMin": 0
+  },
+  {
+    "ID": 10,
+    "ConfigType": "speed_modifier",
+    "Name": "빠른 클리어 (1~3R)",
+    "MinRounds": 1,
+    "MaxRounds": 3,
+    "CostMultiplier": 0.8
+  },
+  {
+    "ID": 11,
+    "ConfigType": "speed_modifier",
+    "Name": "일반 클리어 (4~6R)",
+    "MinRounds": 4,
+    "MaxRounds": 6,
+    "CostMultiplier": 1.0
+  },
+  {
+    "ID": 12,
+    "ConfigType": "speed_modifier",
+    "Name": "느린 클리어 (7+R)",
+    "MinRounds": 7,
+    "MaxRounds": 99,
+    "CostMultiplier": 1.2
+  },
+  {
+    "ID": 13,
+    "ConfigType": "speed_modifier",
+    "Name": "인간 적 파티",
+    "MinRounds": 0,
+    "MaxRounds": 0,
+    "CostMultiplier": 2.0
+  },
+  {
+    "ID": 14,
+    "ConfigType": "speed_modifier",
+    "Name": "패배 (리트라이)",
+    "MinRounds": 0,
+    "MaxRounds": 0,
+    "CostMultiplier": 0.5
+  },
+  {
+    "ID": 20,
+    "ConfigType": "penalty",
+    "Name": "정상 (100~71)",
+    "FatigueMin": 71,
+    "FatigueMax": 100,
+    "DamageMultiplier": 1.0,
+    "SkillRateModifier": 0,
+    "HealMultiplier": 1.0
+  },
+  {
+    "ID": 21,
+    "ConfigType": "penalty",
+    "Name": "약간 피로 (70~51)",
+    "FatigueMin": 51,
+    "FatigueMax": 70,
+    "DamageMultiplier": 0.95,
+    "SkillRateModifier": 0,
+    "HealMultiplier": 0.95
+  },
+  {
+    "ID": 22,
+    "ConfigType": "penalty",
+    "Name": "주의 (50~31)",
+    "FatigueMin": 31,
+    "FatigueMax": 50,
+    "DamageMultiplier": 0.85,
+    "SkillRateModifier": -5,
+    "HealMultiplier": 0.85
+  },
+  {
+    "ID": 23,
+    "ConfigType": "penalty",
+    "Name": "위험 (30~11)",
+    "FatigueMin": 11,
+    "FatigueMax": 30,
+    "DamageMultiplier": 0.7,
+    "SkillRateModifier": -15,
+    "HealMultiplier": 0.7
+  },
+  {
+    "ID": 24,
+    "ConfigType": "penalty",
+    "Name": "극도 피로 (10~0)",
+    "FatigueMin": 0,
+    "FatigueMax": 10,
+    "DamageMultiplier": 0.5,
+    "SkillRateModifier": -15,
+    "HealMultiplier": 0.5
+  },
+  {
+    "ID": 30,
+    "ConfigType": "patrol",
+    "Name": "순찰 비용",
+    "PatrolFatigueCost": 3,
+    "PatrolScoutDiscount": 1,
+    "StructurePatrolCost": 10,
+    "BlindAttackBonus": 1.2
+  },
+  {
+    "ID": 40,
+    "ConfigType": "efficiency",
+    "Name": "SSS (≤3턴)",
+    "MaxTurns": 3,
+    "RewardMultiplier": 1.5
+  },
+  {
+    "ID": 41,
+    "ConfigType": "efficiency",
+    "Name": "SS (4~5턴)",
+    "MaxTurns": 5,
+    "RewardMultiplier": 1.3
+  },
+  {
+    "ID": 42,
+    "ConfigType": "efficiency",
+    "Name": "S (6~7턴)",
+    "MaxTurns": 7,
+    "RewardMultiplier": 1.15
+  },
+  {
+    "ID": 43,
+    "ConfigType": "efficiency",
+    "Name": "A (8~10턴)",
+    "MaxTurns": 10,
+    "RewardMultiplier": 1.0
+  },
+  {
+    "ID": 44,
+    "ConfigType": "efficiency",
+    "Name": "B (11~15턴)",
+    "MaxTurns": 15,
+    "RewardMultiplier": 0.9
+  },
+  {
+    "ID": 45,
+    "ConfigType": "efficiency",
+    "Name": "C (16+턴)",
+    "MaxTurns": 99,
+    "RewardMultiplier": 0.8
+  },
+  {
+    "ID": 50,
+    "ConfigType": "sweep",
+    "Name": "소탕 설정",
+    "SweepUnlockGrade": "SS",
+    "SweepUnlockCount": 3,
+    "SweepFatigueDiscount": 0.7,
+    "SweepSupplyDiscount": 0.5,
+    "SweepRewardGrade": "A"
+  },
+  {
+    "ID": 60,
+    "ConfigType": "supply",
+    "Name": "전투 보급 기본 설정",
+    "SupplyEnabled": true,
+    "EncounterCostFree": true,
+    "DefenseCostFree": true
+  },
+  {
+    "ID": 70,
+    "ConfigType": "injury",
+    "Name": "경상",
+    "InjuryGrade": "light",
+    "StatPenalty": 10,
+    "CanDeploy": true,
+    "NaturalHealMin": 60,
+    "InstantHerbsCost": 5,
+    "InstantGoldCost": 50
+  },
+  {
+    "ID": 71,
+    "ConfigType": "injury",
+    "Name": "중상",
+    "InjuryGrade": "serious",
+    "StatPenalty": 30,
+    "CanDeploy": true,
+    "NaturalHealMin": 180,
+    "InstantHerbsCost": 15,
+    "InstantGoldCost": 200
+  },
+  {
+    "ID": 72,
+    "ConfigType": "injury",
+    "Name": "중태",
+    "InjuryGrade": "critical",
+    "StatPenalty": 100,
+    "CanDeploy": false,
+    "NaturalHealMin": 360,
+    "InstantHerbsCost": 40,
+    "InstantGoldCost": 500
+  },
+  {
+    "ID": 80,
+    "ConfigType": "injury_trigger",
+    "Name": "완승",
+    "BattleResult": "perfect",
+    "InjuryGrade": "none",
+    "Condition": "피해 30% 미만"
+  },
+  {
+    "ID": 81,
+    "ConfigType": "injury_trigger",
+    "Name": "신승",
+    "BattleResult": "narrow",
+    "InjuryGrade": "light",
+    "Condition": "승리, 피해 70%+, HP 0 캐릭"
+  },
+  {
+    "ID": 82,
+    "ConfigType": "injury_trigger",
+    "Name": "철수",
+    "BattleResult": "retreat",
+    "InjuryGrade": "light",
+    "Condition": "퇴각, HP 0 캐릭"
+  },
+  {
+    "ID": 83,
+    "ConfigType": "injury_trigger",
+    "Name": "패배",
+    "BattleResult": "defeat",
+    "InjuryGrade": "serious",
+    "Condition": "전멸, HP 0 캐릭"
+  },
+  {
+    "ID": 84,
+    "ConfigType": "injury_trigger",
+    "Name": "대패",
+    "BattleResult": "rout",
+    "InjuryGrade": "critical",
+    "Condition": "릴레이 전멸, HP 0 캐릭"
+  }
+]
