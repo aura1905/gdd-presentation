@@ -5,6 +5,8 @@ import { hexWorld, hexId } from "../util/hex.js";
 import { paletteForTerrainCode } from "./terrainColors.js";
 import { getHexTileImage } from "./hexTiles.js";
 import { isHexOwned } from "../state/gameState.js";
+import { getFogState } from "../engine/fog.js";
+import { getState } from "../state/gameState.js";
 
 const ISO_Y = 0.75;  // matches util/hex.js
 

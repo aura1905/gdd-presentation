@@ -129,6 +129,19 @@ export function moveParty(partyId, targetQ, targetR, fatigueCost) {
       else ch.status = "normal";
     }
   }
+  // 홈 헥스 도착 시 자동 풀 회복 (HP/피로/상태 정상화)
+  const home = state.family?.homeHex;
+  if (home && targetQ === home.q && targetR === home.r) {
+    for (const cid of party.slots) {
+      if (cid == null) continue;
+      const ch = state.characters.find(c => c.id === cid);
+      if (ch) {
+        ch.hp = ch.maxHp;
+        ch.fatigue = ch.maxFatigue;
+        ch.status = "normal";
+      }
+    }
+  }
   emit("state:changed", { path: "parties", partyId, action: "move" });
 }
 
@@ -159,6 +172,25 @@ export function restoreState(saved, tables) {
       if (tmpl && !ch.element) ch.element = tmpl.Element || "None";
     }
   }
+
+  // 홈 헥스에 있는 파티는 풀 회복 (저장 시점에 죽어있던 캐릭터도 거점에서 부활)
+  const home = state.family?.homeHex;
+  if (home) {
+    for (const p of state.parties || []) {
+      if (p.location?.q === home.q && p.location?.r === home.r) {
+        for (const cid of p.slots || []) {
+          if (cid == null) continue;
+          const ch = state.characters.find(c => c.id === cid);
+          if (ch) {
+            ch.hp = ch.maxHp;
+            ch.fatigue = ch.maxFatigue;
+            ch.status = "normal";
+          }
+        }
+      }
+    }
+  }
+
   emit("state:init", state);
   return state;
 }

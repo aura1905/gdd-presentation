@@ -17,7 +17,8 @@ import { emit, on } from "./util/events.js";
 import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
-import { resolveCombat, findEnemyParties, lookupDropReward } from "./engine/combat.js";
+import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward } from "./engine/combat.js";
+import { recomputeFog, applyScout, getFogState, bumpAction } from "./engine/fog.js";
 
 const status = (msg) => {
   const el = document.getElementById("loading-status");
@@ -48,6 +49,7 @@ async function boot() {
     console.log("[save] 저장 복원:", saved.ownedHexes?.length || 0, "헥스,", saved.capturedStructures?.length || 0, "구조물");
   }
   const gameState = saved ? restoreState(saved, tables) : initState(tables);
+  recomputeFog(gameState, tables);
 
   status("헥스 타일 로드 중…");
   await loadHexTiles();
@@ -87,7 +89,12 @@ async function boot() {
     }));
     worldmap.requestDraw();
   }
-  function syncAll() { syncOverlays(); renderPartyList(); updateHud(); saveState(getState()); }
+  function syncAll() {
+    recomputeFog(getState(), tables);
+    syncOverlays(); renderPartyList(); updateHud();
+    saveState(getState());
+    worldmap.requestDraw();
+  }
   on("state:changed", syncAll);
   on("state:init", () => { syncOverlays(); renderPartyList(); updateHud(); });
 
@@ -265,9 +272,14 @@ async function boot() {
     const region = tables.regions.get(row.RegionID);
     const structure = row.StructureID ? tables.structures.get(row.StructureID) : null;
     const party = getSelectedParty();
-    const enemies = findEnemyParties(row, tables);
-    const hasEnemies = enemies.length > 0;
+    const isHidden = false;  // 안개 비활성
+    let enemies = findEnemyParties(row, tables);
     const isCaptured = structure ? isStructureCaptured(structure.StructureID) : false;
+    if (structure && !isCaptured) {
+      const defenders = findStructureDefenders(structure.StructureID, tables);
+      if (defenders.length > 0) enemies = defenders;
+    }
+    const hasEnemies = enemies.length > 0;
     const hexOwned = isHexOwned(row.HexID);
     const isPassable = terrain?.Movable !== false;
 
@@ -275,14 +287,18 @@ async function boot() {
     document.getElementById("hex-title").textContent =
       region ? tr(tables, region.NameKey, `R${region.RegionID}`) : `#${row.HexID}`;
 
-    // Info
+    // Info — hidden이면 지형만 노출, 자원/구조물/적 정보 숨김
     const info = [`지형: ${terrain?.Code || "?"}`];
-    if (row.HexLevel > 0) info[0] += ` Lv${row.HexLevel}`;
-    if (hexOwned) info.push(`<span style="color:#5a5">점령됨</span>`);
-    if (row.ResourceCode) info.push(`자원: ${row.ResourceCode}`);
-    if (structure) info.push(`${structure.StructureType}${isCaptured ? " (점령됨)" : ""}`);
+    if (!isHidden) {
+      if (row.HexLevel > 0) info[0] += ` Lv${row.HexLevel}`;
+      if (hexOwned) info.push(`<span style="color:#5a5">점령됨</span>`);
+      if (row.ResourceCode) info.push(`자원: ${row.ResourceCode}`);
+      if (structure) info.push(`${structure.StructureType}${isCaptured ? " (점령됨)" : ""}`);
+      if (hasEnemies) info.push(`적 ${enemies.length}${enemies[0]?.__isStructure ? "웨이브" : "파티"}`);
+    } else {
+      info.push(`<span style="color:#888">⚫ 안개 — 정보 미공개</span>`);
+    }
     if (path) info.push(`경로: ${path.length - 1}칸 · 피로+${pathCost(path)}`);
-    if (hasEnemies) info.push(`적 파티 ${enemies.length}개`);
     document.getElementById("hex-meta").innerHTML = info.join(" · ");
 
     // Action buttons
@@ -310,10 +326,13 @@ async function boot() {
 
     // 점령 — 미점령 헥스 (적 있으면 전투 후 점령, 없으면 바로 점령)
     // 룰: ① 인접성 (아군 영토와 붙어야 함) ② 영지 슬롯 여유 (기본 15, 최대 81)
+    // 구조물(관문/거점/도시) 헥스는 슬롯 카운트와 무관 (별도 영토)
     if (party && isPassable && !hexOwned) {
       const adjacent = isAdjacentToOwnedTerritory(row.HexQ, row.HexR);
-      const slotsOk = canOccupyMore();
-      const btn = addAction(actions, "점령", "#8a6020", () => {
+      const isStructHex = !!structure;
+      const slotsOk = isStructHex || canOccupyMore();
+      const label = isStructHex ? `점령(${structure.StructureType})` : "점령";
+      const btn = addAction(actions, label, "#8a6020", () => {
         if (!adjacent || !slotsOk) return;
         doCombatAction(row, path, "occupy");
       });
@@ -447,17 +466,35 @@ async function boot() {
   // --- M3 Actions ---
 
   function doScout(hexRow) {
-    const enemies = findEnemyParties(hexRow, tables);
+    let enemies = findEnemyParties(hexRow, tables);
+    const struct = hexRow.StructureID ? tables.structures.get(hexRow.StructureID) : null;
+    if (struct && !isStructureCaptured(struct.StructureID)) {
+      const defenders = findStructureDefenders(struct.StructureID, tables);
+      if (defenders.length > 0) enemies = defenders;
+    }
     if (enemies.length === 0) {
       showHexPanel(hexRow, tables, "적 파티 없음");
       return;
     }
+    // 안개 시스템에 scouted 마킹 (5액션 유지)
+    const preview = {
+      partyCount: enemies.length,
+      level: enemies[0]?.EnemyLevel || 1,
+    };
+    bumpAction(getState());
+    applyScout(getState(), hexRow.HexID, 5, preview);
+    saveState(getState());
+    worldmap.requestDraw();
+
     const meta = document.getElementById("hex-meta");
-    const parts = [`<b>적 파티 ${enemies.length}개 (웨이브)</b>`];
+    const isStruct = enemies[0].__isStructure;
+    const parts = [`<b>${isStruct ? `${enemies[0].__structureType} 수비 ${enemies.length}웨이브` : `적 파티 ${enemies.length}개`}</b>`];
     for (const ep of enemies) {
       const slots = [ep.Slot1, ep.Slot2, ep.Slot3].filter(Boolean);
-      parts.push(`W${ep.PartyIndex}: Lv${ep.EnemyLevel} ${ep.FormationType} [${slots.length}명]`);
+      const prefix = ep.__layerName ? `[${ep.__layerName}]` : `W${ep.PartyIndex}`;
+      parts.push(`${prefix} Lv${ep.EnemyLevel} [${slots.length}명]`);
     }
+    parts.push(`<span style="color:#9c9;font-size:10px">5액션간 정보 유지</span>`);
     meta.innerHTML = parts.join("<br>");
   }
 
@@ -685,9 +722,9 @@ async function boot() {
           if (data[(y * frame.w + x) * 4 + 3] > 16) { topY = y; break outer1; }
         }
       }
-      // 2) 머리 끝(목/어깨): 위에서부터 1/3 지점까지 보고 가장 폭이 좁은 행 추정
-      //    간단히: 상단 1/3 영역을 머리로 잡음
-      const headHeight = Math.max(8, Math.floor((frame.h - topY) * 0.30));
+      // 2) 머리 영역: 캐릭터 전체 높이의 상단 ~38% (목/얼굴까지 충분히)
+      const charHeight = frame.h - topY;
+      const headHeight = Math.max(10, Math.floor(charHeight * 0.38));
       // 3) 머리 영역 좌우 비투명 범위 (head bbox)
       let minX = frame.w, maxX = 0;
       for (let y = topY; y < topY + headHeight; y++) {
@@ -699,8 +736,14 @@ async function boot() {
         }
       }
       if (minX > maxX) { minX = 0; maxX = frame.w - 1; }
-      const padX = Math.floor((maxX - minX) * 0.15);
-      const padY = Math.floor(headHeight * 0.05);
+      // 정사각형에 가깝게 만들기 위해 좁은 쪽에 더 패딩
+      const headW = maxX - minX + 1;
+      let padX = Math.floor(headW * 0.20);
+      let padY = Math.floor(headHeight * 0.10);
+      // 정사각형 보정: 가로/세로 비율을 ~1.0에 가깝게
+      const ratio = (headW + padX * 2) / (headHeight + padY * 2);
+      if (ratio < 0.85) padX += Math.floor((headHeight + padY * 2) * 0.85 - (headW + padX * 2)) / 2 | 0;
+      else if (ratio > 1.15) padY += Math.floor((headW + padX * 2) / 1.15 - (headHeight + padY * 2)) / 2 | 0;
       const x0 = Math.max(0, minX - padX);
       const x1 = Math.min(frame.w, maxX + padX + 1);
       const y0 = Math.max(0, topY - padY);
@@ -740,11 +783,10 @@ async function boot() {
       return;
     }
     const f = data.frames[0];
-    // 첫 프레임의 실제 알파 시작점(머리 꼭대기) 자동 감지
     const head = detectHeadBox(data.image, f);
     const sx = head.x, sy = head.y, sw = head.w, sh = head.h;
-    // 캔버스에 fill
-    const scale = Math.max(canvas.width / sw, canvas.height / sh) * 1.0;
+    // fit (얼굴 잘리지 않게) + 살짝 확대
+    const scale = Math.min(canvas.width / sw, canvas.height / sh) * 1.0;
     const dw = sw * scale, dh = sh * scale;
     const dx = (canvas.width - dw) / 2;
     const dy = (canvas.height - dh) / 2;
@@ -862,6 +904,8 @@ async function boot() {
     document.getElementById("hex-panel").hidden = true;
     animatedMove(party.id, path, () => {
       moveParty(party.id, home.q, home.r, cost);
+      // 거점 도착 시 자동 풀 회복 (HP/피로/상태)
+      fullRestParty(party.id);
       cancelInteraction();
       saveState(getState());
     });

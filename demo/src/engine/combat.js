@@ -79,3 +79,52 @@ export function findEnemyParties(hex, tables) {
     .filter(ep => ep.RegionID === hex.RegionID && ep.HexLevel === hex.HexLevel)
     .sort((a, b) => a.PartyIndex - b.PartyIndex);
 }
+
+/**
+ * 구조물(관문/거점/도시/던전) 수비대 — GDD project_structure_battle.md 기준.
+ * 4축 체계: 경비대(Patrol) → 수비대(Garrison) → 주둔군(Stationed) 순차 만남.
+ * 각 layer의 Lv는 StructureTable의 PatrolLv/GarrisonLv/StationedLv 사용.
+ */
+export function findStructureDefenders(structureId, tables) {
+  const struct = tables.structures.get(structureId);
+  if (!struct) return [];
+
+  const LAYER_ORDER = { Patrol: 0, Garrison: 1, Stationed: 2 };
+  const LAYER_LV = {
+    Patrol: struct.PatrolLv || 0,
+    Garrison: struct.GarrisonLv || 0,
+    Stationed: struct.StationedLv || 0,
+  };
+  // 적 레벨: 각 layer Lv × 5 (Patrol 약 / Garrison 중 / Stationed 강)
+  const LAYER_MULT = { Patrol: 5, Garrison: 10, Stationed: 15 };
+  const LAYER_NAME_KR = { Patrol: "경비대", Garrison: "수비대", Stationed: "주둔군" };
+
+  return tables.structureDefense.all()
+    .filter(d => d.StructureID === structureId)
+    .sort((a, b) => {
+      const la = LAYER_ORDER[a.DefenseLayer] ?? 99;
+      const lb = LAYER_ORDER[b.DefenseLayer] ?? 99;
+      if (la !== lb) return la - lb;
+      return (a.WaveIndex || 0) - (b.WaveIndex || 0);
+    })
+    .map(d => {
+      const layerLv = LAYER_LV[d.DefenseLayer] || 1;
+      const layerMult = LAYER_MULT[d.DefenseLayer] || 5;
+      return {
+        PartyID: d.DefenseID,
+        RegionID: 0,
+        HexLevel: 1,
+        PartyIndex: d.WaveIndex,
+        PartyCount: 0,
+        Slot1: d.Slot1, Slot1Role: d.Slot1Role,
+        Slot2: d.Slot2, Slot2Role: d.Slot2Role,
+        Slot3: d.Slot3, Slot3Role: d.Slot3Role,
+        EnemyLevel: Math.max(1, layerLv * layerMult),
+        EnemyStar: 0,
+        __isStructure: true,
+        __layer: d.DefenseLayer,
+        __layerName: LAYER_NAME_KR[d.DefenseLayer] || d.DefenseLayer,
+        __structureType: struct.StructureType,
+      };
+    });
+}

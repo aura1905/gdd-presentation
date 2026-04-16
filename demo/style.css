@@ -104,16 +104,16 @@ html, body { height: 100%; overflow: hidden; background: #0a0a0a; color: #e8e8e8
 .party-card .pc-avg-bar-fill { height: 100%; transition: width 0.2s; }
 
 /* Members — 3 portraits side by side (게임풍) */
-.party-card .pc-members { display: flex; gap: 4px; justify-content: space-between; }
+.party-card .pc-members { display: flex; gap: 4px; justify-content: flex-start; }
 .party-card .pc-member { flex: 1; display: flex; flex-direction: column;
-  align-items: center; gap: 2px; padding: 3px 2px;
+  align-items: flex-start; gap: 2px; padding: 3px 4px;
   background: linear-gradient(180deg, rgba(60,50,30,0.5), rgba(20,15,10,0.7));
   border: 1px solid #4a3820; border-radius: 4px; position: relative; }
-.party-card .pc-member.ko { filter: grayscale(0.95) brightness(0.55); }
+.party-card .pc-member.ko { filter: grayscale(1) brightness(0.45); opacity: 0.7; }
 /* tired/exhausted 테두리 글로우는 제거 — 글자로만 표시 */
 .party-card .pcm-portrait { width: 48px; height: 48px;
   background: rgba(20,30,40,0.6); border-radius: 3px; overflow: hidden;
-  position: relative; border: 1px solid #2a2a2a; }
+  position: relative; border: 1px solid #2a2a2a; align-self: flex-start; }
 .party-card .pcm-portrait canvas { width: 100%; height: 100%;
   image-rendering: pixelated; display: block; }
 .party-card .pcm-lv-badge { position: absolute; top: -3px; right: -3px;
@@ -126,16 +126,22 @@ html, body { height: 100%; overflow: hidden; background: #0a0a0a; color: #e8e8e8
   text-shadow: 0 0 3px #000, 0 0 3px #000, 0 1px 1px #000; }
 .party-card .pcm-portrait .pcm-ko-mark { position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: center;
-  pointer-events: none; }
+  pointer-events: none;
+  background: rgba(0,0,0,0.5); }
 .party-card .pcm-portrait .pcm-ko-mark::before,
 .party-card .pcm-portrait .pcm-ko-mark::after {
-  content: ""; position: absolute; left: 10%; right: 10%; height: 3px;
-  background: linear-gradient(90deg, transparent, #f44 20%, #f44 80%, transparent);
-  box-shadow: 0 0 4px #000; }
+  content: ""; position: absolute; left: 5%; right: 5%; height: 5px;
+  background: #f33;
+  box-shadow: 0 0 6px #f00, 0 0 2px #fff; border-radius: 2px; }
 .party-card .pcm-portrait .pcm-ko-mark::before { transform: rotate(45deg); }
 .party-card .pcm-portrait .pcm-ko-mark::after { transform: rotate(-45deg); }
-.party-card .pcm-name { font-size: 9px; color: #ddd; max-width: 56px;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: center; }
+.party-card .pcm-ko-label { position: absolute; bottom: 1px; left: 0; right: 0;
+  text-align: center; font-size: 9px; font-weight: bold;
+  color: #fcc; line-height: 1; letter-spacing: 1px;
+  text-shadow: 0 0 3px #f00, 0 0 3px #000, 0 1px 1px #000;
+  pointer-events: none; }
+.party-card .pcm-name { font-size: 9px; color: #ddd; max-width: 100%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
 .party-card .pcm-bars { width: 100%; display: flex; flex-direction: column; gap: 1px; }
 .party-card .pcm-bar { height: 3px; background: #1a1a1a; border-radius: 2px;
   overflow: hidden; border: 1px solid #000; }
