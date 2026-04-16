@@ -1,14 +1,24 @@
 // World map renderer — editor-style (colored hex polygons + ISO Y compression).
 // Matches gdd-presentation/world-map-editor visual convention.
 import { CONFIG } from "../config.js";
-import { hexWorld } from "../util/hex.js";
+import { hexWorld, hexId } from "../util/hex.js";
 import { paletteForTerrainCode } from "./terrainColors.js";
+import { getHexTileImage } from "./hexTiles.js";
+import { isHexOwned } from "../state/gameState.js";
 
 const ISO_Y = 0.75;  // matches util/hex.js
 
 export function createWorldmapRenderer(ctx, canvas, camera, tables, overlays) {
   const R = CONFIG.hex.W / 2;   // hex radius in world px (before ISO)
-  const hexes = tables.worldHex.all();
+  // Sort hexes for isometric draw order (painter's algorithm):
+  // back (top of screen) → front (bottom of screen).
+  // Use actual world-space Y, with X as tiebreaker (left before right).
+  const hexes = tables.worldHex.all().slice().sort((a, b) => {
+    const wa = hexWorld(a.HexQ, a.HexR);
+    const wb = hexWorld(b.HexQ, b.HexR);
+    if (wa.y !== wb.y) return wa.y - wb.y;   // smaller worldY (higher on screen) drawn first
+    return wa.x - wb.x;                       // left before right
+  });
   const terrainById = tables.terrains;  // already indexed by TerrainID
 
   // World-space bounds (ISO already applied by hexWorld).
@@ -27,6 +37,8 @@ export function createWorldmapRenderer(ctx, canvas, camera, tables, overlays) {
 
   let needsDraw = true;
   camera.onChange(() => { needsDraw = true; });
+  // 캐릭터 애니메이션 / 파티 이동 애니메이션을 위해 매 프레임 다시 그림
+  setInterval(() => { needsDraw = true; }, 80);  // ~12.5fps refresh trigger
 
   const stats = { lastFrameMs: 0, drawnHexes: 0 };
 
@@ -53,53 +65,95 @@ export function createWorldmapRenderer(ctx, canvas, camera, tables, overlays) {
 
     const terrain = terrainById.get(hx.TerrainID);
     const code = terrain ? terrain.Code : "plains";
-    const pal = paletteForTerrainCode(code);
 
-    const verts = hexVertsIso(screen.x, screen.y, size);
-    ctx.beginPath();
-    ctx.moveTo(verts[0].x, verts[0].y);
-    for (let i = 1; i < 6; i++) ctx.lineTo(verts[i].x, verts[i].y);
-    ctx.closePath();
-    ctx.fillStyle = pal.color;
-    ctx.fill();
-    if (size > 3) {
-      ctx.strokeStyle = pal.dark;
-      ctx.lineWidth = Math.max(0.3, size * 0.03);
-      ctx.stroke();
+    // Try sprite tile first, fall back to colored polygon
+    const tileImg = getHexTileImage(code);
+    if (tileImg) {
+      // Tiles are 256x256, scale to hex size. Width = size*2, maintain aspect.
+      const drawW = size * 2;
+      const drawH = drawW * (tileImg.height / tileImg.width);
+      ctx.drawImage(tileImg,
+        screen.x - drawW / 2,
+        screen.y - drawH / 2 - size * 0.08,  // slight Y offset for ISO base alignment
+        drawW, drawH);
+    } else {
+      const pal = paletteForTerrainCode(code);
+      const verts = hexVertsIso(screen.x, screen.y, size);
+      ctx.beginPath();
+      ctx.moveTo(verts[0].x, verts[0].y);
+      for (let i = 1; i < 6; i++) ctx.lineTo(verts[i].x, verts[i].y);
+      ctx.closePath();
+      ctx.fillStyle = pal.color;
+      ctx.fill();
+      if (size > 3) {
+        ctx.strokeStyle = pal.dark;
+        ctx.lineWidth = Math.max(0.3, size * 0.03);
+        ctx.stroke();
+      }
     }
 
-    // Hex level tint (darker for higher-level "combat" hexes to hint danger).
+    // 점령 오버레이는 별도 패스에서 (드로우 순서 문제 회피)
+
+    // Hex level tint
     if (hx.HexLevel && hx.HexLevel > 0 && size > 6) {
       const alpha = 0.08 * hx.HexLevel;
       ctx.fillStyle = `rgba(180,40,40,${alpha})`;
       ctx.fill();
     }
 
-    // Resource dot (small, bottom-left of hex so it doesn't collide with level label)
+    // Resource icon (헥스 중앙, 큼직한 이모지 + 그림자)
     if (hx.ResourceCode && size > 8) {
-      const rx = screen.x - size * 0.4, ry = screen.y + size * 0.3;
-      ctx.beginPath();
-      ctx.arc(rx, ry, size * 0.17, 0, Math.PI * 2);
-      ctx.fillStyle = resourceColor(hx.ResourceCode);
-      ctx.fill();
-      ctx.strokeStyle = "#000";
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
+      const icon = resourceIcon(hx.ResourceCode);
+      ctx.font = `${size * 0.95}px 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.shadowColor = "rgba(0,0,0,0.85)";
+      ctx.shadowBlur = Math.max(2, size * 0.12);
+      ctx.fillStyle = "#fff";
+      ctx.fillText(icon, screen.x, screen.y - size * 0.05);
+      ctx.shadowBlur = 0;
     }
 
-    // HexLevel number (1~5) — centered
+    // HexLevel number — 우상단으로 이동 (자원 아이콘과 겹치지 않게)
     if (hx.HexLevel && hx.HexLevel > 0 && size > 10) {
-      const fontSize = Math.max(8, size * 0.42);
-      ctx.font = `bold ${fontSize}px 'Segoe UI'`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillStyle = "rgba(0,0,0,0.85)";
-      ctx.fillText(String(hx.HexLevel), screen.x + 1, screen.y + 1);
+      const lx = screen.x + size * 0.45, ly = screen.y - size * 0.4;
+      const lr = size * 0.22;
+      ctx.beginPath();
+      ctx.arc(lx, ly, lr, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${hx.HexLevel >= 4 ? "180,40,40" : hx.HexLevel >= 2 ? "200,140,40" : "100,140,80"},0.95)`;
+      ctx.fill();
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = 0.7;
+      ctx.stroke();
+      ctx.font = `bold ${Math.max(8, size * 0.34)}px 'Segoe UI'`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
       ctx.fillStyle = "#fff";
-      ctx.fillText(String(hx.HexLevel), screen.x, screen.y);
+      ctx.fillText(String(hx.HexLevel), lx, ly);
     }
 
     return true;
+  }
+
+  // 점령 헥스 오버레이 (반투명 초록 + 두꺼운 테두리)
+  function drawOwnedOverlay() {
+    for (const hx of hexes) {
+      if (!isHexOwned(hx.HexID)) continue;
+      const p = hexWorld(hx.HexQ, hx.HexR);
+      const screen = camera.worldToScreen(p.x, p.y);
+      const size = R * camera.scale;
+      const margin = size * 2;
+      if (screen.x < -margin || screen.x > canvas.clientWidth + margin ||
+          screen.y < -margin || screen.y > canvas.clientHeight + margin) continue;
+      const ov = hexVertsIso(screen.x, screen.y, size);
+      ctx.beginPath();
+      ctx.moveTo(ov[0].x, ov[0].y);
+      for (let i = 1; i < 6; i++) ctx.lineTo(ov[i].x, ov[i].y);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(60,200,60,0.20)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(80,255,80,0.95)";
+      ctx.lineWidth = Math.max(1.5, size * 0.07);
+      ctx.stroke();
+    }
   }
 
   // Draw structures (Gate / Fort / City / Dungeon) in a second pass so they
@@ -219,14 +273,17 @@ export function createWorldmapRenderer(ctx, canvas, camera, tables, overlays) {
     }
   }
 
-  function resourceColor(code) {
+  function resourceIcon(code) {
     switch (code) {
-      case "iron":  return "#a8a8a8";
-      case "wood":  return "#6b4a2a";
-      case "stone": return "#c0bab0";
-      case "grain": return "#e8c858";
-      case "herbs": return "#72c272";
-      default:      return "#cccccc";
+      case "iron":  return "⛏️";   // 철광석
+      case "wood":  return "🌲";   // 목재
+      case "stone": return "🪨";   // 석재
+      case "grain": return "🌾";   // 곡물
+      case "herbs": return "🌿";   // 약초
+      case "gem":   return "💎";   // 보석광
+      case "mana":  return "🔮";   // 마석
+      case "gold":  return "💰";   // 골드
+      default:      return "❓";
     }
   }
 
@@ -245,6 +302,9 @@ export function createWorldmapRenderer(ctx, canvas, camera, tables, overlays) {
     for (const hx of hexes) {
       if (drawHex(hx)) drawn += 1;
     }
+
+    // 점령 오버레이 (별도 패스 — 모든 타일 위에)
+    drawOwnedOverlay();
 
     drawStructures();
 

@@ -7,6 +7,7 @@ export function saveState(state) {
     const serializable = {
       ...state,
       capturedStructures: [...(state.capturedStructures || [])],
+      ownedHexes: [...(state.ownedHexes || [])],
       selectedPartyId: null,  // don't persist UI selection
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(serializable));

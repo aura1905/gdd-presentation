@@ -1,92 +1,770 @@
 {
-  "mode": "placeholder",
-  "source_count": 85,
   "success": [
-    "Adelina_F",
-    "Alejandro_M",
-    "Andre_M",
-    "Berneli_F",
-    "Brunie_F",
-    "Calyce_F",
-    "Catherine_F",
-    "Claude_M",
-    "Coimbra_Trooper_M",
-    "Corthasar_M",
-    "Daria_F",
-    "Emilia_F",
-    "fighter_boy",
-    "fighter_boy_256",
-    "fighter_F",
-    "fighter_M",
-    "Garcia_M",
-    "Gracielo_M",
-    "Idge_F",
-    "Jack_M",
-    "Leonele_M",
-    "lisa_F",
-    "Lorch_M",
-    "M'Boma_M",
-    "mon_Bandit_leader",
-    "mon_Basilisk",
-    "mon_bat",
-    "mon_blizzard_revenant",
-    "mon_Centaur",
-    "mon_cerberus",
-    "mon_death_knight",
-    "mon_deer",
-    "mon_Dingo",
-    "mon_Flying_Sickle",
-    "mon_gargoyle",
-    "mon_Ghost_Baron",
-    "mon_ghost_sailor",
-    "mon_Ghostly_Father",
-    "mon_Ghostly_flammer",
-    "mon_griffon",
-    "mon_Grim_Ripper",
-    "mon_hill_giant",
-    "mon_HoneySpider",
-    "mon_Hydrobomber",
-    "mon_jabberwock",
-    "mon_jellyfish",
-    "mon_Jormongand",
-    "mon_Jumping_Croc",
-    "mon_Jumping_Fish",
-    "mon_Leviathan",
-    "mon_medusa",
-    "mon_Merman",
-    "mon_Merman_Eater",
-    "mon_Necromancer",
-    "mon_pirate_soldier",
-    "mon_Saber_Boar",
-    "mon_scissors_beetle",
-    "mon_Scorpion",
-    "mon_skeleton",
-    "mon_Skeleton_Soldier",
-    "mon_smuggler",
-    "mon_sneak",
-    "mon_spider",
-    "mon_Treasure_Golem",
-    "mon_white_wolf",
-    "mon_wild_boar",
-    "mon_wolf_king",
-    "mon_zealot",
-    "mon_zombi",
-    "Musketeer_F",
-    "Musketeer_M",
-    "Natalie_F",
-    "Panfilo_M",
-    "Raven_M",
-    "Rio_M",
-    "Scout_F",
-    "Scout_M",
-    "Soho_M",
-    "Soldier_Reboldoeux_M",
-    "Tiburon_M",
-    "Valeria_F",
-    "Warlock_F",
-    "Warlock_M",
-    "wizard_F",
-    "wizard_M"
+    {
+      "name": "Adelina_F",
+      "frames": 43,
+      "tags": 5,
+      "size": [
+        226,
+        202
+      ]
+    },
+    {
+      "name": "Alejandro_M",
+      "frames": 36,
+      "tags": 5,
+      "size": [
+        504,
+        434
+      ]
+    },
+    {
+      "name": "Andre_M",
+      "frames": 32,
+      "tags": 5,
+      "size": [
+        202,
+        188
+      ]
+    },
+    {
+      "name": "Berneli_F",
+      "frames": 40,
+      "tags": 5,
+      "size": [
+        167,
+        183
+      ]
+    },
+    {
+      "name": "Brunie_F",
+      "frames": 33,
+      "tags": 5,
+      "size": [
+        154,
+        160
+      ]
+    },
+    {
+      "name": "Calyce_F",
+      "frames": 36,
+      "tags": 5,
+      "size": [
+        165,
+        150
+      ]
+    },
+    {
+      "name": "Catherine_F",
+      "frames": 36,
+      "tags": 5,
+      "size": [
+        162,
+        196
+      ]
+    },
+    {
+      "name": "Claude_M",
+      "frames": 31,
+      "tags": 5,
+      "size": [
+        254,
+        233
+      ]
+    },
+    {
+      "name": "Coimbra_Trooper_M",
+      "frames": 40,
+      "tags": 5,
+      "size": [
+        192,
+        184
+      ]
+    },
+    {
+      "name": "Corthasar_M",
+      "frames": 30,
+      "tags": 5,
+      "size": [
+        191,
+        199
+      ]
+    },
+    {
+      "name": "Daria_F",
+      "frames": 33,
+      "tags": 5,
+      "size": [
+        203,
+        192
+      ]
+    },
+    {
+      "name": "Emilia_F",
+      "frames": 35,
+      "tags": 5,
+      "size": [
+        196,
+        183
+      ]
+    },
+    {
+      "name": "fighter_boy",
+      "frames": 57,
+      "tags": 5,
+      "size": [
+        110,
+        94
+      ]
+    },
+    {
+      "name": "fighter_boy_256",
+      "frames": 53,
+      "tags": 5,
+      "size": [
+        228,
+        208
+      ]
+    },
+    {
+      "name": "fighter_F",
+      "frames": 35,
+      "tags": 5,
+      "size": [
+        173,
+        179
+      ]
+    },
+    {
+      "name": "fighter_M",
+      "frames": 29,
+      "tags": 5,
+      "size": [
+        173,
+        194
+      ]
+    },
+    {
+      "name": "Garcia_M",
+      "frames": 35,
+      "tags": 5,
+      "size": [
+        178,
+        169
+      ]
+    },
+    {
+      "name": "Gracielo_M",
+      "frames": 42,
+      "tags": 5,
+      "size": [
+        155,
+        163
+      ]
+    },
+    {
+      "name": "Idge_F",
+      "frames": 38,
+      "tags": 5,
+      "size": [
+        188,
+        204
+      ]
+    },
+    {
+      "name": "Jack_M",
+      "frames": 33,
+      "tags": 5,
+      "size": [
+        184,
+        205
+      ]
+    },
+    {
+      "name": "Leonele_M",
+      "frames": 35,
+      "tags": 5,
+      "size": [
+        165,
+        147
+      ]
+    },
+    {
+      "name": "lisa_F",
+      "frames": 35,
+      "tags": 5,
+      "size": [
+        220,
+        194
+      ]
+    },
+    {
+      "name": "Lorch_M",
+      "frames": 36,
+      "tags": 5,
+      "size": [
+        121,
+        172
+      ]
+    },
+    {
+      "name": "M'Boma_M",
+      "frames": 36,
+      "tags": 5,
+      "size": [
+        194,
+        186
+      ]
+    },
+    {
+      "name": "mon_Bandit_leader",
+      "frames": 47,
+      "tags": 5,
+      "size": [
+        228,
+        192
+      ]
+    },
+    {
+      "name": "mon_Basilisk",
+      "frames": 48,
+      "tags": 5,
+      "size": [
+        233,
+        229
+      ]
+    },
+    {
+      "name": "mon_bat",
+      "frames": 33,
+      "tags": 5,
+      "size": [
+        215,
+        154
+      ]
+    },
+    {
+      "name": "mon_blizzard_revenant",
+      "frames": 45,
+      "tags": 5,
+      "size": [
+        205,
+        145
+      ]
+    },
+    {
+      "name": "mon_Centaur",
+      "frames": 33,
+      "tags": 5,
+      "size": [
+        232,
+        220
+      ]
+    },
+    {
+      "name": "mon_cerberus",
+      "frames": 51,
+      "tags": 5,
+      "size": [
+        215,
+        144
+      ]
+    },
+    {
+      "name": "mon_death_knight",
+      "frames": 50,
+      "tags": 5,
+      "size": [
+        228,
+        208
+      ]
+    },
+    {
+      "name": "mon_deer",
+      "frames": 37,
+      "tags": 5,
+      "size": [
+        173,
+        148
+      ]
+    },
+    {
+      "name": "mon_Dingo",
+      "frames": 37,
+      "tags": 5,
+      "size": [
+        177,
+        171
+      ]
+    },
+    {
+      "name": "mon_Flying_Sickle",
+      "frames": 45,
+      "tags": 5,
+      "size": [
+        217,
+        226
+      ]
+    },
+    {
+      "name": "mon_gargoyle",
+      "frames": 40,
+      "tags": 5,
+      "size": [
+        355,
+        339
+      ]
+    },
+    {
+      "name": "mon_Ghost_Baron",
+      "frames": 51,
+      "tags": 5,
+      "size": [
+        183,
+        214
+      ]
+    },
+    {
+      "name": "mon_ghost_sailor",
+      "frames": 43,
+      "tags": 5,
+      "size": [
+        188,
+        187
+      ]
+    },
+    {
+      "name": "mon_Ghostly_Father",
+      "frames": 45,
+      "tags": 5,
+      "size": [
+        190,
+        163
+      ]
+    },
+    {
+      "name": "mon_Ghostly_flammer",
+      "frames": 41,
+      "tags": 5,
+      "size": [
+        228,
+        197
+      ]
+    },
+    {
+      "name": "mon_griffon",
+      "frames": 51,
+      "tags": 5,
+      "size": [
+        205,
+        174
+      ]
+    },
+    {
+      "name": "mon_Grim_Ripper",
+      "frames": 50,
+      "tags": 5,
+      "size": [
+        219,
+        239
+      ]
+    },
+    {
+      "name": "mon_hill_giant",
+      "frames": 55,
+      "tags": 5,
+      "size": [
+        367,
+        314
+      ]
+    },
+    {
+      "name": "mon_HoneySpider",
+      "frames": 49,
+      "tags": 5,
+      "size": [
+        218,
+        156
+      ]
+    },
+    {
+      "name": "mon_Hydrobomber",
+      "frames": 52,
+      "tags": 5,
+      "size": [
+        234,
+        165
+      ]
+    },
+    {
+      "name": "mon_jabberwock",
+      "frames": 46,
+      "tags": 5,
+      "size": [
+        213,
+        214
+      ]
+    },
+    {
+      "name": "mon_jellyfish",
+      "frames": 51,
+      "tags": 5,
+      "size": [
+        197,
+        150
+      ]
+    },
+    {
+      "name": "mon_Jormongand",
+      "frames": 57,
+      "tags": 5,
+      "size": [
+        229,
+        201
+      ]
+    },
+    {
+      "name": "mon_Jumping_Croc",
+      "frames": 55,
+      "tags": 5,
+      "size": [
+        180,
+        143
+      ]
+    },
+    {
+      "name": "mon_Jumping_Fish",
+      "frames": 51,
+      "tags": 5,
+      "size": [
+        124,
+        115
+      ]
+    },
+    {
+      "name": "mon_Leviathan",
+      "frames": 55,
+      "tags": 5,
+      "size": [
+        431,
+        346
+      ]
+    },
+    {
+      "name": "mon_medusa",
+      "frames": 49,
+      "tags": 5,
+      "size": [
+        221,
+        210
+      ]
+    },
+    {
+      "name": "mon_Merman",
+      "frames": 55,
+      "tags": 5,
+      "size": [
+        192,
+        138
+      ]
+    },
+    {
+      "name": "mon_Merman_Eater",
+      "frames": 53,
+      "tags": 5,
+      "size": [
+        368,
+        344
+      ]
+    },
+    {
+      "name": "mon_Necromancer",
+      "frames": 48,
+      "tags": 5,
+      "size": [
+        158,
+        165
+      ]
+    },
+    {
+      "name": "mon_pirate_soldier",
+      "frames": 37,
+      "tags": 5,
+      "size": [
+        192,
+        170
+      ]
+    },
+    {
+      "name": "mon_Saber_Boar",
+      "frames": 42,
+      "tags": 5,
+      "size": [
+        151,
+        157
+      ]
+    },
+    {
+      "name": "mon_scissors_beetle",
+      "frames": 44,
+      "tags": 5,
+      "size": [
+        184,
+        159
+      ]
+    },
+    {
+      "name": "mon_Scorpion",
+      "frames": 38,
+      "tags": 5,
+      "size": [
+        153,
+        126
+      ]
+    },
+    {
+      "name": "mon_skeleton",
+      "frames": 38,
+      "tags": 5,
+      "size": [
+        192,
+        158
+      ]
+    },
+    {
+      "name": "mon_Skeleton_Soldier",
+      "frames": 35,
+      "tags": 5,
+      "size": [
+        226,
+        169
+      ]
+    },
+    {
+      "name": "mon_smuggler",
+      "frames": 43,
+      "tags": 5,
+      "size": [
+        192,
+        176
+      ]
+    },
+    {
+      "name": "mon_sneak",
+      "frames": 35,
+      "tags": 5,
+      "size": [
+        223,
+        178
+      ]
+    },
+    {
+      "name": "mon_spider",
+      "frames": 41,
+      "tags": 5,
+      "size": [
+        156,
+        137
+      ]
+    },
+    {
+      "name": "mon_Treasure_Golem",
+      "frames": 53,
+      "tags": 5,
+      "size": [
+        387,
+        378
+      ]
+    },
+    {
+      "name": "mon_white_wolf",
+      "frames": 41,
+      "tags": 5,
+      "size": [
+        152,
+        153
+      ]
+    },
+    {
+      "name": "mon_wild_boar",
+      "frames": 50,
+      "tags": 5,
+      "size": [
+        233,
+        149
+      ]
+    },
+    {
+      "name": "mon_wolf_king",
+      "frames": 34,
+      "tags": 5,
+      "size": [
+        193,
+        160
+      ]
+    },
+    {
+      "name": "mon_zealot",
+      "frames": 39,
+      "tags": 4,
+      "size": [
+        189,
+        196
+      ]
+    },
+    {
+      "name": "mon_zombi",
+      "frames": 51,
+      "tags": 5,
+      "size": [
+        125,
+        141
+      ]
+    },
+    {
+      "name": "Musketeer_F",
+      "frames": 48,
+      "tags": 5,
+      "size": [
+        199,
+        193
+      ]
+    },
+    {
+      "name": "Musketeer_M",
+      "frames": 48,
+      "tags": 5,
+      "size": [
+        202,
+        170
+      ]
+    },
+    {
+      "name": "Natalie_F",
+      "frames": 33,
+      "tags": 5,
+      "size": [
+        124,
+        157
+      ]
+    },
+    {
+      "name": "Panfilo_M",
+      "frames": 35,
+      "tags": 5,
+      "size": [
+        216,
+        208
+      ]
+    },
+    {
+      "name": "Raven_M",
+      "frames": 36,
+      "tags": 5,
+      "size": [
+        166,
+        178
+      ]
+    },
+    {
+      "name": "Rio_M",
+      "frames": 42,
+      "tags": 5,
+      "size": [
+        160,
+        155
+      ]
+    },
+    {
+      "name": "Scout_F",
+      "frames": 31,
+      "tags": 5,
+      "size": [
+        153,
+        149
+      ]
+    },
+    {
+      "name": "Scout_M",
+      "frames": 36,
+      "tags": 5,
+      "size": [
+        196,
+        168
+      ]
+    },
+    {
+      "name": "Soho_M",
+      "frames": 41,
+      "tags": 5,
+      "size": [
+        215,
+        181
+      ]
+    },
+    {
+      "name": "Soldier_Reboldoeux_M",
+      "frames": 32,
+      "tags": 5,
+      "size": [
+        229,
+        190
+      ]
+    },
+    {
+      "name": "Tiburon_M",
+      "frames": 34,
+      "tags": 5,
+      "size": [
+        162,
+        175
+      ]
+    },
+    {
+      "name": "Valeria_F",
+      "frames": 35,
+      "tags": 5,
+      "size": [
+        186,
+        175
+      ]
+    },
+    {
+      "name": "Warlock_F",
+      "frames": 46,
+      "tags": 5,
+      "size": [
+        201,
+        192
+      ]
+    },
+    {
+      "name": "Warlock_M",
+      "frames": 43,
+      "tags": 5,
+      "size": [
+        174,
+        172
+      ]
+    },
+    {
+      "name": "wizard_F",
+      "frames": 35,
+      "tags": 5,
+      "size": [
+        199,
+        192
+      ]
+    },
+    {
+      "name": "wizard_M",
+      "frames": 34,
+      "tags": 5,
+      "size": [
+        202,
+        197
+      ]
+    }
   ],
   "failed": []
 }
