@@ -89,6 +89,15 @@ export function simulate(playerUnits, enemyUnits, opts = {}) {
   const hp = allUnits.map(u => u.maxHp);
   const alive = allUnits.map(() => true);
 
+  // 리더 식별 (GDD §9-3: 리더 사망 시 파티 즉시 패배)
+  // - 아군: 슬롯 0 = 리더 (gameState party 편성 규칙)
+  // - 적군: role === "Leader"인 유닛. 없으면 전원사망 룰 fallback (경비대 파티 등)
+  const playerLeaderIdx = playerCount > 0 ? 0 : -1;
+  let enemyLeaderIdx = -1;
+  for (let i = playerCount; i < total; i++) {
+    if (allUnits[i].role === "Leader") { enemyLeaderIdx = i; break; }
+  }
+
   // Turn order (SPD desc, ties by index)
   const order = [...Array(total).keys()].sort((a, b) => {
     const cmp = allUnits[b].spd - allUnits[a].spd;
@@ -147,6 +156,22 @@ export function simulate(playerUnits, enemyUnits, opts = {}) {
       });
 
       if (died) record.actions.push({ type: "Death", turn, actorIdx: targetIdx });
+
+      // GDD §9-3: 리더 사망 = 즉시 패배 (해당 파티 퇴각)
+      if (died && targetIdx === playerLeaderIdx) {
+        record.actions.push({ type: "LeaderDown", turn, actorIdx: targetIdx, side: "player" });
+        record.result = "defeat";
+        record.totalTurns = turn;
+        record.finalHp = [...hp];
+        return record;
+      }
+      if (died && targetIdx === enemyLeaderIdx) {
+        record.actions.push({ type: "LeaderDown", turn, actorIdx: targetIdx, side: "enemy" });
+        record.result = "victory";
+        record.totalTurns = turn;
+        record.finalHp = [...hp];
+        return record;
+      }
 
       const playerAlive = alive.slice(0, playerCount).some(Boolean);
       const enemyAlive  = alive.slice(playerCount).some(Boolean);

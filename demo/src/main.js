@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward } from "./engine/combat.js";
@@ -113,6 +113,7 @@ async function boot() {
       territoryEl.classList.toggle("warn", used >= max * 0.8 && used < max);
     }
   }
+  ensurePartySelected();
   syncOverlays();
   renderPartyList();
   updateHud();
@@ -168,10 +169,18 @@ async function boot() {
         else if (m.status === "exhausted") statusOverlay = `<div class="pcm-status-badge">탈진</div>`;
 
         const portraitId = `pcm-face-${party.id}-${slotIdx}`;
+        const jobLetter = m.jobClass || "?";
+        const jobBg = jobColor[jobLetter] || "#888";
+        const jobNameMap = { F: "파이터", S: "스카우트", M: "머스킷티어", W: "위자드", L: "워록" };
+        const jobFullName = jobNameMap[jobLetter] || "?";
+        const isLeader = slotIdx === 0;
+        const leaderCrown = isLeader ? `<div class="pcm-leader-crown" title="리더">👑</div>` : "";
         return `
-          <div class="pc-member ${statusClass}" title="${m.name} Lv${m.level} HP${m.hp}/${m.maxHp} 피로${fatPct}%">
+          <div class="pc-member ${statusClass} ${isLeader ? "is-leader" : ""}" title="${m.name} Lv${m.level} ${jobFullName}${isLeader ? " · 리더" : ""} HP${m.hp}/${m.maxHp} 피로${fatPct}%">
             <div class="pcm-portrait">
               <canvas id="${portraitId}" width="48" height="48"></canvas>
+              <div class="pcm-job-badge" style="background:${jobBg}" title="${jobFullName}">${jobLetter}</div>
+              ${leaderCrown}
               ${statusOverlay}
             </div>
             <div class="pcm-lv-badge">${m.level}</div>
@@ -184,10 +193,13 @@ async function boot() {
           </div>`;
       }).join("");
 
+      const leaderJobMap = { F: "파이터", S: "스카우트", M: "머스킷티어", W: "위자드", L: "워록" };
+      const leaderJobName = leaderJobMap[leader?.jobClass] || "?";
       card.innerHTML = `
         <div class="pc-header">
-          <div class="pc-icon" style="background:${color}">${leader?.jobClass || "?"}</div>
+          <div class="pc-icon" style="background:${color}" title="리더 병종: ${leaderJobName}">${leader?.jobClass || "?"}</div>
           <div class="pc-name">${party.name}</div>
+          <div class="pc-leader-job" style="color:${color}">${leaderJobName}</div>
         </div>
         <div class="pc-members">${memberHtml}</div>`;
 
@@ -310,6 +322,7 @@ async function boot() {
       const blocked = structure && !isCaptured;
       const btn = addAction(actions, `이동 (피로+${pathCost(path)})`, "#2c5aa6", () => {
         if (blocked) return;
+        pushUndo(`이동 → #${row.HexID}`);
         animatedMove(party.id, path, () => {
           moveParty(party.id, row.HexQ, row.HexR, pathCost(path));
           cancelInteraction();
@@ -369,32 +382,44 @@ async function boot() {
       });
     }
 
-    // 영지 포기 — 점령된 일반 헥스 (도시/거점/관문 등 구조물 헥스는 보호)
-    if (hexOwned && !structure) {
-      // 홈 헥스는 포기 불가 (시작 도시 보호)
-      const home = getState().family.homeHex;
-      const isHome = (row.HexQ === home.q && row.HexR === home.r);
-      if (!isHome) {
-        // 파티가 점유 중이면 포기 불가
-        const partyHere = getState().parties.find(p => p.location.q === row.HexQ && p.location.r === row.HexR);
-        const btn = addAction(actions, "포기", "#6a3030", () => {
-          if (partyHere) return;
-          showConfirm({
-            title: `🏳️ 영지 포기`,
-            body: `헥스 <b style="color:#ffd452">#${row.HexID}</b>를 영지에서 제외합니다.\n슬롯 <b>1개</b>가 회수됩니다.`,
-            confirmLabel: "포기",
-            danger: true,
-            onConfirm: () => {
+    // 포기 — 점령된 헥스 또는 점령된 구조물 (홈 도시만 보호)
+    const home = getState().family.homeHex;
+    const isHome = (row.HexQ === home.q && row.HexR === home.r);
+    const isHomeCity = structure && structure.HexQ === home.q && structure.HexR === home.r;
+    const isStructAbandonable = structure && isCaptured && !isHomeCity;
+    const isHexAbandonable = hexOwned && !structure && !isHome;
+
+    if (isStructAbandonable || isHexAbandonable) {
+      const partyHere = getState().parties.find(p => p.location.q === row.HexQ && p.location.r === row.HexR);
+      const targetLabel = isStructAbandonable
+        ? `${structure.StructureType} #${structure.StructureID}`
+        : `헥스 #${row.HexID}`;
+      const btn = addAction(actions, "포기", "#6a3030", () => {
+        if (partyHere) return;
+        showConfirm({
+          title: `🏳️ 포기`,
+          body: `<b style="color:#ffd452">${targetLabel}</b>를 포기합니다.${isStructAbandonable ? "\n구조물이 적 소유로 돌아가고 통과 불가가 됩니다." : "\n슬롯 1개가 회수됩니다."}`,
+          confirmLabel: "포기",
+          danger: true,
+          onConfirm: () => {
+            pushUndo(`포기 ${targetLabel}`);
+            if (isStructAbandonable) {
+              abandonStructure(structure.StructureID);
+              // 구조물의 모든 헥스도 영지에서 제외
+              for (const hx of tables.worldHex.all()) {
+                if (hx.StructureID === structure.StructureID) abandonHex(hx.HexID);
+              }
+            } else {
               abandonHex(row.HexID);
-              document.getElementById("hex-panel").hidden = true;
-              worldmap.requestDraw();
-            },
-          });
+            }
+            document.getElementById("hex-panel").hidden = true;
+            worldmap.requestDraw();
+          },
         });
-        if (partyHere) {
-          btn.disabled = true;
-          btn.title = "파티가 주둔 중인 헥스는 포기 불가";
-        }
+      });
+      if (partyHere) {
+        btn.disabled = true;
+        btn.title = "파티가 주둔 중인 헥스는 포기 불가";
       }
     }
 
@@ -449,9 +474,18 @@ async function boot() {
     selectedHexRow = null;
     overlays.clearPathPreview();
     overlays.clearSelected();
-    deselectParty();
     document.getElementById("hex-panel").hidden = true;
+    // 파티 선택은 유지 — 1개는 항상 선택된 상태로
+    ensurePartySelected();
     worldmap.requestDraw();
+  }
+
+  // 파티 1개는 항상 선택 상태 유지 (번거로움 방지)
+  function ensurePartySelected() {
+    const gs = getState();
+    if (!gs?.parties?.length) return;
+    if (gs.selectedPartyId && gs.parties.find(p => p.id === gs.selectedPartyId)) return;
+    selectParty(gs.parties[0].id);
   }
 
   // --- UI Panels ---
@@ -503,6 +537,8 @@ async function boot() {
     const party = getSelectedParty();
     if (!party) return;
 
+    pushUndo(mode === "occupy" ? `점령 #${hexRow.HexID}` : `토벌 #${hexRow.HexID}`);
+
     document.getElementById("hex-panel").hidden = true;
     const moveCost = path ? pathCost(path) : 0;
 
@@ -520,13 +556,19 @@ async function boot() {
 
   function executeCombat(party, hexRow, mode) {
 
-    const enemies = findEnemyParties(hexRow, tables);
+    // 적 파티 결정 — 구조물 미점령이면 수비대(StructureDefenseTable), 아니면 일반 필드 적
+    let enemies = findEnemyParties(hexRow, tables);
+    const structureForCombat = hexRow.StructureID ? tables.structures.get(hexRow.StructureID) : null;
+    if (structureForCombat && !isStructureCaptured(structureForCombat.StructureID)) {
+      const defenders = findStructureDefenders(structureForCombat.StructureID, tables);
+      if (defenders.length > 0) enemies = defenders;
+    }
+
     if (enemies.length === 0) {
       // 적 없음 — 점령 모드면 바로 점령
       if (mode === "occupy") {
         ownHex(hexRow.HexID);
-        const structure = hexRow.StructureID ? tables.structures.get(hexRow.StructureID) : null;
-        if (structure) captureStructure(structure.StructureID);
+        if (structureForCombat) captureStructure(structureForCombat.StructureID);
         const ps = camera.worldToScreen(hexWorld(hexRow.HexQ, hexRow.HexR).x, hexWorld(hexRow.HexQ, hexRow.HexR).y);
         showBattleResult(hexRow, null, 0, 0, mode, ps);
       }
@@ -785,8 +827,8 @@ async function boot() {
     const f = data.frames[0];
     const head = detectHeadBox(data.image, f);
     const sx = head.x, sy = head.y, sw = head.w, sh = head.h;
-    // fit (얼굴 잘리지 않게) + 살짝 확대
-    const scale = Math.min(canvas.width / sw, canvas.height / sh) * 1.0;
+    // fill — 박스를 꽉 채우고 살짝 확대 (긴 쪽 약간 잘림 허용)
+    const scale = Math.max(canvas.width / sw, canvas.height / sh) * 1.05;
     const dw = sw * scale, dh = sh * scale;
     const dx = (canvas.width - dw) / 2;
     const dy = (canvas.height - dh) / 2;
@@ -924,6 +966,29 @@ async function boot() {
     camera.setScale(CONFIG.camera.stratScale));
   document.getElementById("btn-zoom-tile").addEventListener("click", () =>
     camera.setScale(CONFIG.camera.tileScale));
+
+  // 실행 취소 버튼 + Ctrl+Z
+  const btnUndo = document.getElementById("btn-undo");
+  function refreshUndoBtn() {
+    const can = canUndo();
+    btnUndo.disabled = !can;
+    btnUndo.title = can ? `실행 취소: ${lastUndoLabel()} (Ctrl+Z)` : "취소할 작업 없음";
+  }
+  btnUndo.addEventListener("click", () => {
+    if (performUndo()) {
+      showToast(`↶ 실행 취소`, "exp");
+      saveState(getState());
+      worldmap.requestDraw();
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
+      e.preventDefault();
+      btnUndo.click();
+    }
+  });
+  on("undo:changed", refreshUndoBtn);
+  refreshUndoBtn();
   document.getElementById("btn-close-panel").addEventListener("click", () => cancelInteraction());
 
   // Animation loop
