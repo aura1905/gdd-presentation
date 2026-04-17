@@ -3,6 +3,8 @@
 import { emit } from "../util/events.js";
 
 let state = null;
+// HexLevel 조회용 tables 참조 (영지 슬롯 카운트 시 HL0 제외)
+let _tablesRef = null;
 
 // 실행 취소 스냅샷 스택 (최대 10단계)
 const UNDO_LIMIT = 10;
@@ -53,6 +55,7 @@ export function clearUndoStack() {
 export function getState() { return state; }
 
 export function initState(tables) {
+  _tablesRef = tables;
   const startHex = { q: 65, r: 45 };  // Reboldoeux city
 
   // 시작 캐릭터 Lv.1 (정상 진행). 적 스탯이 RegionTable.Strength × HexLevel로 스케일 →
@@ -195,6 +198,7 @@ export function moveParty(partyId, targetQ, targetR, fatigueCost) {
 
 // Restore from saved JSON (localStorage)
 export function restoreState(saved, tables) {
+  _tablesRef = tables;
   state = saved;
   if (Array.isArray(state.capturedStructures)) {
     state.capturedStructures = new Set(state.capturedStructures);
@@ -389,8 +393,24 @@ export function getTerritoryMaxSlots() {
   return Math.min(81, 15 + (state.territoryLv || 0) * 2);
 }
 
+/**
+ * 영지 슬롯 사용량 — HexLevel 0 (빈 필드 통로)는 카운트 제외.
+ * HL 0 = 자원 없는 빈 필드 → 영토 확장용 무한 통로 취급.
+ * HL ≥ 1 = 실제 생산 헥스 → 슬롯 소비.
+ * 구조물 헥스(도시/거점/관문 등)도 카운트 제외 (별도 영토).
+ */
 export function getTerritoryUsedSlots() {
-  return state?.ownedHexes.size || 0;
+  if (!state?.ownedHexes) return 0;
+  if (!_tablesRef) return state.ownedHexes.size;
+  let count = 0;
+  for (const hexId of state.ownedHexes) {
+    const hx = _tablesRef.worldHex?.get(hexId);
+    if (!hx) continue;
+    if ((hx.HexLevel || 0) < 1) continue;      // HL0 = 무료 통로
+    if (hx.StructureID) continue;               // 구조물 = 별도 영토
+    count++;
+  }
+  return count;
 }
 
 export function canOccupyMore() {
