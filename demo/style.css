@@ -29,6 +29,38 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .res-icon.grain { background: #d4b460; }
 .res-icon.gold { background: #ffd452; }
 .res-icon.vis { background: #a368d8; }
+.res-icon.iron { background: #8a8a96; }
+.res-icon.wood { background: #8b5a2b; }
+.res-icon.stone { background: #a0a0a0; }
+.res-icon.herbs { background: #5ec060; }
+.res-icon.gem { background: #66d4d4; }
+.res-icon.scroll { background: #d2c4a0; }
+.res-icon.rp { background: #6abff0; }
+.res-icon.mana { background: #b066d4; }
+
+/* HUD 자원 변화 펄스 (M4-A 턴 정산) */
+.res.pulse { animation: res-pulse 0.9s ease; }
+@keyframes res-pulse {
+  0%   { background: rgba(30,30,30,0.85); transform: scale(1); }
+  30%  { background: rgba(120,90,30,0.95); transform: scale(1.12); box-shadow: 0 0 12px rgba(255,212,82,0.8); }
+  100% { background: rgba(30,30,30,0.85); transform: scale(1); }
+}
+
+/* 턴 정산 요약 모달 */
+.ts-section-title { font-size: 12px; color: #ffd452; font-weight: bold;
+  margin-top: 8px; margin-bottom: 6px; text-transform: uppercase;
+  letter-spacing: 0.5px; }
+.ts-section-title:first-child { margin-top: 0; }
+.ts-res-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.ts-res { display: inline-flex; align-items: center; gap: 4px; font-size: 12px;
+  background: rgba(40,40,40,0.85); padding: 4px 8px; border-radius: 4px;
+  border: 1px solid #555; }
+.ts-res b { color: #5d5; margin-left: 2px; }
+.ts-empty { color: #888; font-size: 12px; font-style: italic; padding: 4px 0; }
+.ts-fat-list { max-height: 140px; overflow-y: auto; border: 1px solid #333;
+  border-radius: 4px; padding: 4px 8px; background: rgba(0,0,0,0.3); }
+.ts-fat-row { font-size: 12px; padding: 2px 0; color: #ccc; }
+.ts-fat-row b { color: #5d5; }
 #turn-num { font-weight: bold; color: #ffd452; }
 .hud-badge { display: inline-flex; align-items: center; gap: 4px;
   background: rgba(40,30,15,0.92); border: 2px solid #c8a848; border-radius: 6px;

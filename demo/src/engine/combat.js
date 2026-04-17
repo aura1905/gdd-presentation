@@ -4,8 +4,11 @@ import { simulate, playerToSimUnit, enemyToSimUnit } from "./battleSimulator.js"
 /**
  * Resolve a single battle (one wave) and return BattleRecord-like result
  * plus convenient summary fields for the UI.
+ *
+ * @param {string} mode - "occupy" (점령) | "subjugate" (토벌) — DropTable BattleType 분기.
+ *                       구조물 공성은 "siege" (caller가 명시).
  */
-export function resolveCombat(playerChars, enemyParty, terrainBonus, tables) {
+export function resolveCombat(playerChars, enemyParty, terrainBonus, tables, mode = "subjugate") {
   const playerUnits = playerChars.map(c => playerToSimUnit(c, tables.fieldObjects));
 
   const enemyTemplates = [
@@ -59,7 +62,7 @@ export function resolveCombat(playerChars, enemyParty, terrainBonus, tables) {
     playerAfter,
     enemyAfter,
     log: record.actions,
-    rewards: win ? lookupDropReward("subjugate", tables, /*hexLevel*/ enemyParty.HexLevel || 1) : null,
+    rewards: win ? lookupDropReward(mode, tables, /*hexLevel*/ enemyParty.HexLevel || 1) : null,
   };
 }
 
@@ -116,20 +119,26 @@ export function getPartySiegeDamage(chars) {
   return Math.max(1, Math.floor(total * mult));
 }
 
-/** Look up DropTable reward for a battle (BattleType + HexLevel). */
+/**
+ * Look up DropTable reward for a battle (BattleType + HexLevel).
+ * resourceQty: 호출자가 헥스의 ResourceCode와 매칭해 즉시 가산용으로 사용.
+ * materialQty: 아이템 드랍용 (현재 보류 — 추후 확률 처리에 사용).
+ */
 export function lookupDropReward(battleType, tables, hexLevel) {
   const drops = tables.drops.all();
   const row = drops.find(d => d.BattleType === battleType && d.HexLevel === hexLevel)
             || drops.find(d => d.BattleType === battleType
                             && (d.HexLevelMin ?? d.HexLevel) <= hexLevel
                             && (d.HexLevelMax ?? d.HexLevel) >= hexLevel);
-  if (!row) return { gold: 0, vis: 0, grain: 0, charExp: 0, familyExp: 0 };
+  if (!row) return { gold: 0, vis: 0, grain: 0, charExp: 0, familyExp: 0, resourceQty: 0, materialQty: 0 };
   return {
     gold: row.Gold || 0,
     vis: row.Vis || 0,
     grain: row.SupplyGrain || 0,
     charExp: row.CharEXP || 0,
     familyExp: row.FamilyEXP || 0,
+    resourceQty: row.ResourceQty || 0,
+    materialQty: row.MaterialQty || 0,
   };
 }
 

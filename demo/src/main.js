@@ -20,10 +20,23 @@ import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
 import { getSiegeProgress, getStructureCurrentHP, markDefenderDefeated, isDefenderDefeated, applyStructureDamage } from "./state/gameState.js";
 import { recomputeFog, applyScout, getFogState, bumpAction } from "./engine/fog.js";
+import { endTurn, computeHexIncome } from "./engine/turn.js";
 
 const status = (msg) => {
   const el = document.getElementById("loading-status");
   if (el) el.textContent = msg;
+};
+
+// 자원 코드 → 표시명/HUD 점 색상 매핑 (M4-A: 턴 정산 표시용)
+const RES_LABEL = {
+  grain: "곡물", iron: "철", wood: "목재", stone: "석재", herbs: "약초",
+  gold: "금화", vis: "비스", gem: "보석", scroll: "주문서", rp: "연구",
+  mana: "마나",
+};
+const RES_DOT_CLASS = {
+  grain: "grain", gold: "gold", vis: "vis",
+  iron: "iron", wood: "wood", stone: "stone", herbs: "herbs",
+  gem: "gem", scroll: "scroll", rp: "rp", mana: "mana",
 };
 
 async function boot() {
@@ -641,8 +654,11 @@ async function boot() {
     let totalWins = 0;
     let lastResult = null;
 
+    // 구조물 공성은 별도 BattleType="siege" 풀 (현재 데이터에 매칭 적은 편이지만 호환).
+    const dropMode = isStructureSiege ? "siege" : (mode === "occupy" ? "occupy" : "subjugate");
+
     for (const ep of enemies) {
-      lastResult = resolveCombat(playerChars, ep, terrain, tables);
+      lastResult = resolveCombat(playerChars, ep, terrain, tables, dropMode);
       for (const pa of lastResult.playerAfter) {
         const ch = getCharacter(pa.id);
         if (ch) ch.hp = pa.hp;
@@ -771,6 +787,15 @@ async function boot() {
         if (r.gold) rewardLine.push(`골드 +${r.gold}`);
         if (r.grain) rewardLine.push(`곡물 +${r.grain}`);
         if (r.vis) rewardLine.push(`비스 +${r.vis}`);
+        // 점령/토벌 시 헥스의 ResourceCode 자원에 ResourceQty 즉시 가산
+        // (subjugate Lv1=1, occupy Lv1=2 ... drops.json 기반)
+        if (r.resourceQty && hexRow.ResourceCode) {
+          const code = hexRow.ResourceCode;
+          if (!(code in gs.resources)) gs.resources[code] = 0;
+          gs.resources[code] += r.resourceQty;
+          const label = RES_LABEL[code] || code;
+          rewardLine.push(`${label} +${r.resourceQty}`);
+        }
         if (r.familyExp) rewardLine.push(`가문EXP +${r.familyExp}`);
         if (rewardLine.length) parts.push(`<b style="color:#ffd452">보상:</b> ${rewardLine.join(", ")}`);
       }
@@ -1092,6 +1117,85 @@ async function boot() {
   on("undo:changed", refreshUndoBtn);
   refreshUndoBtn();
   document.getElementById("btn-close-panel").addEventListener("click", () => cancelInteraction());
+
+  // ─── 턴 종료 버튼 (M4-A) ───
+  const btnEndTurn = document.getElementById("btn-end-turn");
+  btnEndTurn.disabled = false;
+  btnEndTurn.addEventListener("click", () => {
+    const gs = getState();
+    const preview = computeHexIncome(gs, tables);
+    const previewLines = Object.entries(preview)
+      .filter(([, v]) => v > 0)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([code, v]) => `${RES_LABEL[code] || code} +${v}`)
+      .join(" · ");
+    const previewText = previewLines || "수급 가능한 자원 없음";
+    const minutes = CONFIG.turn?.minutesPerTurn || 10;
+    showConfirm({
+      title: `턴 ${gs.meta.turn} 종료`,
+      body: `1턴 = ${minutes}분 환산\n\n예상 수급: ${previewText}\n\n파티 피로도가 위치에 따라 회복됩니다.`,
+      confirmLabel: "턴 종료",
+      onConfirm: () => {
+        const summary = endTurn(getState(), tables);
+        emit("state:changed", { path: "*", action: "endTurn" });
+        pulseHudResources(summary.gainedResources);
+        showTurnSummary(summary);
+      },
+    });
+  });
+
+  function pulseHudResources(gained) {
+    if (!gained) return;
+    // HUD에 노출된 자원(grain/gold/vis)만 펄스 처리
+    for (const code of ["grain", "gold", "vis"]) {
+      if (!(gained[code] > 0)) continue;
+      const valEl = document.getElementById(`res-${code}`);
+      const chip = valEl?.parentElement;
+      if (!chip) continue;
+      chip.classList.remove("pulse");
+      // reflow 후 재추가하여 애니메이션 재시작
+      void chip.offsetWidth;
+      chip.classList.add("pulse");
+      setTimeout(() => chip.classList.remove("pulse"), 1000);
+    }
+  }
+
+  function showTurnSummary(summary) {
+    if (!summary) return;
+    const gainEntries = Object.entries(summary.gainedResources)
+      .filter(([, v]) => v > 0)
+      .sort(([a], [b]) => a.localeCompare(b));
+    const gainHtml = gainEntries.length
+      ? gainEntries.map(([code, v]) =>
+          `<span class="ts-res"><i class="res-icon ${RES_DOT_CLASS[code] || ''}"></i>${RES_LABEL[code] || code} <b>+${v}</b></span>`
+        ).join("")
+      : `<span class="ts-empty">수급된 자원 없음</span>`;
+
+    const recovered = summary.fatigueLog.filter(l => l.after > l.before);
+    const fatigueHtml = recovered.length
+      ? recovered.map(l => `<div class="ts-fat-row">${l.name} ${l.before} → <b>${l.after}</b></div>`).join("")
+      : `<div class="ts-empty">회복 대상 없음</div>`;
+
+    const body = `
+      <div class="ts-section-title">자원 수급</div>
+      <div class="ts-res-grid">${gainHtml}</div>
+      <div class="ts-section-title">피로 회복</div>
+      <div class="ts-fat-list">${fatigueHtml}</div>
+    `;
+    showConfirm({
+      title: `턴 ${summary.fromTurn} → ${summary.toTurn}`,
+      body,
+      confirmLabel: "확인",
+      cancelLabel: "",
+      onConfirm: () => {},
+    });
+    // 취소 버튼 숨김 (요약은 닫기만)
+    setTimeout(() => {
+      const back = document.querySelector(".modal-backdrop:last-child");
+      const cancelBtn = back?.querySelector('[data-action="cancel"]');
+      if (cancelBtn) cancelBtn.remove();
+    }, 0);
+  }
 
   // Animation loop
   function tick() { worldmap.draw(); requestAnimationFrame(tick); }

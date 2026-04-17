@@ -29,6 +29,12 @@ export const CONFIG = {
     scoutDuration: 5,
   },
 
+  // 턴 길이: 자원/피로 테이블이 모두 분 단위(ProductionPerMin/RecoveryPerMin)이므로
+  // "1턴 = N분"으로 환산. 데모 기본 10분 (Grade1 자원 30/턴, 필드 회복 10/턴).
+  turn: {
+    minutesPerTurn: 10,
+  },
+
   debug: {
     logHexClick: true,
     showStats: true,
