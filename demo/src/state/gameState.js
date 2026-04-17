@@ -1,6 +1,31 @@
 // Mutable game state — single source of truth.
 // Changes only through exported action functions.
 import { emit } from "../util/events.js";
+import { neighbors as hexNeighbors } from "../util/hex.js";
+
+// 도시 지형 ID (terrains.json: TerrainID=13, Code="city").
+const CITY_TERRAIN_ID = 13;
+
+// 시작 헥스에서 연결된 모든 도시 타일 자동 점령 (7헥스 도시 등).
+// 같은 TerrainID(=13) 연속 클러스터를 BFS로 수집.
+function collectCityCluster(startHexId, worldHexTable) {
+  const startHex = worldHexTable.get(startHexId);
+  if (!startHex || startHex.TerrainID !== CITY_TERRAIN_ID) return [startHexId];
+  const cluster = new Set([startHexId]);
+  const queue = [{ q: startHex.HexQ, r: startHex.HexR }];
+  while (queue.length) {
+    const { q, r } = queue.shift();
+    for (const n of hexNeighbors(q, r)) {
+      const nid = n.q * 100 + n.r;
+      if (cluster.has(nid)) continue;
+      const nh = worldHexTable.get(nid);
+      if (!nh || nh.TerrainID !== CITY_TERRAIN_ID) continue;
+      cluster.add(nid);
+      queue.push({ q: n.q, r: n.r });
+    }
+  }
+  return [...cluster];
+}
 
 let state = null;
 // HexLevel 조회용 tables 참조 (영지 슬롯 카운트 시 HL0 제외)
@@ -102,18 +127,15 @@ export function initState(tables) {
     };
   });
 
-  // 시작 헥스 = 리볼도외 도시. 모든 구성 헥스 + 도시 구조물 자동 점령.
+  // 시작 헥스 = 리볼도외 도시. 도시 클러스터(TerrainID=13 연결 7헥스) 자동 점령.
   const homeHexId = startHex.q * 100 + startHex.r;
   const homeHexRow = tables.worldHex.get(homeHexId);
-  const ownedHexes = new Set([homeHexId]);
+  const ownedHexes = new Set();
+  for (const hid of collectCityCluster(homeHexId, tables.worldHex)) {
+    ownedHexes.add(hid);
+  }
   const capturedStructures = new Set();
   if (homeHexRow?.StructureID) capturedStructures.add(homeHexRow.StructureID);
-  // 같은 StructureID(도시 7헥스 등)를 가진 모든 헥스 자동 점령
-  if (homeHexRow?.StructureID) {
-    for (const hx of tables.worldHex.all()) {
-      if (hx.StructureID === homeHexRow.StructureID) ownedHexes.add(hx.HexID);
-    }
-  }
 
   state = {
     meta: { turn: 1, version: "0.1" },
@@ -213,6 +235,17 @@ export function restoreState(saved, tables) {
   if (state.territoryLv == null) state.territoryLv = 0;
   if (!state.siegeState) state.siegeState = {};
 
+  // Migration: 홈 도시 클러스터(7헥스) 자동 점령 — 옛 세이브에 누락된 6헥스 보강.
+  const home = state.family?.homeHex;
+  if (home) {
+    const homeId = home.q * 100 + home.r;
+    if (state.ownedHexes.has(homeId)) {
+      for (const hid of collectCityCluster(homeId, tables.worldHex)) {
+        state.ownedHexes.add(hid);
+      }
+    }
+  }
+
   // Migration: 옛날 세이브 캐릭터에 spriteName / element 보강
   for (const ch of state.characters || []) {
     if (!ch.spriteName || !ch.element) {
@@ -227,7 +260,6 @@ export function restoreState(saved, tables) {
   }
 
   // 홈 헥스에 있는 파티는 풀 회복 (저장 시점에 죽어있던 캐릭터도 거점에서 부활)
-  const home = state.family?.homeHex;
   if (home) {
     for (const p of state.parties || []) {
       if (p.location?.q === home.q && p.location?.r === home.r) {
