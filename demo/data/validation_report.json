@@ -111,7 +111,7 @@
     {
       "xml": "StructureDefenseTable.xml",
       "out": "structure_defense.json",
-      "rows": 252,
+      "rows": 299,
       "issues": 0
     },
     {
@@ -143,6 +143,6 @@
   "totals": {
     "xml_files": 23,
     "json_files": 24,
-    "rows": 15186
+    "rows": 15233
   }
 }

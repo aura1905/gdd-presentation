@@ -47,19 +47,54 @@
       <button class="close" id="btn-close-panel" type="button">✕</button>
     </section>
 
+    <!-- 임무 패널 (M6-lite) -->
+    <section id="quest-panel" hidden>
+      <div class="fp-card">
+        <header class="fp-header">
+          <h2>임무</h2>
+          <button class="fp-close" id="btn-close-quest" type="button">✕</button>
+        </header>
+        <nav class="fp-subtabs" id="quest-subtabs">
+          <button data-qsub="chain"       class="active" type="button">체인</button>
+          <button data-qsub="daily"       type="button">일일</button>
+          <button data-qsub="weekly"      type="button">주간</button>
+          <button data-qsub="achievement" type="button">업적</button>
+        </nav>
+        <div class="fp-content" id="quest-content"></div>
+      </div>
+    </section>
+
+    <!-- 가문 성장 패널 (M5-A) -->
+    <section id="family-panel" hidden>
+      <div class="fp-card">
+        <header class="fp-header">
+          <h2>가문 성장</h2>
+          <button class="fp-close" id="btn-close-family" type="button">✕</button>
+        </header>
+        <nav class="fp-subtabs" id="family-subtabs">
+          <button data-sub="training" class="active" type="button">훈련</button>
+          <button data-sub="research"  type="button" disabled>연구</button>
+          <button data-sub="fortify"   type="button" disabled>축성</button>
+          <button data-sub="level"     type="button">가문레벨</button>
+        </nav>
+        <div class="fp-content" id="family-content"></div>
+      </div>
+    </section>
+
     <!-- 하단 탭 도크 (5탭) -->
     <nav id="tab-dock">
       <button data-tab="barracks" type="button" disabled>
         <span class="tab-icon">🏠</span><span class="tab-label">배럭</span>
       </button>
-      <button data-tab="family" type="button" disabled>
+      <button data-tab="family" type="button">
         <span class="tab-icon">👥</span><span class="tab-label">가문</span>
       </button>
       <button data-tab="worldmap" type="button" class="active">
         <span class="tab-icon">🗺️</span><span class="tab-label">월드맵</span>
       </button>
-      <button data-tab="quest" type="button" disabled>
+      <button data-tab="quest" type="button">
         <span class="tab-icon">📋</span><span class="tab-label">임무</span>
+        <span class="tab-badge" id="quest-badge" hidden>0</span>
       </button>
       <button data-tab="gacha" type="button" disabled>
         <span class="tab-icon">🎲</span><span class="tab-label">모집</span>
