@@ -17,7 +17,8 @@ import { emit, on } from "./util/events.js";
 import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
-import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward } from "./engine/combat.js";
+import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
+import { getSiegeProgress, getStructureCurrentHP, markDefenderDefeated, isDefenderDefeated, applyStructureDamage } from "./state/gameState.js";
 import { recomputeFog, applyScout, getFogState, bumpAction } from "./engine/fog.js";
 
 const status = (msg) => {
@@ -50,6 +51,25 @@ async function boot() {
   }
   const gameState = saved ? restoreState(saved, tables) : initState(tables);
   recomputeFog(gameState, tables);
+
+  // GDD §9-3: 리더 사망한 파티는 전장 잔류 불가 — 복원 시 자동 퇴각(구 세이브 호환)
+  {
+    const home = gameState.family.homeHex;
+    for (const p of gameState.parties) {
+      const leaderId = p.slots?.[0];
+      if (leaderId == null) continue;
+      const leader = gameState.characters.find(c => c.id === leaderId);
+      if (leader && leader.hp <= 0) {
+        p.location = { q: home.q, r: home.r };
+        for (const cid of p.slots) {
+          if (cid == null) continue;
+          const ch = gameState.characters.find(c => c.id === cid);
+          if (ch) { ch.hp = ch.maxHp; ch.fatigue = ch.maxFatigue; ch.status = "normal"; }
+        }
+        console.log(`[safety] ${p.name} 리더 사망 상태로 복원됨 → 거점 자동 귀환 + 회복`);
+      }
+    }
+  }
 
   status("헥스 타일 로드 중…");
   await loadHexTiles();
@@ -311,7 +331,37 @@ async function boot() {
       info.push(`<span style="color:#888">⚫ 안개 — 정보 미공개</span>`);
     }
     if (path) info.push(`경로: ${path.length - 1}칸 · 피로+${pathCost(path)}`);
-    document.getElementById("hex-meta").innerHTML = info.join(" · ");
+
+    // 공성 진행 — 미점령 구조물 HP 게이지
+    let siegeHtml = "";
+    if (structure && !isCaptured) {
+      const maxHp = getStructureMaxHP(structure);
+      if (maxHp > 0) {
+        const curHp = getStructureCurrentHP(structure.StructureID) ?? maxHp;
+        const pct = Math.round(curHp / maxHp * 100);
+        const barColor = pct > 60 ? "#a44" : pct > 25 ? "#da4" : "#fa4";
+        siegeHtml = `
+          <div style="margin-top:6px">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:#fcc">
+              <span>🏰 ${structure.StructureType} HP</span>
+              <span><b>${curHp}</b>/${maxHp}</span>
+            </div>
+            <div style="height:6px;background:#222;border:1px solid #000;border-radius:3px;overflow:hidden;margin-top:2px">
+              <div style="height:100%;width:${pct}%;background:${barColor};transition:width 0.3s"></div>
+            </div>
+          </div>`;
+      }
+      // 수비 진행도
+      const defs = findStructureDefenders(structure.StructureID, tables);
+      const nonPatrol = defs.filter(d => d.__layer !== "Patrol");
+      if (nonPatrol.length > 0) {
+        const downCount = nonPatrol.filter(d =>
+          isDefenderDefeated(structure.StructureID, d.PartyID)
+        ).length;
+        siegeHtml += `<div style="font-size:10px;color:#aaa;margin-top:3px">수비 격파: ${downCount}/${nonPatrol.length} (경비대는 매번 등장)</div>`;
+      }
+    }
+    document.getElementById("hex-meta").innerHTML = info.join(" · ") + siegeHtml;
 
     // Action buttons
     const actions = document.getElementById("hex-actions");
@@ -559,9 +609,14 @@ async function boot() {
     // 적 파티 결정 — 구조물 미점령이면 수비대(StructureDefenseTable), 아니면 일반 필드 적
     let enemies = findEnemyParties(hexRow, tables);
     const structureForCombat = hexRow.StructureID ? tables.structures.get(hexRow.StructureID) : null;
-    if (structureForCombat && !isStructureCaptured(structureForCombat.StructureID)) {
-      const defenders = findStructureDefenders(structureForCombat.StructureID, tables);
-      if (defenders.length > 0) enemies = defenders;
+    const isStructureSiege = structureForCombat && !isStructureCaptured(structureForCombat.StructureID);
+    if (isStructureSiege) {
+      const allDefenders = findStructureDefenders(structureForCombat.StructureID, tables);
+      // 데모 단순화 (§6): Patrol 무한 등장, Garrison/Stationed 격파 영구
+      enemies = allDefenders.filter(d => {
+        if (d.__layer === "Patrol") return true;
+        return !isDefenderDefeated(structureForCombat.StructureID, d.PartyID);
+      });
     }
 
     if (enemies.length === 0) {
@@ -607,20 +662,56 @@ async function boot() {
     // 4. 결과 처리
     const allWon = totalWins === enemies.length;
 
-    if (allWon && mode === "occupy") {
-      ownHex(hexRow.HexID);
-      const structure = hexRow.StructureID ? tables.structures.get(hexRow.StructureID) : null;
-      if (structure && !isStructureCaptured(structure.StructureID)) {
-        captureStructure(structure.StructureID);
+    // 구조물 공성: 격파한 수비대를 영구 격파 마킹 + HP 데미지 (gdd_structure_siege.md)
+    let siegeInfo = null;
+    if (isStructureSiege && totalWins > 0) {
+      const maxHp = getStructureMaxHP(structureForCombat);
+      // 격파한 웨이브들 마킹 (Patrol 제외 — 무한 등장)
+      for (let i = 0; i < totalWins; i++) {
+        const ep = enemies[i];
+        if (ep.__layer !== "Patrol") {
+          markDefenderDefeated(structureForCombat.StructureID, ep.PartyID, maxHp);
+        }
       }
+      // 모든 비-Patrol 수비대 격파 시 → HP 데미지
+      const allDefenders = findStructureDefenders(structureForCombat.StructureID, tables);
+      const nonPatrol = allDefenders.filter(d => d.__layer !== "Patrol");
+      const allCleared = nonPatrol.every(d =>
+        isDefenderDefeated(structureForCombat.StructureID, d.PartyID)
+      );
+      if (allCleared && maxHp > 0) {
+        const damage = getPartySiegeDamage(playerChars);
+        const fellHP = applyStructureDamage(structureForCombat.StructureID, damage, maxHp);
+        const sp = getSiegeProgress(structureForCombat.StructureID, maxHp);
+        siegeInfo = { damage, hp: sp.hp, maxHp, fell: fellHP, allCleared: true };
+        if (fellHP && mode === "occupy") {
+          // 함락! 점령 처리
+          ownHex(hexRow.HexID);
+          captureStructure(structureForCombat.StructureID);
+        }
+      } else if (maxHp === 0 && allCleared && mode === "occupy") {
+        // 거점(Fort) — 내구도 없음, 수비대 전멸 시 즉시 함락
+        ownHex(hexRow.HexID);
+        captureStructure(structureForCombat.StructureID);
+        siegeInfo = { damage: 0, hp: 0, maxHp: 0, fell: true, allCleared: true };
+      }
+    }
+
+    // GDD §9-3: 리더(슬롯 0) 사망 시 파티는 현장 잔류 불가 — 강제 퇴각
+    const leaderAfter = party.slots[0] != null ? getCharacter(party.slots[0]) : null;
+    const leaderDead = leaderAfter && leaderAfter.hp <= 0;
+
+    if (allWon && !isStructureSiege && mode === "occupy" && !leaderDead) {
+      // 일반 헥스 점령 (리더 생존 시에만)
+      ownHex(hexRow.HexID);
       // 파티는 점령 헥스에 유지
-    } else if (!allWon) {
-      // 패배 → 자동 귀환 + 거점 도착 즉시 전체 회복 (HP/피로)
+    } else if (!allWon || leaderDead) {
+      // 패배 또는 리더 사망 → 자동 귀환 + 거점 도착 즉시 전체 회복
       const home = getState().family.homeHex;
       moveParty(party.id, home.q, home.r, 0);
       fullRestParty(party.id);
     }
-    // 토벌 승리: 파티는 해당 헥스에 유지 (점령 안 함)
+    // 토벌 승리 (리더 생존): 파티는 해당 헥스에 유지 (점령 안 함)
 
     const ps = camera.worldToScreen(hexWorld(hexRow.HexQ, hexRow.HexR).x, hexWorld(hexRow.HexQ, hexRow.HexR).y);
 
@@ -638,14 +729,14 @@ async function boot() {
     const sceneChars = playerChars.map(c => ({ spriteName: c.spriteName, name: c.name }));
 
     overlays.startBattleScene(hexRow.HexQ, hexRow.HexR, sceneChars, enemySlots, allWon, () => {
-      showBattleResult(hexRow, lastResult, totalWins, enemies.length, mode, ps);
+      showBattleResult(hexRow, lastResult, totalWins, enemies.length, mode, ps, siegeInfo);
       saveState(getState());
       worldmap.requestDraw();
     });
     worldmap.requestDraw();
   }
 
-  function showBattleResult(hexRow, result, wavesWon, totalWaves, mode, screenPos) {
+  function showBattleResult(hexRow, result, wavesWon, totalWaves, mode, screenPos, siegeInfo) {
     const panel = document.getElementById("hex-panel");
     const title = document.getElementById("hex-title");
     const meta = document.getElementById("hex-meta");
@@ -710,9 +801,20 @@ async function boot() {
         showToast(`+${actualExp} EXP × ${partyForExp?.slots.filter(Boolean).length || 0}명`, "exp");
       }
 
+      // 공성 진행 (구조물 공격 시)
+      if (siegeInfo) {
+        if (siegeInfo.fell) {
+          parts.push(`<span style="color:#fa4">🏰 구조물 함락! HP 0/${siegeInfo.maxHp}</span>`);
+        } else if (siegeInfo.allCleared && siegeInfo.maxHp > 0) {
+          parts.push(`<span style="color:#fc4">🏰 수비 전멸 → 구조물 -${siegeInfo.damage} HP (남은: ${siegeInfo.hp}/${siegeInfo.maxHp})</span>`);
+        } else if (won && siegeInfo.maxHp > 0 && !siegeInfo.allCleared) {
+          parts.push(`<span style="color:#aaa">수비 일부 격파 (HP 데미지는 모두 격파 후)</span>`);
+        }
+      }
+
       if (!won) {
         parts.push(`<span style="color:#e44">패배 → 거점으로 자동 귀환</span>`);
-      } else if (mode === "occupy") {
+      } else if (mode === "occupy" && !siegeInfo) {
         parts.push(`<span style="color:#5a5">영토 점령 완료</span>`);
       }
 
