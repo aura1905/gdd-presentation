@@ -8,9 +8,9 @@
     "Chapter": 1,
     "HexQ": 52,
     "HexR": 47,
-    "PatrolLv": 3,
-    "GarrisonLv": 3,
-    "StationedLv": 2,
+    "PatrolLv": 2,
+    "GarrisonLv": 2,
+    "StationedLv": 1,
     "DurabilityLv": 0,
     "BattleBgAsset": "battle_stage_siege_01"
   },
