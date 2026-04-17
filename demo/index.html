@@ -47,12 +47,23 @@
       <button class="close" id="btn-close-panel" type="button">✕</button>
     </section>
 
-    <!-- 하단 탭 도크 -->
+    <!-- 하단 탭 도크 (5탭) -->
     <nav id="tab-dock">
-      <button data-tab="worldmap" class="active">월드맵</button>
-      <button data-tab="family" disabled>가문</button>
-      <button data-tab="growth" disabled>성장</button>
-      <button data-tab="mailbox" disabled>우편</button>
+      <button data-tab="barracks" type="button" disabled>
+        <span class="tab-icon">🏠</span><span class="tab-label">배럭</span>
+      </button>
+      <button data-tab="family" type="button" disabled>
+        <span class="tab-icon">👥</span><span class="tab-label">가문</span>
+      </button>
+      <button data-tab="worldmap" type="button" class="active">
+        <span class="tab-icon">🗺️</span><span class="tab-label">월드맵</span>
+      </button>
+      <button data-tab="quest" type="button" disabled>
+        <span class="tab-icon">📋</span><span class="tab-label">임무</span>
+      </button>
+      <button data-tab="gacha" type="button" disabled>
+        <span class="tab-icon">🎲</span><span class="tab-label">모집</span>
+      </button>
     </nav>
 
     <div id="splash">
