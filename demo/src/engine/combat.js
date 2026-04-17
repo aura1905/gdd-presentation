@@ -159,8 +159,11 @@ export function findStructureDefenders(structureId, tables) {
   if (!struct) return [];
 
   const LAYER_ORDER = { Patrol: 0, Garrison: 1, Stationed: 2 };
-  // 적 레벨 = 8 + StationedLv × 8 → Sta1=16, Sta9=80 (Player 권장 Lv와 매칭)
-  const enemyLevel = Math.max(1, 8 + (struct.StationedLv || 1) * 8);
+  // 적 레벨 = StationedLv × 5 + GarrisonLv × 3 (세밀한 조정 가능)
+  // 극초반 Fort1 (S=1,G=2): Lv.11 / 후반 Fort13 (S=9,G=10): Lv.75 / Gate43 Ch.1 (S=1,G=1): Lv.8
+  const enemyLevel = Math.max(1,
+    (struct.StationedLv || 0) * 5 + (struct.GarrisonLv || 0) * 3
+  );
   const enemyStar = Math.max(0, (struct.GarrisonLv || 0) - 1);
   const LAYER_NAME_KR = { Patrol: "경비대", Garrison: "수비대", Stationed: "주둔군" };
 
