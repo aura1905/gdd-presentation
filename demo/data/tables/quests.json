@@ -14,6 +14,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 30,
     "NextQuestID": 102
   },
   {
@@ -31,6 +32,7 @@
     "RwdScroll": 0,
     "RwdItem": "exp_book_s",
     "RwdItemQty": 1,
+    "RwdFamilyEXP": 50,
     "NextQuestID": 103
   },
   {
@@ -48,6 +50,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 30,
     "NextQuestID": 104
   },
   {
@@ -65,6 +68,7 @@
     "RwdScroll": 0,
     "RwdItem": "exp_book_s",
     "RwdItemQty": 2,
+    "RwdFamilyEXP": 50,
     "NextQuestID": 105
   },
   {
@@ -82,6 +86,7 @@
     "RwdScroll": 0,
     "RwdItem": "herbs",
     "RwdItemQty": 50,
+    "RwdFamilyEXP": 0,
     "NextQuestID": 106
   },
   {
@@ -99,6 +104,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 30,
     "NextQuestID": 107
   },
   {
@@ -116,6 +122,7 @@
     "RwdScroll": 0,
     "RwdItem": "iron",
     "RwdItemQty": 100,
+    "RwdFamilyEXP": 30,
     "NextQuestID": 108
   },
   {
@@ -133,6 +140,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 150,
     "NextQuestID": 109
   },
   {
@@ -150,6 +158,7 @@
     "RwdScroll": 0,
     "RwdItem": "wood",
     "RwdItemQty": 100,
+    "RwdFamilyEXP": 0,
     "NextQuestID": 110
   },
   {
@@ -167,6 +176,7 @@
     "RwdScroll": 0,
     "RwdItem": "iron",
     "RwdItemQty": 200,
+    "RwdFamilyEXP": 50,
     "NextQuestID": 111
   },
   {
@@ -184,6 +194,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 80,
     "NextQuestID": 112
   },
   {
@@ -201,6 +212,7 @@
     "RwdScroll": 1,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 250,
     "NextQuestID": 113
   },
   {
@@ -218,6 +230,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 100,
     "NextQuestID": 114
   },
   {
@@ -235,6 +248,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 250,
     "NextQuestID": 115
   },
   {
@@ -252,6 +266,7 @@
     "RwdScroll": 2,
     "RwdItem": "exp_book_m",
     "RwdItemQty": 1,
+    "RwdFamilyEXP": 0,
     "NextQuestID": 201
   },
   {
@@ -269,6 +284,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 500,
     "NextQuestID": 202
   },
   {
@@ -286,6 +302,7 @@
     "RwdScroll": 0,
     "RwdItem": "wood",
     "RwdItemQty": 500,
+    "RwdFamilyEXP": 300,
     "NextQuestID": 203
   },
   {
@@ -303,6 +320,7 @@
     "RwdScroll": 0,
     "RwdItem": "iron",
     "RwdItemQty": 500,
+    "RwdFamilyEXP": 300,
     "NextQuestID": 204
   },
   {
@@ -320,6 +338,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 500,
     "NextQuestID": 205
   },
   {
@@ -337,6 +356,7 @@
     "RwdScroll": 0,
     "RwdItem": "equip_blueprint_rare",
     "RwdItemQty": 1,
+    "RwdFamilyEXP": 800,
     "NextQuestID": 206
   },
   {
@@ -354,6 +374,7 @@
     "RwdScroll": 5,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 1500,
     "NextQuestID": 301
   },
   {
@@ -371,6 +392,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 1500,
     "NextQuestID": 0
   },
   {
@@ -388,6 +410,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 1000,
     "NextQuestID": 0
   },
   {
@@ -405,6 +428,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 800,
     "NextQuestID": 0
   },
   {
@@ -422,6 +446,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 3000,
     "NextQuestID": 0
   },
   {
@@ -439,6 +464,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 50,
     "NextQuestID": 0
   },
   {
@@ -456,6 +482,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 40,
     "NextQuestID": 0
   },
   {
@@ -473,6 +500,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 30,
     "NextQuestID": 0
   },
   {
@@ -490,6 +518,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 30,
     "NextQuestID": 0
   },
   {
@@ -507,6 +536,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 40,
     "NextQuestID": 0
   },
   {
@@ -524,6 +554,7 @@
     "RwdScroll": 0,
     "RwdItem": "exp_book_s",
     "RwdItemQty": 2,
+    "RwdFamilyEXP": 100,
     "NextQuestID": 0
   },
   {
@@ -541,6 +572,7 @@
     "RwdScroll": 1,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 200,
     "NextQuestID": 0
   },
   {
@@ -558,6 +590,7 @@
     "RwdScroll": 0,
     "RwdItem": null,
     "RwdItemQty": 0,
+    "RwdFamilyEXP": 200,
     "NextQuestID": 0
   },
   {
@@ -575,6 +608,7 @@
     "RwdScroll": 0,
     "RwdItem": "exp_book_m",
     "RwdItemQty": 1,
+    "RwdFamilyEXP": 300,
     "NextQuestID": 0
   },
   {
@@ -592,6 +626,7 @@
     "RwdScroll": 2,
     "RwdItem": "exp_book_m",
     "RwdItemQty": 2,
+    "RwdFamilyEXP": 500,
     "NextQuestID": 0
   }
 ]

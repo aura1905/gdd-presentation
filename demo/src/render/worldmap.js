@@ -289,6 +289,75 @@ export function createWorldmapRenderer(ctx, canvas, camera, tables, overlays) {
     }
   }
 
+  // GDD §4-2: 공성 타이머 시각화 (구조물 헥스 위 카운트다운 링 + 시간)
+  function drawSiegeTimers() {
+    const state = getState();
+    if (!state?.siegeState) return;
+    const structRows = tables.structures.all();
+    for (const s of structRows) {
+      const sp = state.siegeState[s.StructureID];
+      if (!sp?.defenderTimers) continue;
+      const now = Date.now();
+      // 남은 시간 최소값 (가장 먼저 만료)
+      let minRem = Infinity;
+      for (const expireAt of Object.values(sp.defenderTimers)) {
+        const rem = expireAt - now;
+        if (rem > 0 && rem < minRem) minRem = rem;
+      }
+      if (!isFinite(minRem)) continue;
+
+      const p = hexWorld(s.HexQ, s.HexR);
+      const screen = camera.worldToScreen(p.x, p.y);
+      const size = R * camera.scale;
+      if (screen.x < -size || screen.x > canvas.clientWidth + size ||
+          screen.y < -size || screen.y > canvas.clientHeight + size) continue;
+
+      // 링 진행도 (가장 긴 타이머 기준으로 pct — 여기선 Patrol 3분 기준)
+      const MAX_MS = 3 * 60 * 1000;
+      const pct = Math.max(0, Math.min(1, minRem / MAX_MS));
+      const urgent = minRem < 30000;
+      const color = urgent ? "#f44" : minRem < 60000 ? "#fa4" : "#5a5";
+      const ringR = size * 0.6;
+      const cx = screen.x;
+      const cy = screen.y - size * 0.1;
+
+      // 배경 링
+      ctx.beginPath();
+      ctx.arc(cx, cy, ringR, 0, Math.PI * 2);
+      ctx.strokeStyle = "rgba(0,0,0,0.6)";
+      ctx.lineWidth = Math.max(3, size * 0.12);
+      ctx.stroke();
+      // 진행 링 (남은 pct만큼)
+      ctx.beginPath();
+      ctx.arc(cx, cy, ringR, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * pct);
+      ctx.strokeStyle = color;
+      ctx.lineWidth = Math.max(3, size * 0.12);
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      // 시간 텍스트 m:ss
+      const s_total = Math.ceil(minRem / 1000);
+      const mm = Math.floor(s_total / 60);
+      const ss = s_total % 60;
+      const timeText = `${mm}:${String(ss).padStart(2, "0")}`;
+      ctx.font = `bold ${Math.max(10, size * 0.35)}px 'Segoe UI'`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      // 외곽선
+      ctx.strokeStyle = "#000";
+      ctx.lineWidth = Math.max(2, size * 0.08);
+      ctx.strokeText(timeText, cx, cy);
+      ctx.fillStyle = urgent ? "#ff8888" : "#fff";
+      ctx.fillText(timeText, cx, cy);
+
+      // 임박 시 흔들림 효과(텍스트만 한 번 더)
+      if (urgent && Math.floor(now / 250) % 2 === 0) {
+        ctx.fillStyle = "#ff4444";
+        ctx.fillText("⚠", cx - size * 0.5, cy - size * 0.5);
+      }
+    }
+  }
+
   function draw() {
     if (!needsDraw) return false;
     needsDraw = false;
@@ -309,6 +378,7 @@ export function createWorldmapRenderer(ctx, canvas, camera, tables, overlays) {
     drawOwnedOverlay();
 
     drawStructures();
+    drawSiegeTimers();
 
     overlays?.draw(ctx, camera);
 

@@ -14,13 +14,14 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
-import { getSiegeProgress, getStructureCurrentHP, markDefenderDefeated, isDefenderDefeated, applyStructureDamage } from "./state/gameState.js";
+import { getSiegeProgress, getStructureCurrentHP, markDefenderDefeated, isDefenderDefeated, applyStructureDamage, getDefenderTimerRemaining, cleanupExpiredTimers } from "./state/gameState.js";
 import { recomputeFog, applyScout, getFogState, bumpAction } from "./engine/fog.js";
 import { endTurn, computeHexIncome } from "./engine/turn.js";
+import { initQuests, ensureQuestsState, getActiveQuests, getClaimableQuests, reportProgress, claimQuestReward } from "./engine/quests.js";
 
 const status = (msg) => {
   const el = document.getElementById("loading-status");
@@ -63,6 +64,11 @@ async function boot() {
     console.log("[save] 저장 복원:", saved.ownedHexes?.length || 0, "헥스,", saved.capturedStructures?.length || 0, "구조물");
   }
   const gameState = saved ? restoreState(saved, tables) : initState(tables);
+  // 미션 상태 초기화 (옛 세이브엔 quests 없을 수 있음)
+  if (saved) ensureQuestsState(gameState, tables);
+  else initQuests(gameState, tables);
+  // 신규/복원 직후 가문 레벨 진행 quest 즉시 평가 (이미 도달한 마일스톤 처리)
+  reportProgress(gameState, tables, "family_level", gameState.family.level || 1);
   recomputeFog(gameState, tables);
 
   // GDD §9-3: 리더 사망한 파티는 전장 잔류 불가 — 복원 시 자동 퇴각(구 세이브 호환)
@@ -150,6 +156,38 @@ async function boot() {
   syncOverlays();
   renderPartyList();
   updateHud();
+
+  // GDD §4-2: 공성 타이머 만료 체크 (1초 주기)
+  // 복원 시점에 토스트 알림 + UI 갱신하여 유저가 "왜 실패했는지" 인지 가능.
+  setInterval(() => {
+    const gs = getState();
+    if (!gs?.siegeState) return;
+    let anyActive = false;
+    let anyExpired = false;
+    for (const sid of Object.keys(gs.siegeState)) {
+      const sp = gs.siegeState[sid];
+      if (sp?.defenderTimers && Object.keys(sp.defenderTimers).length > 0) anyActive = true;
+      const struct = tables.structures.get(Number(sid));
+      if (!struct) continue;
+      const expired = cleanupExpiredTimers(Number(sid));
+      if (expired.length === 0) continue;
+      anyExpired = true;
+      const defenseRows = tables.structureDefense.all().filter(d => expired.includes(d.DefenseID));
+      const layers = [...new Set(defenseRows.map(d => d.DefenseLayer))];
+      for (const layer of layers) {
+        const nameKr = { Patrol: "경비대", Garrison: "수비대" }[layer] || layer;
+        showToast(`💀 [${struct.Name}] ${nameKr} 복원됨 (타이머 만료)`, "warn");
+      }
+    }
+    if (anyExpired) {
+      saveState(getState());
+    }
+    // 타이머 활성 중이면 매초 화면 갱신 (링 + 팝업 카운트다운)
+    if (anyActive || anyExpired) {
+      worldmap.requestDraw();
+      if (selectedHexRow?.StructureID) showTilePanel(selectedHexRow, null, tables, 0, 0);
+    }
+  }, 1000);
 
   function renderPartyList() {
     const gs = getState();
@@ -364,14 +402,38 @@ async function boot() {
             </div>
           </div>`;
       }
-      // 수비 진행도
+      // 공성 진행도 (layer별 타이머 시각화)
       const defs = findStructureDefenders(structure.StructureID, tables);
-      const nonPatrol = defs.filter(d => d.__layer !== "Patrol");
-      if (nonPatrol.length > 0) {
-        const downCount = nonPatrol.filter(d =>
+      const byLayer = { Patrol: [], Garrison: [], Stationed: [] };
+      for (const d of defs) byLayer[d.__layer]?.push(d);
+      const fmtTime = (ms) => {
+        if (ms == null) return "영구";
+        const s = Math.max(0, Math.floor(ms / 1000));
+        return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+      };
+      for (const layer of ["Patrol", "Garrison", "Stationed"]) {
+        const arr = byLayer[layer];
+        if (!arr.length) continue;
+        const defeatedCount = arr.filter(d =>
           isDefenderDefeated(structure.StructureID, d.PartyID)
         ).length;
-        siegeHtml += `<div style="font-size:10px;color:#aaa;margin-top:3px">수비 격파: ${downCount}/${nonPatrol.length} (경비대는 매번 등장)</div>`;
+        const nameKr = { Patrol: "경비대", Garrison: "수비대", Stationed: "주둔군" }[layer];
+        // 가장 먼저 만료되는 타이머 표시
+        let timerText = "";
+        if (layer !== "Stationed" && defeatedCount > 0) {
+          const rems = arr
+            .map(d => getDefenderTimerRemaining(structure.StructureID, d.PartyID))
+            .filter(r => r != null);
+          if (rems.length) {
+            const earliest = Math.min(...rems);
+            const color = earliest < 30000 ? "#f44" : earliest < 60000 ? "#fa4" : "#5a5";
+            timerText = ` <span style="color:${color}">⏱ ${fmtTime(earliest)}</span>`;
+          }
+        }
+        const status = defeatedCount === arr.length
+          ? `<span style="color:#5a5">✅ ${defeatedCount}/${arr.length}</span>`
+          : `<span style="color:#fa6">${defeatedCount}/${arr.length}</span>`;
+        siegeHtml += `<div style="font-size:10px;color:#ccc;margin-top:2px">${nameKr} ${status}${timerText}</div>`;
       }
     }
     document.getElementById("hex-meta").innerHTML = info.join(" · ") + siegeHtml;
@@ -637,6 +699,7 @@ async function boot() {
       if (mode === "occupy") {
         ownHex(hexRow.HexID);
         if (structureForCombat) captureStructure(structureForCombat.StructureID);
+        reportProgress(getState(), tables, "occupy", 1);
         const ps = camera.worldToScreen(hexWorld(hexRow.HexQ, hexRow.HexR).x, hexWorld(hexRow.HexQ, hexRow.HexR).y);
         showBattleResult(hexRow, null, 0, 0, mode, ps);
       }
@@ -678,21 +741,20 @@ async function boot() {
     // 4. 결과 처리
     const allWon = totalWins === enemies.length;
 
-    // 구조물 공성: 격파한 수비대를 영구 격파 마킹 + HP 데미지 (gdd_structure_siege.md)
+    // 구조물 공성: 격파 웨이브를 layer별 타이머로 마킹 + HP 데미지 (gdd_structure_siege.md §4)
     let siegeInfo = null;
     if (isStructureSiege && totalWins > 0) {
       const maxHp = getStructureMaxHP(structureForCombat);
-      // 격파한 웨이브들 마킹 (Patrol 제외 — 무한 등장)
+      // 격파한 웨이브들을 layer별 타이머 규칙에 맞춰 마킹
+      // - Patrol: 3분 타이머, Garrison: 5분 타이머, Stationed: 영구
       for (let i = 0; i < totalWins; i++) {
         const ep = enemies[i];
-        if (ep.__layer !== "Patrol") {
-          markDefenderDefeated(structureForCombat.StructureID, ep.PartyID, maxHp);
-        }
+        markDefenderDefeated(structureForCombat.StructureID, ep.PartyID, maxHp, ep.__layer);
+        showToast(`✅ [${structureForCombat.Name}] ${ep.__layerName} 격파${ep.__layer === "Stationed" ? " (영구)" : ""}`, "exp");
       }
-      // 모든 비-Patrol 수비대 격파 시 → HP 데미지
+      // 모든 방어자 격파 시 → HP 데미지 (Patrol도 포함 — 타이머 내에 깨진 상태여야 함)
       const allDefenders = findStructureDefenders(structureForCombat.StructureID, tables);
-      const nonPatrol = allDefenders.filter(d => d.__layer !== "Patrol");
-      const allCleared = nonPatrol.every(d =>
+      const allCleared = allDefenders.every(d =>
         isDefenderDefeated(structureForCombat.StructureID, d.PartyID)
       );
       if (allCleared && maxHp > 0) {
@@ -704,11 +766,20 @@ async function boot() {
           // 함락! 점령 처리
           ownHex(hexRow.HexID);
           captureStructure(structureForCombat.StructureID);
+          reportProgress(getState(), tables, "occupy", 1);
+          // 구조물 종류별 quest 진행
+          const sType = structureForCombat.StructureType;
+          if (sType === "Gate") reportProgress(getState(), tables, "siege_gate", 1);
+          if (sType === "Fort") reportProgress(getState(), tables, "siege_fort", 1);
+          reportProgress(getState(), tables, "siege_any", 1);
         }
       } else if (maxHp === 0 && allCleared && mode === "occupy") {
         // 거점(Fort) — 내구도 없음, 수비대 전멸 시 즉시 함락
         ownHex(hexRow.HexID);
         captureStructure(structureForCombat.StructureID);
+        reportProgress(getState(), tables, "occupy", 1);
+        reportProgress(getState(), tables, "siege_fort", 1);
+        reportProgress(getState(), tables, "siege_any", 1);
         siegeInfo = { damage: 0, hp: 0, maxHp: 0, fell: true, allCleared: true };
       }
     }
@@ -720,7 +791,11 @@ async function boot() {
     if (allWon && !isStructureSiege && mode === "occupy" && !leaderDead) {
       // 일반 헥스 점령 (리더 생존 시에만)
       ownHex(hexRow.HexID);
+      reportProgress(getState(), tables, "occupy", 1);
       // 파티는 점령 헥스에 유지
+    } else if (allWon && !isStructureSiege && mode === "subjugate" && !leaderDead) {
+      // 토벌 승리 (점령 X)
+      reportProgress(getState(), tables, "subjugate", 1);
     } else if (!allWon || leaderDead) {
       // 패배 또는 리더 사망 → 자동 귀환 + 거점 도착 즉시 전체 회복
       const home = getState().family.homeHex;
@@ -783,6 +858,15 @@ async function boot() {
         gs.resources.grain += r.grain || 0;
         gs.resources.vis += r.vis || 0;
         gs.family.xp += r.familyExp || 0;
+        // 가문 XP 누적 → 자동 레벨업 체크 (M5-A 가문레벨)
+        const lvUps = levelUpFamilyIfReady(tables);
+        for (const ev of lvUps) {
+          showToast(`🏰 가문 Lv${ev.from} → <b>Lv${ev.to}</b>!`, "levelup");
+        }
+        // 가문 레벨 변동 시 family_level 타입 quest 즉시 평가
+        if (lvUps.length > 0) {
+          reportProgress(getState(), tables, "family_level", gs.family.level);
+        }
         const rewardLine = [];
         if (r.gold) rewardLine.push(`골드 +${r.gold}`);
         if (r.grain) rewardLine.push(`곡물 +${r.grain}`);
@@ -1196,6 +1280,416 @@ async function boot() {
       if (cancelBtn) cancelBtn.remove();
     }, 0);
   }
+
+  // ─── 가문 성장 패널 (M5-A) ───
+  // 정식 명칭은 training.json의 Name 필드에서 추출 (예: "Fighter 훈련 1" → "Fighter 훈련")
+  // 효과 설명은 EffectType/EffectType2 (gdd_family_growth_system.md §4-1 기준)
+  const TRAIN_ICONS = {
+    stamina: "🛡️", recovery: "💖",
+    class_F: "⚔️", class_S: "🏹", class_M: "🔫", class_W: "✨", class_L: "🔮",
+  };
+  const TRAIN_ORDER = ["stamina", "recovery", "class_F", "class_S", "class_M", "class_W", "class_L"];
+
+  // EffectType → 한국어 단위 라벨
+  const EFFECT_LABELS = {
+    maxFatigue:     "최대 피로도",
+    recoveryPerMin: "분당 회복",
+    ATK_PCT: "ATK", DEF_PCT: "DEF", SPD_PCT: "SPD", CRI_PCT: "CRI",
+    INT_PCT: "INT", RES_PCT: "RES", PEN_PCT: "PEN",
+  };
+  function isPctEffect(type) { return type && type.endsWith("_PCT"); }
+
+  /** TrainingType의 카테고리명 추출 (Lv1 행의 Name에서 " 1" 제거) */
+  function getTrainingCategoryName(trainingType) {
+    const lv1 = tables.training.all().find(r => r.TrainingType === trainingType && r.Level === 1);
+    if (!lv1?.Name) return trainingType;
+    return lv1.Name.replace(/\s*\d+$/, "");  // 끝 숫자 제거
+  }
+
+  /** EffectType+EffectType2 → "ATK +1% / DEF +0.5%" 같은 표시 문자열 */
+  function formatEffectDescription(row) {
+    if (!row) return "";
+    const parts = [];
+    const fmt = (type, value) => {
+      if (!type || !value) return null;
+      const label = EFFECT_LABELS[type] || type;
+      const unit = isPctEffect(type) ? "%" : "";
+      const sign = value > 0 ? "+" : "";
+      return `${label} ${sign}${value}${unit}`;
+    };
+    const e1 = fmt(row.EffectType, row.EffectValue);
+    const e2 = fmt(row.EffectType2, row.EffectValue2);
+    if (e1) parts.push(e1);
+    if (e2) parts.push(e2);
+    return parts.length ? parts.join(" / ") + "/Lv" : "";
+  }
+
+  const familyPanel = document.getElementById("family-panel");
+  const familyBtn = document.querySelector('#tab-dock button[data-tab="family"]');
+  const wmBtn = document.querySelector('#tab-dock button[data-tab="worldmap"]');
+  const familyContent = document.getElementById("family-content");
+
+  function openFamilyPanel() {
+    familyPanel.hidden = false;
+    familyBtn.classList.add("active");
+    wmBtn.classList.remove("active");
+    renderFamilyContent("training");
+  }
+  function closeFamilyPanel() {
+    familyPanel.hidden = true;
+    familyBtn.classList.remove("active");
+    wmBtn.classList.add("active");
+  }
+
+  familyBtn.addEventListener("click", () => {
+    if (familyPanel.hidden) openFamilyPanel(); else closeFamilyPanel();
+  });
+  wmBtn.addEventListener("click", () => closeFamilyPanel());
+  document.getElementById("btn-close-family").addEventListener("click", closeFamilyPanel);
+  // 백드롭 클릭(카드 외부) 으로 닫기
+  familyPanel.addEventListener("click", (e) => {
+    if (e.target === familyPanel) closeFamilyPanel();
+  });
+  // ESC 키로 닫기
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !familyPanel.hidden) closeFamilyPanel();
+  });
+
+  // 서브탭 전환 (현재 훈련만 활성)
+  document.querySelectorAll('#family-subtabs button').forEach(btn => {
+    btn.addEventListener("click", () => {
+      if (btn.disabled) return;
+      document.querySelectorAll('#family-subtabs button').forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderFamilyContent(btn.dataset.sub);
+    });
+  });
+
+  function renderFamilyContent(sub) {
+    if (sub === "training") {
+      renderTrainingTab();
+    } else if (sub === "level") {
+      renderFamilyLevelTab();
+    } else {
+      familyContent.innerHTML = `<div class="fp-empty">준비 중 (M5-B)</div>`;
+    }
+  }
+
+  // 가문 시설/콘텐츠 키 → 한국어 라벨 (family_level.json Unlock 컬럼)
+  const UNLOCK_LABELS = {
+    barracks: "배럭 시설", recovery: "회복력 강화",
+    training_ground: "훈련장", class_F: "Fighter 훈련", class_S: "Scout 훈련", class_M: "Musketeer 훈련",
+    mcc_team_2: "분대 2팀", barracks_expand: "배럭 확장", exploration: "탐색",
+    kitchen: "주방", smithy: "대장간",
+    infirmary: "치료소", warehouse: "창고", wall: "성벽", weapon_research: "무기 연구", garrison: "수비대",
+    trading_post: "교역소", lab: "연구소", outpost_2: "거점 2", class_W: "Wizard 훈련", class_L: "Warlock 훈련", gate: "관문",
+    trade_system: "교역 시스템",
+    management_office: "관저", mcc_team_3: "분대 3팀", awakening: "각성",
+  };
+
+  function renderFamilyLevelTab() {
+    const gs = getState();
+    const cur = gs.family.level || 1;
+    const xp = gs.family.xp || 0;
+    const curRow = tables.familyLevel.get(cur);
+    const nextRow = tables.familyLevel.get(cur + 1);
+
+    let progressHtml;
+    if (nextRow) {
+      const reqStart = curRow?.CumulativeXP || 0;
+      const reqEnd = nextRow.CumulativeXP || 0;
+      const span = Math.max(1, reqEnd - reqStart);
+      const have = Math.max(0, xp - reqStart);
+      const pct = Math.min(100, Math.round(have / span * 100));
+      progressHtml = `
+        <div class="fl-progress-label">XP ${xp} / ${reqEnd} (다음 Lv ${cur + 1}까지 <b>${reqEnd - xp}</b>)</div>
+        <div class="fl-progress-bar"><div class="fl-progress-fill" style="width:${pct}%"></div></div>
+      `;
+    } else {
+      progressHtml = `<div class="fl-progress-label">최대 레벨 달성</div>`;
+    }
+
+    // 다음 5개 레벨 해금 미리보기
+    const upcoming = [];
+    for (let lv = cur + 1; lv <= cur + 10 && upcoming.length < 5; lv++) {
+      const row = tables.familyLevel.get(lv);
+      if (!row) break;
+      if (!row.Unlock) continue;
+      const items = row.Unlock.split(",").map(k => UNLOCK_LABELS[k.trim()] || k.trim());
+      upcoming.push(`<div class="fl-unlock-row">
+        <span class="fl-unlock-lv">Lv ${lv}</span>
+        <span class="fl-unlock-list">${items.join(", ")}</span>
+      </div>`);
+    }
+    const upcomingHtml = upcoming.length
+      ? `<div class="fl-section-title">앞으로 해금되는 항목</div><div class="fl-unlock-list-box">${upcoming.join("")}</div>`
+      : "";
+
+    // XP 획득 안내
+    const hintHtml = `
+      <div class="fl-section-title">가문 XP 획득 방법</div>
+      <ul class="fl-hint">
+        <li>전투 승리 (점령/토벌) 시 자동 가산 (DropTable의 FamilyEXP)</li>
+        <li>점령 ★등급이 높을수록 큰 XP</li>
+      </ul>
+    `;
+
+    familyContent.innerHTML = `
+      <div class="fl-wrap">
+        <div class="fl-current">
+          <div class="fl-lv-big">가문 Lv <b>${cur}</b></div>
+          ${progressHtml}
+        </div>
+        ${upcomingHtml}
+        ${hintHtml}
+      </div>
+    `;
+  }
+
+  function renderTrainingTab() {
+    const gs = getState();
+    const items = TRAIN_ORDER.map(type => {
+      const cur = getTrainingLevel(type);
+      const next = getNextTrainingRow(type, tables);
+      const icon = TRAIN_ICONS[type] || "•";
+      const categoryName = getTrainingCategoryName(type);
+      // desc는 다음 행이 있으면 다음 행 효과, 없으면 마지막 행 효과 (MAX 표시용)
+      const lastRow = tables.training.all().filter(r => r.TrainingType === type).slice(-1)[0];
+      const descRow = next || lastRow;
+      const desc = formatEffectDescription(descRow);
+
+      if (!next) {
+        return `<div class="train-card">
+          <div class="train-icon">${icon}</div>
+          <div class="train-body">
+            <div class="train-name">${categoryName} <span class="train-lv">Lv ${cur} (MAX)</span></div>
+            <div class="train-desc">${desc}</div>
+          </div>
+        </div>`;
+      }
+
+      const check = canAffordTraining(next);
+      const costs = [];
+      if (next.CostRes1 && next.CostAmt1) costs.push({ res: next.CostRes1, amt: next.CostAmt1 });
+      if (next.CostRes2 && next.CostAmt2) costs.push({ res: next.CostRes2, amt: next.CostAmt2 });
+      if (next.CostRes3 && next.CostAmt3) costs.push({ res: next.CostRes3, amt: next.CostAmt3 });
+      const costHtml = costs.map(c => {
+        const have = gs.resources[c.res] || 0;
+        const lack = have < c.amt;
+        const label = RES_LABEL[c.res] || c.res;
+        return `<span class="train-cost ${lack ? 'lack' : ''}"><i class="res-icon ${RES_DOT_CLASS[c.res] || ''}"></i>${label} ${c.amt}</span>`;
+      }).join("");
+
+      let btnLabel = `Lv ${cur + 1} 투자`;
+      let tooltip = `${next.Name} (Lv ${cur} → Lv ${cur + 1})`;
+      let disabled = !check.ok;
+      if (check.reason === "locked") {
+        btnLabel = `🔒 가문 Lv${check.unlockLv} 필요`;
+        tooltip = `가문 레벨 ${check.unlockLv} 이상에서 해금`;
+      } else if (check.reason === "cost") {
+        const lacks = Object.entries(check.missing).map(([r, n]) => `${RES_LABEL[r] || r} ${n} 부족`).join(", ");
+        tooltip = lacks;
+      }
+
+      return `<div class="train-card ${disabled ? 'disabled' : ''}" data-type="${type}">
+        <div class="train-icon">${icon}</div>
+        <div class="train-body">
+          <div class="train-name">${categoryName} <span class="train-lv">Lv ${cur}</span></div>
+          <div class="train-desc">${desc}</div>
+          <div class="train-costs">${costHtml}</div>
+        </div>
+        <button class="train-btn" data-invest="${type}" ${disabled ? "disabled" : ""} title="${tooltip}">${btnLabel}</button>
+      </div>`;
+    }).join("");
+
+    familyContent.innerHTML = `<div class="train-list">${items}</div>`;
+
+    // 투자 클릭
+    familyContent.querySelectorAll('button[data-invest]').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const type = btn.dataset.invest;
+        const categoryName = getTrainingCategoryName(type);
+        pushUndo(`훈련 투자: ${categoryName}`);
+        const result = investTraining(type, tables);
+        if (result.ok) {
+          showToast(`${TRAIN_ICONS[type] || ""} ${result.row.Name} 투자 완료`, "exp");
+          // Quest 진행도: 모든 훈련 = "training", 병종 훈련 = "class_train" + class_train_level
+          reportProgress(getState(), tables, "training", 1);
+          if (type.startsWith("class_")) {
+            reportProgress(getState(), tables, "class_train", 1);
+            // class_train_level: 해당 type의 새 Lv 보고 (가장 높은 class_train Lv)
+            const newLv = getTrainingLevel(type);
+            reportProgress(getState(), tables, "class_train_level", newLv);
+          }
+          renderTrainingTab();
+          updateHud();
+        } else {
+          showToast(`투자 실패: ${result.reason}`, "warn");
+        }
+      });
+    });
+  }
+
+  // 자원/가문 변동 시 가문 패널 자동 갱신 (열려있을 때만)
+  on("state:changed", () => {
+    if (familyPanel.hidden) return;
+    const active = document.querySelector('#family-subtabs button.active');
+    if (!active) return;
+    if (active.dataset.sub === "training") renderTrainingTab();
+    else if (active.dataset.sub === "level") renderFamilyLevelTab();
+  });
+
+  // ─── 임무 패널 (M6-lite) ───
+  const TARGET_LABELS = {
+    occupy: "헥스 점령", subjugate: "토벌", siege_gate: "관문 함락", siege_fort: "거점 함락",
+    siege_any: "관문/거점 함락", kill_named: "네임드 처치", enter_region: "신규 리전 진입",
+    discover_gate: "관문 발견", craft_food: "음식 제작", craft_equip: "장비 제작",
+    class_train: "병종 훈련", training: "훈련 (훈련/체력/회복)",
+    class_train_level: "병종 훈련 Lv 도달", facility_level: "시설 Lv 도달",
+    family_level: "가문 Lv 도달", occupy_special: "특수자원 점령",
+    patrol: "순찰", daily_all: "일일 전부 완료", weekly_all: "주간 전부 완료",
+  };
+
+  const questPanel = document.getElementById("quest-panel");
+  const questBtn = document.querySelector('#tab-dock button[data-tab="quest"]');
+  const questBadge = document.getElementById("quest-badge");
+  const questContent = document.getElementById("quest-content");
+
+  function openQuestPanel() {
+    closeFamilyPanel();
+    questPanel.hidden = false;
+    questBtn.classList.add("active");
+    wmBtn.classList.remove("active");
+    renderQuestContent("chain");
+  }
+  function closeQuestPanel() {
+    questPanel.hidden = true;
+    questBtn.classList.remove("active");
+    if (familyPanel.hidden) wmBtn.classList.add("active");
+  }
+  questBtn.addEventListener("click", () => {
+    if (questPanel.hidden) openQuestPanel(); else closeQuestPanel();
+  });
+  wmBtn.addEventListener("click", () => closeQuestPanel());
+  document.getElementById("btn-close-quest").addEventListener("click", closeQuestPanel);
+  questPanel.addEventListener("click", (e) => {
+    if (e.target === questPanel) closeQuestPanel();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !questPanel.hidden) closeQuestPanel();
+  });
+
+  document.querySelectorAll('#quest-subtabs button').forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll('#quest-subtabs button').forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderQuestContent(btn.dataset.qsub);
+    });
+  });
+
+  function renderQuestContent(qtype) {
+    const gs = getState();
+    if (!gs.quests) {
+      questContent.innerHTML = `<div class="fp-empty">미션 데이터 미초기화</div>`;
+      return;
+    }
+    const all = tables.quests.all().filter(q => q.QuestType === qtype);
+    // chain: 활성/대기 중인 것만 + 완료된 마지막 N개
+    let displayed;
+    if (qtype === "chain") {
+      displayed = all.filter(q => gs.quests.active.includes(q.QuestID) || gs.quests.completed.includes(q.QuestID))
+        .sort((a, b) => a.QuestID - b.QuestID);
+    } else {
+      displayed = all.sort((a, b) => a.QuestID - b.QuestID);
+    }
+
+    if (displayed.length === 0) {
+      questContent.innerHTML = `<div class="fp-empty">표시할 미션 없음</div>`;
+      return;
+    }
+
+    const html = displayed.map(q => {
+      const claimed = gs.quests.completed.includes(q.QuestID);
+      const ready = gs.quests.readyToClaim.includes(q.QuestID);
+      const cur = Math.min(gs.quests.progress[q.QuestID] || 0, q.TargetCount);
+      const pct = Math.round(cur / q.TargetCount * 100);
+      const targetLabel = TARGET_LABELS[q.TargetType] || q.TargetType;
+
+      // 보상 표시
+      const rewards = [];
+      if (q.RwdGrain) rewards.push(`<span class="qrw"><i class="res-icon grain"></i>${q.RwdGrain}</span>`);
+      if (q.RwdGold)  rewards.push(`<span class="qrw"><i class="res-icon gold"></i>${q.RwdGold}</span>`);
+      if (q.RwdVis)   rewards.push(`<span class="qrw"><i class="res-icon vis"></i>${q.RwdVis}</span>`);
+      if (q.RwdGem)   rewards.push(`<span class="qrw"><i class="res-icon gem"></i>${q.RwdGem}</span>`);
+      if (q.RwdScroll) rewards.push(`<span class="qrw"><i class="res-icon scroll"></i>${q.RwdScroll}</span>`);
+      if (q.RwdFamilyEXP) rewards.push(`<span class="qrw qrw-fexp">🏰 ${q.RwdFamilyEXP}</span>`);
+
+      let btn;
+      if (claimed) {
+        btn = `<button class="quest-btn done" disabled>✓ 수령 완료</button>`;
+      } else if (ready) {
+        btn = `<button class="quest-btn claim" data-claim="${q.QuestID}">🎁 보상 수령</button>`;
+      } else {
+        btn = `<button class="quest-btn" disabled>${cur} / ${q.TargetCount}</button>`;
+      }
+
+      return `<div class="quest-card ${claimed ? 'claimed' : ''} ${ready ? 'ready' : ''}">
+        <div class="quest-body">
+          <div class="quest-head">
+            <span class="quest-title">${q.Title}</span>
+            <span class="quest-target">${targetLabel} ${q.TargetCount}</span>
+          </div>
+          <div class="quest-desc">${q.Description}</div>
+          <div class="quest-progress-bar"><div class="quest-progress-fill" style="width:${Math.min(100, pct)}%"></div></div>
+          <div class="quest-rewards">${rewards.join("")}</div>
+        </div>
+        ${btn}
+      </div>`;
+    }).join("");
+
+    questContent.innerHTML = `<div class="quest-list">${html}</div>`;
+
+    // 보상 수령 클릭
+    questContent.querySelectorAll('button[data-claim]').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const qid = parseInt(btn.dataset.claim, 10);
+        const result = claimQuestReward(getState(), tables, qid, () => levelUpFamilyIfReady(tables));
+        if (result.ok) {
+          const lines = [];
+          if (result.rewards.familyExp) lines.push(`🏰 가문EXP +${result.rewards.familyExp}`);
+          if (result.rewards.gold) lines.push(`골드 +${result.rewards.gold}`);
+          if (result.rewards.vis) lines.push(`비스 +${result.rewards.vis}`);
+          showToast(`✓ 보상 수령: ${lines.join(", ")}`, "exp");
+          for (const ev of (result.levelUps || [])) {
+            showToast(`🏰 가문 Lv${ev.from} → <b>Lv${ev.to}</b>!`, "levelup");
+          }
+          renderQuestContent(qtype);
+          updateHud();
+          updateQuestBadge();
+        }
+      });
+    });
+  }
+
+  function updateQuestBadge() {
+    const gs = getState();
+    const n = gs.quests?.readyToClaim?.length || 0;
+    if (n > 0) {
+      questBadge.textContent = n;
+      questBadge.hidden = false;
+    } else {
+      questBadge.hidden = true;
+    }
+  }
+
+  // 미션 진행 변동 시 패널 갱신 + 배지 업데이트
+  on("state:changed", () => {
+    updateQuestBadge();
+    if (questPanel.hidden) return;
+    const active = document.querySelector('#quest-subtabs button.active');
+    if (active) renderQuestContent(active.dataset.qsub);
+  });
+  updateQuestBadge();
 
   // Animation loop
   function tick() { worldmap.draw(); requestAnimationFrame(tick); }

@@ -164,6 +164,9 @@ export function initState(tables) {
     territoryLv: 0,
     // 공성 진행 상태: { [structureId]: { hp, defeatedDefenseIds: [DefenseID] } }
     siegeState: {},
+    // 가문 성장 투자 레벨 (M5-A): { [trainingType]: currentLv }
+    // training.json의 TrainingType 키별 0=미투자, N=다음 레벨 N+1을 살 수 있음
+    training: {},
   };
 
   emit("state:init", state);
@@ -234,6 +237,10 @@ export function restoreState(saved, tables) {
   }
   if (state.territoryLv == null) state.territoryLv = 0;
   if (!state.siegeState) state.siegeState = {};
+  if (!state.training) state.training = {};
+
+  // Migration: 옛 세이브에 누적된 family.xp 즉시 레벨 반영 (M5-A 이전 세이브 호환)
+  levelUpFamilyIfReady(tables);
 
   // Migration: 홈 도시 클러스터(7헥스) 자동 점령 — 옛 세이브에 누락된 6헥스 보강.
   const home = state.family?.homeHex;
@@ -366,30 +373,87 @@ export function captureStructure(structureId) {
 
 // ─────── 구조물 공성 상태 헬퍼 ───────
 
+// GDD §4-2: 공성 복원 타이머 (실시간 기준 — 데모용. 정식판은 턴 기반).
+// 경비대/수비대는 격파 후 타이머 진행, 만료 시 부활. 주둔군은 영구 격파.
+export const SIEGE_TIMER_MS = {
+  Patrol: 3 * 60 * 1000,       // 3분
+  Garrison: 5 * 60 * 1000,     // 5분
+  Stationed: null,              // 영구 격파 (타이머 없음)
+};
+
 /** 구조물의 현재 공성 진행 상태 (없으면 새로 생성). */
 export function getSiegeProgress(structureId, maxHp) {
   if (!state.siegeState) state.siegeState = {};
   if (!state.siegeState[structureId]) {
-    state.siegeState[structureId] = { hp: maxHp, defeatedDefenseIds: [] };
+    state.siegeState[structureId] = {
+      hp: maxHp,
+      defeatedDefenseIds: [],     // 주둔군 영구 격파 저장 (과거 호환)
+      defenderTimers: {},          // { [defenseId]: expireAtMs } — Patrol/Garrison용
+    };
   }
-  return state.siegeState[structureId];
+  // 과거 세이브 호환
+  const sp = state.siegeState[structureId];
+  if (!sp.defenderTimers) sp.defenderTimers = {};
+  if (!sp.defeatedDefenseIds) sp.defeatedDefenseIds = [];
+  return sp;
 }
 
 export function getStructureCurrentHP(structureId) {
   return state?.siegeState?.[structureId]?.hp;
 }
 
-/** 수비 웨이브 격파 마킹. */
-export function markDefenderDefeated(structureId, defenseId, maxHp) {
+/**
+ * 수비 웨이브 격파 마킹.
+ * @param {string} layer  'Patrol' | 'Garrison' | 'Stationed'
+ */
+export function markDefenderDefeated(structureId, defenseId, maxHp, layer) {
   const sp = getSiegeProgress(structureId, maxHp);
-  if (!sp.defeatedDefenseIds.includes(defenseId)) {
-    sp.defeatedDefenseIds.push(defenseId);
+  const timerMs = SIEGE_TIMER_MS[layer];
+  if (timerMs == null) {
+    // 주둔군 — 영구 격파
+    if (!sp.defeatedDefenseIds.includes(defenseId)) {
+      sp.defeatedDefenseIds.push(defenseId);
+    }
+  } else {
+    // 경비대/수비대 — 타이머 기반
+    sp.defenderTimers[defenseId] = Date.now() + timerMs;
   }
+  emit("state:changed", { path: "siegeState", structureId, action: "defeat" });
 }
 
-/** 격파 여부 확인. */
+/** 격파 여부 확인 (타이머 만료 시 false 반환). */
 export function isDefenderDefeated(structureId, defenseId) {
-  return state?.siegeState?.[structureId]?.defeatedDefenseIds?.includes(defenseId) || false;
+  const sp = state?.siegeState?.[structureId];
+  if (!sp) return false;
+  // 주둔군: 영구 격파
+  if (sp.defeatedDefenseIds?.includes(defenseId)) return true;
+  // 경비대/수비대: 타이머 체크
+  const expireAt = sp.defenderTimers?.[defenseId];
+  if (expireAt && Date.now() < expireAt) return true;
+  return false;
+}
+
+/** 특정 방어자의 복원까지 남은 ms (없으면 null). */
+export function getDefenderTimerRemaining(structureId, defenseId) {
+  const expireAt = state?.siegeState?.[structureId]?.defenderTimers?.[defenseId];
+  if (!expireAt) return null;
+  const rem = expireAt - Date.now();
+  return rem > 0 ? rem : null;
+}
+
+/** 만료된 타이머 제거. 만료된 defenseId 배열 반환 (로그용). */
+export function cleanupExpiredTimers(structureId) {
+  const sp = state?.siegeState?.[structureId];
+  if (!sp?.defenderTimers) return [];
+  const now = Date.now();
+  const expired = [];
+  for (const [did, expireAt] of Object.entries(sp.defenderTimers)) {
+    if (now >= expireAt) {
+      expired.push(Number(did));
+      delete sp.defenderTimers[did];
+    }
+  }
+  return expired;
 }
 
 /** 구조물 HP 데미지 적용. HP <= 0이면 true 반환 (함락 가능). */
@@ -447,4 +511,98 @@ export function getTerritoryUsedSlots() {
 
 export function canOccupyMore() {
   return getTerritoryUsedSlots() < getTerritoryMaxSlots();
+}
+
+// ─────── 가문 성장 투자 (M5-A) ───────
+
+/** 해당 TrainingType의 현재 투자 레벨 (0 = 미투자). */
+export function getTrainingLevel(trainingType) {
+  return state?.training?.[trainingType] || 0;
+}
+
+/**
+ * 다음 Lv 훈련 행을 training.json에서 찾는다.
+ * 현재 Lv=0이면 Level=1 행, Lv=5면 Level=6 행 반환.
+ */
+export function getNextTrainingRow(trainingType, tables) {
+  const cur = getTrainingLevel(trainingType);
+  const nextLv = cur + 1;
+  return tables.training.all().find(
+    r => r.TrainingType === trainingType && r.Level === nextLv
+  ) || null;
+}
+
+/**
+ * 자원 충분한지 + 가문 Lv 해금 조건 만족하는지 판정.
+ * @returns {{ ok: boolean, reason?: string, missing?: object }}
+ */
+export function canAffordTraining(row) {
+  if (!row) return { ok: false, reason: "max" };  // 최대 레벨 도달
+  const familyLv = state.family?.level || 1;
+  if ((row.UnlockFamilyLv || 1) > familyLv) {
+    return { ok: false, reason: "locked", unlockLv: row.UnlockFamilyLv };
+  }
+  const missing = {};
+  const check = (res, amt) => {
+    if (!res || !amt) return;
+    const have = state.resources[res] || 0;
+    if (have < amt) missing[res] = amt - have;
+  };
+  check(row.CostRes1, row.CostAmt1);
+  check(row.CostRes2, row.CostAmt2);
+  check(row.CostRes3, row.CostAmt3);
+  if (Object.keys(missing).length > 0) return { ok: false, reason: "cost", missing };
+  return { ok: true };
+}
+
+/**
+ * 가문 레벨 자동 진행 — family.xp가 다음 레벨 CumulativeXP 이상이면 레벨업.
+ * 보상 자원 자동 가산. family_level.json 기반.
+ * @returns {Array<{from, to, row}>} 발생한 모든 레벨업
+ */
+export function levelUpFamilyIfReady(tables) {
+  if (!state?.family) return [];
+  const events = [];
+  while (true) {
+    const cur = state.family.level || 1;
+    const nextLv = cur + 1;
+    const row = tables.familyLevel.get(nextLv);
+    if (!row) break;
+    if ((state.family.xp || 0) < (row.CumulativeXP || 0)) break;
+    state.family.level = nextLv;
+    // 레벨업 보상 지급
+    if (row.RwdGrain) state.resources.grain = (state.resources.grain || 0) + row.RwdGrain;
+    if (row.RwdGold)  state.resources.gold  = (state.resources.gold  || 0) + row.RwdGold;
+    if (row.RwdVis)   state.resources.vis   = (state.resources.vis   || 0) + row.RwdVis;
+    if (row.RwdGem)   state.resources.gem   = (state.resources.gem   || 0) + row.RwdGem;
+    if (row.RwdScroll) state.resources.scroll = (state.resources.scroll || 0) + row.RwdScroll;
+    events.push({ from: cur, to: nextLv, row });
+  }
+  if (events.length > 0) emit("state:changed", { path: "family.level", events });
+  return events;
+}
+
+/**
+ * 훈련 투자 실행 — 자원 차감 + 레벨 +1.
+ * @returns {{ ok: boolean, row?: object, reason?: string }}
+ */
+export function investTraining(trainingType, tables) {
+  const row = getNextTrainingRow(trainingType, tables);
+  const check = canAffordTraining(row);
+  if (!check.ok) return { ok: false, reason: check.reason };
+
+  // 자원 차감
+  if (row.CostRes1 && row.CostAmt1) {
+    state.resources[row.CostRes1] = (state.resources[row.CostRes1] || 0) - row.CostAmt1;
+  }
+  if (row.CostRes2 && row.CostAmt2) {
+    state.resources[row.CostRes2] = (state.resources[row.CostRes2] || 0) - row.CostAmt2;
+  }
+  if (row.CostRes3 && row.CostAmt3) {
+    state.resources[row.CostRes3] = (state.resources[row.CostRes3] || 0) - row.CostAmt3;
+  }
+  // 레벨 +1
+  state.training[trainingType] = (state.training[trainingType] || 0) + 1;
+  emit("state:changed", { path: "training", trainingType, action: "invest" });
+  return { ok: true, row };
 }
