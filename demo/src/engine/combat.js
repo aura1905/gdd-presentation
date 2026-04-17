@@ -14,10 +14,17 @@ export function resolveCombat(playerChars, enemyParty, terrainBonus, tables) {
     tables.fieldObjects.all().find(fo => fo.ID === id && fo.ObjectType === "Enemy")
   );
 
-  // 적 레벨 = Region.Strength × HexLevel (RegionTable.Strength 적용으로 권역별 난이도 차등)
-  const region = tables.regions.get(enemyParty.RegionID);
-  const strength = region?.Strength ?? 1;
-  const scaledLevel = Math.max(1, strength * (enemyParty.HexLevel || 1));
+  // 적 레벨 산정:
+  //   - 구조물 수비대: findStructureDefenders가 미리 산정한 EnemyLevel (PatrolLv×5 등) 사용
+  //   - 일반 필드 적: Region.Strength × HexLevel (권역별 난이도)
+  let scaledLevel;
+  if (enemyParty.__isStructure) {
+    scaledLevel = Math.max(1, enemyParty.EnemyLevel || 1);
+  } else {
+    const region = tables.regions.get(enemyParty.RegionID);
+    const strength = region?.Strength ?? 1;
+    scaledLevel = Math.max(1, strength * (enemyParty.HexLevel || 1));
+  }
   const enemyUnits = enemyTemplates.map(t => enemyToSimUnit(t, scaledLevel));
 
   // Apply terrain bonus to player units (ATK/DEF flat bonus from TerrainTable).
@@ -56,6 +63,59 @@ export function resolveCombat(playerChars, enemyParty, terrainBonus, tables) {
   };
 }
 
+// ─────── 구조물 공성 시스템 (gdd_structure_siege.md §2~§4) ───────
+
+// §2: DurabilityLv → MaxHP (관문/도시/던전)
+const DURABILITY_HP = {
+  Gate:    [0, 500, 800, 1200, 1800, 2500, 3500, 5000, 7000, 9000, 12000],
+  City:    [0, 1000, 1500, 2500, 4000, 5500, 7500, 10000, 14000, 18000, 24000],
+  Dungeon: [0, 300, 500, 800, 1200, 1800, 2500, 3500, 5000, 7000, 9000],
+  Fort:    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],  // 거점은 내구도 없음
+};
+
+export function getStructureMaxHP(structure) {
+  if (!structure) return 0;
+  const table = DURABILITY_HP[structure.StructureType];
+  if (!table) return 0;
+  const lv = Math.max(0, Math.min(10, structure.DurabilityLv || 0));
+  return table[lv];
+}
+
+// §3-1: 직업별 공성치
+const SIEGE_APTITUDE = {
+  F: 40,   // Fighter — 근접 A
+  M: 48,   // Musketeer — 화력 S
+  S: 28,   // Scout — 기동 C
+  W: 32,   // Wizard — 책략 B
+  L: 32,   // Warlock — 책략 B
+};
+
+// §3-3: 사기(피로도) 보정 — battle_logic_spec.md §4-4 동일
+function siegeFatigueMultiplier(fatigue) {
+  if (fatigue >= 71) return 1.00;
+  if (fatigue >= 51) return 0.95;
+  if (fatigue >= 31) return 0.85;
+  if (fatigue >= 11) return 0.70;
+  return 0.50;
+}
+
+/**
+ * 파티의 공성치 = 슬롯 1+2+3 캐릭터 공성치 합 × 평균 사기 보정.
+ * @param {object[]} chars  - 활성 캐릭터 (gameState format)
+ */
+export function getPartySiegeDamage(chars) {
+  if (!chars || chars.length === 0) return 0;
+  let total = 0;
+  let avgFat = 0;
+  for (const c of chars) {
+    total += SIEGE_APTITUDE[c.jobClass] ?? 30;
+    avgFat += c.fatigue ?? 100;
+  }
+  avgFat /= chars.length;
+  const mult = siegeFatigueMultiplier(avgFat);
+  return Math.max(1, Math.floor(total * mult));
+}
+
 /** Look up DropTable reward for a battle (BattleType + HexLevel). */
 export function lookupDropReward(battleType, tables, hexLevel) {
   const drops = tables.drops.all();
@@ -90,13 +150,9 @@ export function findStructureDefenders(structureId, tables) {
   if (!struct) return [];
 
   const LAYER_ORDER = { Patrol: 0, Garrison: 1, Stationed: 2 };
-  const LAYER_LV = {
-    Patrol: struct.PatrolLv || 0,
-    Garrison: struct.GarrisonLv || 0,
-    Stationed: struct.StationedLv || 0,
-  };
-  // 적 레벨: 각 layer Lv × 5 (Patrol 약 / Garrison 중 / Stationed 강)
-  const LAYER_MULT = { Patrol: 5, Garrison: 10, Stationed: 15 };
+  // 적 레벨 = 8 + StationedLv × 8 → Sta1=16, Sta9=80 (Player 권장 Lv와 매칭)
+  const enemyLevel = Math.max(1, 8 + (struct.StationedLv || 1) * 8);
+  const enemyStar = Math.max(0, (struct.GarrisonLv || 0) - 1);
   const LAYER_NAME_KR = { Patrol: "경비대", Garrison: "수비대", Stationed: "주둔군" };
 
   return tables.structureDefense.all()
@@ -107,24 +163,20 @@ export function findStructureDefenders(structureId, tables) {
       if (la !== lb) return la - lb;
       return (a.WaveIndex || 0) - (b.WaveIndex || 0);
     })
-    .map(d => {
-      const layerLv = LAYER_LV[d.DefenseLayer] || 1;
-      const layerMult = LAYER_MULT[d.DefenseLayer] || 5;
-      return {
-        PartyID: d.DefenseID,
-        RegionID: 0,
-        HexLevel: 1,
-        PartyIndex: d.WaveIndex,
-        PartyCount: 0,
-        Slot1: d.Slot1, Slot1Role: d.Slot1Role,
-        Slot2: d.Slot2, Slot2Role: d.Slot2Role,
-        Slot3: d.Slot3, Slot3Role: d.Slot3Role,
-        EnemyLevel: Math.max(1, layerLv * layerMult),
-        EnemyStar: 0,
-        __isStructure: true,
-        __layer: d.DefenseLayer,
-        __layerName: LAYER_NAME_KR[d.DefenseLayer] || d.DefenseLayer,
-        __structureType: struct.StructureType,
-      };
-    });
+    .map(d => ({
+      PartyID: d.DefenseID,
+      RegionID: 0,
+      HexLevel: 1,
+      PartyIndex: d.WaveIndex,
+      PartyCount: 0,
+      Slot1: d.Slot1, Slot1Role: d.Slot1Role,
+      Slot2: d.Slot2, Slot2Role: d.Slot2Role,
+      Slot3: d.Slot3, Slot3Role: d.Slot3Role,
+      EnemyLevel: enemyLevel,
+      EnemyStar: enemyStar,
+      __isStructure: true,
+      __layer: d.DefenseLayer,
+      __layerName: LAYER_NAME_KR[d.DefenseLayer] || d.DefenseLayer,
+      __structureType: struct.StructureType,
+    }));
 }

@@ -8,6 +8,7 @@ export function saveState(state) {
       ...state,
       capturedStructures: [...(state.capturedStructures || [])],
       ownedHexes: [...(state.ownedHexes || [])],
+      siegeState: state.siegeState || {},
       selectedPartyId: null,  // don't persist UI selection
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(serializable));

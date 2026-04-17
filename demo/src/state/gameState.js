@@ -4,6 +4,52 @@ import { emit } from "../util/events.js";
 
 let state = null;
 
+// 실행 취소 스냅샷 스택 (최대 10단계)
+const UNDO_LIMIT = 10;
+const undoStack = [];
+
+function snapshotForUndo() {
+  if (!state) return null;
+  return JSON.stringify({
+    ...state,
+    capturedStructures: [...(state.capturedStructures || [])],
+    ownedHexes: [...(state.ownedHexes || [])],
+    selectedPartyId: null,
+  });
+}
+
+export function pushUndo(label) {
+  const snap = snapshotForUndo();
+  if (!snap) return;
+  undoStack.push({ label: label || "", snap });
+  while (undoStack.length > UNDO_LIMIT) undoStack.shift();
+  emit("undo:changed", { count: undoStack.length });
+}
+
+export function canUndo() { return undoStack.length > 0; }
+export function undoCount() { return undoStack.length; }
+export function lastUndoLabel() {
+  return undoStack.length > 0 ? undoStack[undoStack.length - 1].label : "";
+}
+
+export function performUndo() {
+  if (undoStack.length === 0) return false;
+  const { snap } = undoStack.pop();
+  const parsed = JSON.parse(snap);
+  state = parsed;
+  // Set 복원
+  state.capturedStructures = new Set(parsed.capturedStructures || []);
+  state.ownedHexes = new Set(parsed.ownedHexes || []);
+  emit("state:changed", { path: "*", action: "undo" });
+  emit("undo:changed", { count: undoStack.length });
+  return true;
+}
+
+export function clearUndoStack() {
+  undoStack.length = 0;
+  emit("undo:changed", { count: 0 });
+}
+
 export function getState() { return state; }
 
 export function initState(tables) {
@@ -90,7 +136,9 @@ export function initState(tables) {
     selectedPartyId: null,
     capturedStructures,
     ownedHexes,
-    territoryLv: 0,   // FortificationTable territory: Lv 0 = 15슬롯, Lv33 = 81슬롯
+    territoryLv: 0,
+    // 공성 진행 상태: { [structureId]: { hp, defeatedDefenseIds: [DefenseID] } }
+    siegeState: {},
   };
 
   emit("state:init", state);
@@ -159,6 +207,7 @@ export function restoreState(saved, tables) {
     state.ownedHexes = new Set();
   }
   if (state.territoryLv == null) state.territoryLv = 0;
+  if (!state.siegeState) state.siegeState = {};
 
   // Migration: 옛날 세이브 캐릭터에 spriteName / element 보강
   for (const ch of state.characters || []) {
@@ -274,7 +323,50 @@ export function isStructureCaptured(structureId) {
 
 export function captureStructure(structureId) {
   state.capturedStructures.add(structureId);
+  // 점령 시 공성 상태 정리
+  if (state.siegeState) delete state.siegeState[structureId];
   emit("state:changed", { path: "capturedStructures", structureId });
+}
+
+// ─────── 구조물 공성 상태 헬퍼 ───────
+
+/** 구조물의 현재 공성 진행 상태 (없으면 새로 생성). */
+export function getSiegeProgress(structureId, maxHp) {
+  if (!state.siegeState) state.siegeState = {};
+  if (!state.siegeState[structureId]) {
+    state.siegeState[structureId] = { hp: maxHp, defeatedDefenseIds: [] };
+  }
+  return state.siegeState[structureId];
+}
+
+export function getStructureCurrentHP(structureId) {
+  return state?.siegeState?.[structureId]?.hp;
+}
+
+/** 수비 웨이브 격파 마킹. */
+export function markDefenderDefeated(structureId, defenseId, maxHp) {
+  const sp = getSiegeProgress(structureId, maxHp);
+  if (!sp.defeatedDefenseIds.includes(defenseId)) {
+    sp.defeatedDefenseIds.push(defenseId);
+  }
+}
+
+/** 격파 여부 확인. */
+export function isDefenderDefeated(structureId, defenseId) {
+  return state?.siegeState?.[structureId]?.defeatedDefenseIds?.includes(defenseId) || false;
+}
+
+/** 구조물 HP 데미지 적용. HP <= 0이면 true 반환 (함락 가능). */
+export function applyStructureDamage(structureId, damage, maxHp) {
+  const sp = getSiegeProgress(structureId, maxHp);
+  sp.hp = Math.max(0, sp.hp - damage);
+  emit("state:changed", { path: "siegeState", structureId });
+  return sp.hp <= 0;
+}
+
+export function abandonStructure(structureId) {
+  state.capturedStructures.delete(structureId);
+  emit("state:changed", { path: "capturedStructures", structureId, action: "abandon" });
 }
 
 export function ownHex(hexId) {
