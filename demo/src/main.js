@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -256,7 +256,8 @@ async function boot() {
     const el = document.getElementById("editor-content");
     if (!el) return;
     const selected = editorSelectedCharId;
-    let html = `<div class="ep-hint">💡 아래에서 캐릭을 선택한 뒤 분대 슬롯을 클릭하면 배치됩니다. 슬롯 0번이 리더(사망 시 즉시 패배).</div>`;
+    const maxP = getMaxParties();
+    let html = `<div class="ep-hint">💡 아래에서 캐릭을 선택한 뒤 분대 슬롯을 클릭하면 배치됩니다. 슬롯 0번이 리더(사망 시 즉시 패배). · 분대 <b>${gs.parties.length}</b>/${maxP}</div>`;
     for (const party of gs.parties) {
       html += `<div class="ep-party-row"><div class="ep-party-head"><b>${party.name}</b><small>${party.slots.filter(x=>x!=null).length}/${party.slots.length}</small></div><div class="ep-slots">`;
       for (let i = 0; i < party.slots.length; i++) {
@@ -274,6 +275,15 @@ async function boot() {
       }
       html += `</div></div>`;
     }
+    // 분대 추가 / 삭제 버튼
+    const canAdd = gs.parties.length < maxP;
+    html += `<div class="ep-party-actions">`;
+    html += `<button class="ep-btn-add" ${canAdd ? "" : "disabled"} type="button">➕ 분대 추가 ${canAdd ? "" : `(최대 ${maxP}개)`}</button>`;
+    if (gs.parties.length > 1) {
+      html += `<button class="ep-btn-del" type="button">🗑 마지막 분대 삭제</button>`;
+    }
+    html += `</div>`;
+
     html += `<div class="ep-roster-section"><div class="ep-roster-title">📋 로스터 (클릭으로 선택)</div><div class="ep-roster-grid">`;
     for (const ch of roster) {
       const sel = ch.id === selected ? " selected" : "";
@@ -289,6 +299,21 @@ async function boot() {
     // 캔버스 초상화 그리기
     el.querySelectorAll("canvas[data-portrait]").forEach(cv => {
       drawFacePortrait(cv, cv.dataset.portrait, cv.dataset.ko === "true");
+    });
+
+    // 분대 추가/삭제
+    el.querySelector(".ep-btn-add")?.addEventListener("click", () => {
+      pushUndo("분대 추가");
+      const r = createParty();
+      if (!r.ok && r.reason === "limit_reached") {
+        showToast(`최대 분대 수 ${r.limit}개 도달`, "warn");
+      }
+    });
+    el.querySelector(".ep-btn-del")?.addEventListener("click", () => {
+      const last = gs.parties[gs.parties.length - 1];
+      if (!last) return;
+      pushUndo(`분대 삭제: ${last.name}`);
+      deleteParty(last.id);
     });
 
     // 로스터 캐릭 선택

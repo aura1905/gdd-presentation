@@ -162,6 +162,8 @@ export function initState(tables) {
     capturedStructures,
     ownedHexes,
     territoryLv: 0,
+    // 최대 분대 수 (기본 2, 배럭 확장으로 최대 6까지 증가 예정)
+    maxParties: 2,
     // 공성 진행 상태: { [structureId]: { hp, defeatedDefenseIds: [DefenseID] } }
     siegeState: {},
     // 가문 성장 투자 레벨 (M5-A): { [trainingType]: currentLv }
@@ -236,6 +238,7 @@ export function restoreState(saved, tables) {
     state.ownedHexes = new Set();
   }
   if (state.territoryLv == null) state.territoryLv = 0;
+  if (state.maxParties == null) state.maxParties = Math.max(2, state.parties?.length || 2);
   if (!state.siegeState) state.siegeState = {};
   if (!state.training) state.training = {};
 
@@ -363,6 +366,44 @@ export function recoverHP(charId, amount) {
 }
 
 /** Full rest (used at city or owned hex with structure). */
+/** 현재 최대 파티 수 (M5-A 훈련/배럭 확장 후 늘어남). 기본 2, 최대 6. */
+export function getMaxParties() {
+  return state?.maxParties ?? 2;
+}
+
+/** 파티 추가. 빈 슬롯 3개. 최대치 초과 시 실패. */
+export function createParty() {
+  if (!state) return { ok: false, reason: "no_state" };
+  const max = getMaxParties();
+  if (state.parties.length >= max) {
+    return { ok: false, reason: "limit_reached", limit: max };
+  }
+  const n = state.parties.length + 1;
+  const home = state.family.homeHex;
+  const newParty = {
+    id: `party_${n}`,
+    name: `${n}분대`,
+    slots: [null, null, null],
+    location: { q: home.q, r: home.r },
+    state: "idle",
+  };
+  state.parties.push(newParty);
+  emit("state:changed", { path: "parties", action: "create", partyId: newParty.id });
+  return { ok: true, party: newParty };
+}
+
+/** 파티 삭제. 편성된 캐릭 해제 (로스터로 복귀). */
+export function deleteParty(partyId) {
+  if (!state) return { ok: false };
+  const idx = state.parties.findIndex(p => p.id === partyId);
+  if (idx < 0) return { ok: false, reason: "not_found" };
+  if (state.parties.length <= 1) return { ok: false, reason: "last_party" };
+  state.parties.splice(idx, 1);
+  if (state.selectedPartyId === partyId) state.selectedPartyId = null;
+  emit("state:changed", { path: "parties", action: "delete", partyId });
+  return { ok: true };
+}
+
 /**
  * 파티 슬롯에 캐릭터 배치/교체/비우기.
  * - characterId가 null이면 슬롯 비움
