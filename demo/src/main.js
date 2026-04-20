@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignBestParties } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -234,7 +234,7 @@ async function boot() {
     const maxP = getMaxParties();
     let html = `<div class="ep-hint">💡 아래에서 캐릭을 선택한 뒤 분대 슬롯을 클릭하면 배치됩니다. 슬롯 0번이 리더(사망 시 즉시 패배). · 분대 <b>${gs.parties.length}</b>/${maxP}</div>`;
     for (const party of gs.parties) {
-      html += `<div class="ep-party-row"><div class="ep-party-head"><b>${party.name}</b><small>${party.slots.filter(x=>x!=null).length}/${party.slots.length}</small></div><div class="ep-slots">`;
+      html += `<div class="ep-party-row"><div class="ep-party-head"><b>${party.name}</b><button class="ep-btn-auto-party" data-auto-party="${party.id}" type="button" title="이 분대만 자동 배치 (다른 파티는 그대로)">🎯 자동</button><small>${party.slots.filter(x=>x!=null).length}/${party.slots.length}</small></div><div class="ep-slots">`;
       for (let i = 0; i < party.slots.length; i++) {
         const cid = party.slots[i];
         const ch = cid != null ? getCharacter(cid) : null;
@@ -250,10 +250,9 @@ async function boot() {
       }
       html += `</div></div>`;
     }
-    // 분대 추가 / 자동 배치 / 삭제 / 배럭 확장 버튼
+    // 분대 추가 / 삭제 / 배럭 확장 버튼 (자동 배치는 각 분대 헤더에 별도)
     const canAdd = gs.parties.length < maxP;
     html += `<div class="ep-party-actions">`;
-    html += `<button class="ep-btn-auto" type="button" title="모든 슬롯을 가장 좋은 조합으로 자동 채움 (Tanker 리더 + Dealer + Healer)">🎯 자동 배치</button>`;
     html += `<button class="ep-btn-add" ${canAdd ? "" : "disabled"} type="button">➕ 분대 추가 ${canAdd ? `(${gs.parties.length}/${maxP})` : `(${maxP}/${maxP} 가득)`}</button>`;
     if (gs.parties.length > 1) {
       html += `<button class="ep-btn-del" type="button">🗑 마지막 분대 삭제</button>`;
@@ -326,20 +325,20 @@ async function boot() {
       pushUndo(`분대 삭제: ${last.name}`);
       deleteParty(last.id);
     });
-    el.querySelector(".ep-btn-auto")?.addEventListener("click", () => {
-      showConfirm({
-        title: "🎯 자동 배치",
-        body: `현재 모든 분대 편성을 초기화하고 가장 좋은 조합으로 자동 채웁니다.\n\n룰:\n· Slot 0 (리더): Tanker 우선\n· Slot 1: Dealer\n· Slot 2: Healer/Support\n\n레벨 desc 분배 — 1분대가 가장 강한 조합.`,
-        confirmLabel: "자동 배치",
-        onConfirm: () => {
-          pushUndo("자동 배치");
-          const r = autoAssignBestParties();
-          if (r.ok) {
-            showToast(`🎯 자동 배치 완료 — ${r.assigned.length}명 편성, ${r.unassigned.length}명 대기`, "exp");
-          } else {
-            showToast(`자동 배치 실패: ${r.reason}`, "warn");
-          }
-        },
+    // 파티별 자동 배치 — 클릭한 분대만 미배치 캐릭에서 채움 (다른 파티 그대로)
+    el.querySelectorAll(".ep-btn-auto-party").forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const pid = btn.dataset.autoParty;
+        const party = gs.parties.find(p => p.id === pid);
+        if (!party) return;
+        pushUndo(`자동 배치: ${party.name}`);
+        const r = autoAssignParty(pid);
+        if (r.ok) {
+          showToast(`🎯 ${party.name} 자동 배치 — ${r.assigned.length}명 편성`, "exp");
+        } else {
+          showToast(`자동 배치 실패: ${r.reason}`, "warn");
+        }
       });
     });
     el.querySelector(".ep-btn-expand")?.addEventListener("click", () => {

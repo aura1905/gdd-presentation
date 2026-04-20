@@ -444,26 +444,36 @@ export function createParty() {
 }
 
 /**
- * 자동 배치 — 모든 파티 슬롯을 가장 좋은 조합으로 채움.
+ * 단일 파티 자동 배치 — 해당 파티만 초기화 후 미배치(다른 파티에 안 들어간) 캐릭 풀에서 채움.
  *
  * 룰:
- *   Slot 0 (리더, 사망=강제 퇴각): Tanker 우선 → 없으면 Dealer
+ *   Slot 0 (리더, 사망=강제 퇴각): Tanker 우선 → Dealer fallback
  *   Slot 1 (DPS):                  Dealer 우선 → Support → Healer
  *   Slot 2 (유틸):                 Healer 우선 → Support → Dealer
  *
- * 분배: 각 슬롯별 best-first round-robin (1분대 = 최강 Tanker/Dealer/Healer 조합,
- *       2분대 = 두번째, ...) → 각 파티 균형 + 1분대가 가장 강함
- *
- * @returns {{ ok, assigned, unassigned }} assigned 캐릭 ID 배열
+ * 다른 파티의 편성은 건드리지 않음.
+ * @returns {{ ok, assigned, reason }}
  */
-export function autoAssignBestParties() {
+export function autoAssignParty(partyId) {
   if (!state?.parties || !state.characters) return { ok: false, reason: "no_state" };
+  const party = state.parties.find(p => p.id === partyId);
+  if (!party) return { ok: false, reason: "not_found" };
 
-  // 1) 모든 파티 슬롯 초기화
-  for (const p of state.parties) p.slots = [null, null, null];
+  // 1) 해당 파티만 슬롯 초기화 (다른 파티는 그대로)
+  party.slots = [null, null, null];
 
-  // 2) Role별 풀 (레벨 desc 정렬)
-  const byRole = (role) => state.characters
+  // 2) 다른 파티에 이미 배치된 캐릭 ID 모음 (제외 대상)
+  const usedByOthers = new Set();
+  for (const p of state.parties) {
+    if (p.id === partyId) continue;
+    for (const cid of p.slots || []) {
+      if (cid != null) usedByOthers.add(cid);
+    }
+  }
+
+  // 3) 미배치 캐릭만 Role별 풀 구성 (레벨 desc)
+  const available = state.characters.filter(c => !usedByOthers.has(c.id));
+  const byRole = (role) => available
     .filter(c => c.role === role)
     .sort((a, b) => (b.level || 1) - (a.level || 1));
   const pools = {
@@ -472,13 +482,12 @@ export function autoAssignBestParties() {
     Healer: byRole("Healer"),
     Support: byRole("Support"),
   };
-  const usedIds = new Set();
+  const pickedIds = new Set();
 
-  // 3) 슬롯별 우선순위 큐
   const SLOT_PRIORITY = [
-    ["Tanker", "Dealer", "Support", "Healer"],   // Slot 0: Tanker → Dealer fallback
-    ["Dealer", "Support", "Healer", "Tanker"],   // Slot 1: DPS
-    ["Healer", "Support", "Dealer", "Tanker"],   // Slot 2: 유틸
+    ["Tanker", "Dealer", "Support", "Healer"],
+    ["Dealer", "Support", "Healer", "Tanker"],
+    ["Healer", "Support", "Dealer", "Tanker"],
   ];
 
   function pickNext(slotIdx) {
@@ -486,33 +495,24 @@ export function autoAssignBestParties() {
       const pool = pools[role];
       while (pool.length > 0) {
         const c = pool.shift();
-        if (!usedIds.has(c.id)) {
-          usedIds.add(c.id);
+        if (!pickedIds.has(c.id)) {
+          pickedIds.add(c.id);
           return c.id;
         }
       }
     }
-    return null;  // 풀 고갈
+    return null;
   }
 
-  // 4) Slot별 round-robin: 모든 파티 Slot0 먼저, 그다음 Slot1, Slot2
   const assigned = [];
   for (let slotIdx = 0; slotIdx < 3; slotIdx++) {
-    for (const party of state.parties) {
-      const cid = pickNext(slotIdx);
-      if (cid != null) {
-        party.slots[slotIdx] = cid;
-        assigned.push(cid);
-      }
-    }
+    const cid = pickNext(slotIdx);
+    party.slots[slotIdx] = cid;
+    if (cid != null) assigned.push(cid);
   }
 
-  emit("state:changed", { path: "parties", action: "auto-assign" });
-  return {
-    ok: true,
-    assigned,
-    unassigned: state.characters.filter(c => !usedIds.has(c.id)).map(c => c.id),
-  };
+  emit("state:changed", { path: "parties", partyId, action: "auto-assign-party" });
+  return { ok: true, assigned };
 }
 
 /** 파티 삭제. 편성된 캐릭 해제 (로스터로 복귀). */
