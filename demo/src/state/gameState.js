@@ -363,6 +363,49 @@ export function recoverHP(charId, amount) {
 }
 
 /** Full rest (used at city or owned hex with structure). */
+/**
+ * 파티 슬롯에 캐릭터 배치/교체/비우기.
+ * - characterId가 null이면 슬롯 비움
+ * - 해당 캐릭터가 다른 슬롯에 있으면 자동 해제 후 이동
+ * - 파티가 월드맵에서 이동/전투 중이면 배치 거부 (리더 교체 위험)
+ */
+export function assignPartySlot(partyId, slotIdx, characterId) {
+  const party = state.parties.find(p => p.id === partyId);
+  if (!party) return { ok: false, reason: "party_not_found" };
+  if (slotIdx < 0 || slotIdx >= party.slots.length) {
+    return { ok: false, reason: "invalid_slot" };
+  }
+  // 기존 해당 캐릭 다른 슬롯/파티에서 제거 (중복 방지)
+  if (characterId != null) {
+    for (const p of state.parties) {
+      for (let i = 0; i < p.slots.length; i++) {
+        if (p.slots[i] === characterId) p.slots[i] = null;
+      }
+    }
+  }
+  party.slots[slotIdx] = characterId;
+  emit("state:changed", { path: "parties", partyId, action: "assign" });
+  return { ok: true };
+}
+
+/** 로스터용: 모든 캐릭터 + 배치 상태 반환 */
+export function getRosterWithStatus() {
+  if (!state?.characters) return [];
+  return state.characters.map(ch => {
+    let assignedTo = null;
+    let slotIdx = -1;
+    for (const p of state.parties) {
+      const idx = p.slots.indexOf(ch.id);
+      if (idx >= 0) {
+        assignedTo = p.id;
+        slotIdx = idx;
+        break;
+      }
+    }
+    return { ...ch, assignedPartyId: assignedTo, assignedSlotIdx: slotIdx };
+  });
+}
+
 export function fullRestParty(partyId) {
   const party = state.parties.find(p => p.id === partyId);
   if (!party) return;

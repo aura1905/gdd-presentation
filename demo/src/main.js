@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -201,6 +201,143 @@ async function boot() {
       if (selectedHexRow?.StructureID) showTilePanel(selectedHexRow, null, tables, 0, 0);
     }
   }, 1000);
+
+  // ─────── 로스터 패널 (A) ───────
+  const JOB_COLOR = { F: "#c86464", S: "#5aaa5a", M: "#c8a03c", W: "#5a82c8", L: "#a050b4" };
+  function renderRoster() {
+    const roster = getRosterWithStatus();
+    const countEl = document.getElementById("roster-count");
+    const gridEl = document.getElementById("roster-grid");
+    if (!gridEl) return;
+    if (countEl) countEl.textContent = roster.length;
+    gridEl.innerHTML = "";
+    for (const ch of roster) {
+      const slot = document.createElement("div");
+      slot.className = "roster-slot" + (ch.assignedPartyId ? " assigned" : "") + (ch.hp <= 0 ? " ko" : "");
+      slot.title = `${ch.name} Lv${ch.level} ${ch.jobClass}${ch.assignedPartyId ? ` · ${ch.assignedPartyId}` : " · 미배치"}`;
+      const cv = document.createElement("canvas");
+      cv.width = 38; cv.height = 38;
+      slot.appendChild(cv);
+      const jobBadge = document.createElement("div");
+      jobBadge.className = "rs-job";
+      jobBadge.textContent = ch.jobClass || "?";
+      jobBadge.style.background = JOB_COLOR[ch.jobClass] || "#888";
+      slot.appendChild(jobBadge);
+      const lvBadge = document.createElement("div");
+      lvBadge.className = "rs-lv";
+      lvBadge.textContent = ch.level;
+      slot.appendChild(lvBadge);
+      slot.addEventListener("click", () => openPartyEditor(ch.id));
+      gridEl.appendChild(slot);
+      drawFacePortrait(cv, ch.spriteName, ch.hp <= 0);
+    }
+  }
+  // 로스터 토글
+  document.getElementById("btn-roster-toggle")?.addEventListener("click", () => {
+    document.getElementById("roster-panel")?.classList.toggle("collapsed");
+  });
+
+  // ─────── 분대 편성 모달 (B) ───────
+  let editorSelectedCharId = null;
+  function openPartyEditor(highlightCharId) {
+    editorSelectedCharId = highlightCharId || null;
+    document.getElementById("editor-panel").hidden = false;
+    renderPartyEditor();
+  }
+  function closePartyEditor() {
+    document.getElementById("editor-panel").hidden = true;
+    editorSelectedCharId = null;
+  }
+  document.getElementById("btn-close-editor")?.addEventListener("click", closePartyEditor);
+
+  function renderPartyEditor() {
+    const gs = getState();
+    const roster = getRosterWithStatus();
+    const el = document.getElementById("editor-content");
+    if (!el) return;
+    const selected = editorSelectedCharId;
+    let html = `<div class="ep-hint">💡 아래에서 캐릭을 선택한 뒤 분대 슬롯을 클릭하면 배치됩니다. 슬롯 0번이 리더(사망 시 즉시 패배).</div>`;
+    for (const party of gs.parties) {
+      html += `<div class="ep-party-row"><div class="ep-party-head"><b>${party.name}</b><small>${party.slots.filter(x=>x!=null).length}/${party.slots.length}</small></div><div class="ep-slots">`;
+      for (let i = 0; i < party.slots.length; i++) {
+        const cid = party.slots[i];
+        const ch = cid != null ? getCharacter(cid) : null;
+        const leaderCls = i === 0 ? " leader" : "";
+        if (ch) {
+          html += `<div class="ep-slot${leaderCls}" data-party="${party.id}" data-slot="${i}">
+            <canvas width="44" height="44" data-portrait="${ch.spriteName}" data-ko="${ch.hp<=0}"></canvas>
+            <div class="ep-name">${ch.name} Lv${ch.level}</div>
+          </div>`;
+        } else {
+          html += `<div class="ep-slot${leaderCls}" data-party="${party.id}" data-slot="${i}"><div class="ep-empty">+</div><div class="ep-name">빈 슬롯</div></div>`;
+        }
+      }
+      html += `</div></div>`;
+    }
+    html += `<div class="ep-roster-section"><div class="ep-roster-title">📋 로스터 (클릭으로 선택)</div><div class="ep-roster-grid">`;
+    for (const ch of roster) {
+      const sel = ch.id === selected ? " selected" : "";
+      const asn = ch.assignedPartyId ? " assigned" : "";
+      html += `<div class="ep-roster-slot${sel}${asn}" data-charid="${ch.id}" title="${ch.name} Lv${ch.level} ${ch.jobClass}">
+        <canvas width="40" height="40" data-portrait="${ch.spriteName}" data-ko="${ch.hp<=0}"></canvas>
+        <div class="rs-lv">${ch.level}</div>
+      </div>`;
+    }
+    html += `</div></div>`;
+    el.innerHTML = html;
+
+    // 캔버스 초상화 그리기
+    el.querySelectorAll("canvas[data-portrait]").forEach(cv => {
+      drawFacePortrait(cv, cv.dataset.portrait, cv.dataset.ko === "true");
+    });
+
+    // 로스터 캐릭 선택
+    el.querySelectorAll(".ep-roster-slot").forEach(e => {
+      e.addEventListener("click", () => {
+        editorSelectedCharId = Number(e.dataset.charid);
+        renderPartyEditor();
+      });
+    });
+    // 슬롯 클릭 → 배치/제거
+    el.querySelectorAll(".ep-slot").forEach(e => {
+      e.addEventListener("click", () => {
+        const pid = e.dataset.party;
+        const idx = Number(e.dataset.slot);
+        if (editorSelectedCharId != null) {
+          pushUndo(`편성: ${pid} 슬롯${idx}`);
+          assignPartySlot(pid, idx, editorSelectedCharId);
+          editorSelectedCharId = null;
+          renderPartyEditor();
+        } else {
+          // 선택 없으면 해당 슬롯 비우기
+          const party = gs.parties.find(p => p.id === pid);
+          if (party?.slots[idx] != null) {
+            pushUndo(`편성 제거: ${pid} 슬롯${idx}`);
+            assignPartySlot(pid, idx, null);
+            renderPartyEditor();
+          }
+        }
+      });
+    });
+  }
+
+  // 로스터 갱신: state 변경 시 같이
+  on("state:changed", () => {
+    renderRoster();
+    if (!document.getElementById("editor-panel")?.hidden) renderPartyEditor();
+  });
+  on("state:init", renderRoster);
+  renderRoster();
+
+  // ESC / 외부 클릭으로 편성 모달 닫기
+  document.getElementById("editor-panel")?.addEventListener("click", (e) => {
+    if (e.target.id === "editor-panel") closePartyEditor();
+  });
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !document.getElementById("editor-panel")?.hidden) {
+      closePartyEditor();
+    }
+  });
 
   function renderPartyList() {
     const gs = getState();

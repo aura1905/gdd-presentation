@@ -34,8 +34,28 @@
     <!-- 토스트 알림 영역 -->
     <div id="toast-area"></div>
 
-    <!-- 좌측 파티 목록 -->
-    <aside id="party-list"></aside>
+    <!-- 좌측 로스터 + 파티 목록 컨테이너 -->
+    <div id="left-column">
+      <aside id="roster-panel">
+        <header class="roster-header">
+          <span class="roster-title">👥 로스터 <span id="roster-count">0</span></span>
+          <button id="btn-roster-toggle" type="button" title="접기/펼치기">▼</button>
+        </header>
+        <div class="roster-grid" id="roster-grid"></div>
+      </aside>
+      <aside id="party-list"></aside>
+    </div>
+
+    <!-- 파티 편성 모달 (B) -->
+    <section id="editor-panel" hidden>
+      <div class="fp-card">
+        <header class="fp-header">
+          <h2 id="editor-title">분대 편성</h2>
+          <button class="fp-close" id="btn-close-editor" type="button">✕</button>
+        </header>
+        <div class="fp-content" id="editor-content"></div>
+      </div>
+    </section>
 
     <!-- 우측 미니 컨트롤 -->
     <aside id="controls-right">

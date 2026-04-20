@@ -115,10 +115,83 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 @keyframes toast-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes toast-out { to { opacity: 0; transform: translateY(-8px); } }
 
-/* 좌측 파티 목록 */
-#party-list { position: absolute; top: 52px; left: 8px; z-index: 10;
-  display: flex; flex-direction: column; gap: 4px; pointer-events: auto;
-  max-height: calc(100vh - 120px); overflow-y: auto; }
+/* 좌측 컨테이너 (로스터 + 파티) */
+#left-column { position: absolute; top: 52px; left: 8px; z-index: 10;
+  display: flex; flex-direction: column; gap: 6px; pointer-events: auto;
+  max-height: calc(100vh - 120px); width: 230px; }
+
+/* 좌측 로스터 패널 (분대 상단) */
+#roster-panel { width: 100%; background: rgba(20,20,20,0.92);
+  border: 1px solid #4a3820; border-radius: 6px; padding: 6px; }
+.roster-header { display: flex; justify-content: space-between; align-items: center;
+  color: #ffd452; font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+.roster-header button { background: none; border: none; color: #ccc;
+  font-size: 12px; cursor: pointer; padding: 0 4px; }
+#roster-count { color: #bbb; font-weight: normal; margin-left: 4px; }
+.roster-grid { display: grid; grid-template-columns: repeat(5, 1fr);
+  gap: 3px; max-height: 200px; overflow-y: auto; padding: 2px; }
+.roster-slot { position: relative; width: 38px; height: 38px;
+  background: rgba(30,40,50,0.6); border: 1px solid #2a2a2a;
+  border-radius: 3px; cursor: pointer; transition: border-color 0.15s; overflow: hidden; }
+.roster-slot:hover { border-color: #ffd452; }
+.roster-slot.assigned::after { content: ''; position: absolute; top: 0; right: 0;
+  width: 8px; height: 8px; background: #5a5; border-radius: 50%;
+  border: 1px solid #000; }
+.roster-slot.ko { filter: grayscale(1) brightness(0.5); }
+.roster-slot canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+.roster-slot .rs-lv { position: absolute; bottom: -1px; right: -1px;
+  background: #ffd452; color: #000; font-size: 8px; font-weight: bold;
+  padding: 0 3px; border-radius: 4px; border: 1px solid #000; line-height: 1.1; }
+#roster-panel.collapsed .roster-grid { display: none; }
+#roster-panel.collapsed #btn-roster-toggle { transform: rotate(-90deg); }
+
+/* 분대 편성 모달 (B) */
+#editor-panel { position: absolute; inset: 8% 10%; z-index: 40;
+  display: flex; align-items: stretch; pointer-events: auto; }
+#editor-panel .fp-card { flex: 1; display: flex; flex-direction: column;
+  background: linear-gradient(135deg, #1a1f2a, #12161e);
+  border: 2px solid #c8a848; border-radius: 10px; overflow: hidden; }
+#editor-content { flex: 1; overflow-y: auto; padding: 12px; }
+.ep-party-row { display: flex; gap: 8px; align-items: center; padding: 8px;
+  background: rgba(30,30,30,0.6); border: 1px solid #3a3a3a;
+  border-radius: 6px; margin-bottom: 8px; }
+.ep-slots { display: flex; gap: 6px; flex: 1; }
+.ep-slot { flex: 1; min-height: 64px; background: rgba(40,30,15,0.4);
+  border: 1.5px dashed #5a4a30; border-radius: 4px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 4px; cursor: pointer; transition: border-color 0.15s; position: relative; }
+.ep-slot:hover { border-color: #ffd452; border-style: solid; }
+.ep-slot.leader { border-color: #ffd452; background: rgba(60,50,20,0.4); }
+.ep-slot.leader::before { content: '👑'; position: absolute; top: -10px;
+  font-size: 13px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.8)); }
+.ep-slot canvas { width: 44px; height: 44px; image-rendering: pixelated; }
+.ep-slot .ep-name { font-size: 10px; color: #ddd; margin-top: 2px;
+  text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 100%; }
+.ep-slot .ep-empty { color: #666; font-size: 20px; }
+.ep-party-head { display: flex; flex-direction: column; min-width: 60px; }
+.ep-party-head b { color: #ffd452; font-size: 13px; }
+.ep-party-head small { color: #888; font-size: 10px; }
+.ep-roster-section { margin-top: 12px; padding-top: 12px; border-top: 1px solid #333; }
+.ep-roster-title { color: #ffd452; font-size: 12px; font-weight: bold;
+  margin-bottom: 6px; }
+.ep-roster-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; }
+.ep-roster-slot { aspect-ratio: 1; background: rgba(30,40,50,0.6);
+  border: 1px solid #2a2a2a; border-radius: 3px; cursor: pointer;
+  position: relative; overflow: hidden; }
+.ep-roster-slot:hover { border-color: #ffd452; }
+.ep-roster-slot.selected { border-color: #ffd452; border-width: 2px;
+  box-shadow: 0 0 8px rgba(255,212,82,0.6); }
+.ep-roster-slot.assigned { filter: brightness(0.55); }
+.ep-roster-slot canvas { width: 100%; height: 100%; image-rendering: pixelated; }
+.ep-roster-slot .rs-lv { position: absolute; bottom: -1px; right: -1px;
+  background: #ffd452; color: #000; font-size: 8px; font-weight: bold;
+  padding: 0 2px; border-radius: 3px; line-height: 1.1; }
+.ep-hint { font-size: 11px; color: #8aa; padding: 6px; background: rgba(20,40,60,0.4);
+  border-radius: 4px; margin-bottom: 8px; }
+
+/* 좌측 파티 목록 (이제 #left-column 내부) */
+#party-list { display: flex; flex-direction: column; gap: 4px;
+  flex: 1; overflow-y: auto; min-height: 0; }
 .party-card { background: rgba(20,20,20,0.88); border: 1px solid #444;
   border-radius: 6px; padding: 6px 8px; cursor: pointer; width: 230px;
   transition: border-color 0.15s, background 0.15s; }
