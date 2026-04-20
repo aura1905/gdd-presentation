@@ -140,7 +140,7 @@ export function initState(tables) {
   state = {
     meta: { turn: 1, version: "0.1" },
     family: { name: "Player", level: 1, xp: 0, homeHex: startHex },
-    resources: { grain: 0, iron: 0, wood: 0, stone: 0, herbs: 0, gold: 0, vis: 0, gem: 0, scroll: 0, rp: 0 },
+    resources: { grain: 0, iron: 0, wood: 0, stone: 0, herbs: 0, gold: 0, vis: 0, gem: 3000, scroll: 5, rp: 0 },
     characters,
     parties: [
       {
@@ -169,6 +169,8 @@ export function initState(tables) {
     // 가문 성장 투자 레벨 (M5-A): { [trainingType]: currentLv }
     // training.json의 TrainingType 키별 0=미투자, N=다음 레벨 N+1을 살 수 있음
     training: {},
+    // 가챠 중복 조각 누적: { [charId]: count }
+    shards: {},
   };
 
   emit("state:init", state);
@@ -240,6 +242,11 @@ export function restoreState(saved, tables) {
   if (state.territoryLv == null) state.territoryLv = 0;
   if (state.maxParties == null) state.maxParties = Math.max(2, state.parties?.length || 2);
   if (!state.siegeState) state.siegeState = {};
+  if (!state.shards) state.shards = {};
+  // 구 세이브 호환: gem 부족 시 최소 2800(10연차) 보장
+  if (!state.resources) state.resources = {};
+  if ((state.resources.gem || 0) < 2800) state.resources.gem = 3000;
+  if ((state.resources.scroll || 0) < 5) state.resources.scroll = 5;
   if (!state.training) state.training = {};
 
   // Migration: 옛 세이브에 누적된 family.xp 즉시 레벨 반영 (M5-A 이전 세이브 호환)
@@ -471,6 +478,65 @@ export function assignPartySlot(partyId, slotIdx, characterId) {
   party.slots[slotIdx] = characterId;
   emit("state:changed", { path: "parties", partyId, action: "assign" });
   return { ok: true };
+}
+
+/** 가챠로 획득한 캐릭터를 로스터에 추가 (신규 편성 슬롯으로). */
+export function addCharacterToRoster(p, startingLevel = 1) {
+  if (!state) return { ok: false };
+  if (state.characters.some(c => c.id === p.ID)) {
+    return { ok: false, reason: "duplicate" };
+  }
+  const lvUp = Math.max(0, startingLevel - 1);
+  const maxHp = (p.BaseHP || 0) + (p.GrowthHP || 0) * lvUp;
+  const spriteName = p.PrefabPath ? p.PrefabPath.split("/")[1] : null;
+  const ch = {
+    id: p.ID,
+    name: p.Name || `Unit_${p.ID}`,
+    jobClass: p.JobClass || "F",
+    role: p.Role || "Dealer",
+    spriteName,
+    element: p.Element || "None",
+    level: startingLevel,
+    hp: maxHp,
+    maxHp,
+    fatigue: 100,
+    maxFatigue: 100,
+    xp: 0,
+    stats: {
+      atk: (p.BaseATK || 0) + (p.GrowthATK || 0) * lvUp,
+      def: (p.BaseDEF || 0) + (p.GrowthDEF || 0) * lvUp,
+      spd: (p.BaseSPD || 0) + (p.GrowthSPD || 0) * lvUp,
+      cri: (p.BaseCRI || 5) + (p.GrowthCRI || 0) * lvUp,
+      crd: (p.BaseCRD || 130) + (p.GrowthCRD || 0) * lvUp,
+      acc: p.BaseACC || 95,
+      evd: p.BaseEVD || 5,
+      pen: p.BasePEN || 0,
+    },
+    status: "normal",
+  };
+  state.characters.push(ch);
+  return { ok: true, character: ch };
+}
+
+/** 중복 캐릭 획득 시 조각 누적. */
+export function addCharacterShard(charId, count = 1) {
+  if (!state) return;
+  state.shards = state.shards || {};
+  state.shards[charId] = (state.shards[charId] || 0) + count;
+}
+
+/** 보유 조각 조회. */
+export function getCharacterShards(charId) {
+  return state?.shards?.[charId] || 0;
+}
+
+/** 자원 차감 (음수 체크). */
+export function spendResource(code, amount) {
+  if (!state?.resources) return false;
+  if ((state.resources[code] || 0) < amount) return false;
+  state.resources[code] -= amount;
+  emit("state:changed", { path: "resources", code });
+  return true;
 }
 
 /** 로스터용: 모든 캐릭터 + 배치 상태 반환 */

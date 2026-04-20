@@ -22,6 +22,8 @@ import { getSiegeProgress, getStructureCurrentHP, markDefenderDefeated, isDefend
 import { recomputeFog, applyScout, getFogState, bumpAction } from "./engine/fog.js";
 import { endTurn, computeHexIncome } from "./engine/turn.js";
 import { initQuests, ensureQuestsState, getActiveQuests, getClaimableQuests, reportProgress, claimQuestReward } from "./engine/quests.js";
+import { addCharacterToRoster, addCharacterShard } from "./state/gameState.js";
+import { rollOnce, getDupeShardCount, getGachaCost, GRADE_COLOR, GRADE_KR } from "./engine/gacha.js";
 
 const status = (msg) => {
   const el = document.getElementById("loading-status");
@@ -1000,6 +1002,23 @@ async function boot() {
       showBattleResult(hexRow, lastResult, totalWins, enemies.length, mode, ps, siegeInfo);
       saveState(getState());
       worldmap.requestDraw();
+
+      // 구조물 공성 자동 반복 — HP > 0 + 리더 생존 + occupy 모드일 때 같은 파티가 자동으로 다음 사이클
+      if (isStructureSiege && allWon && !leaderDead && mode === "occupy"
+          && !isStructureCaptured(structureForCombat.StructureID)) {
+        const sp = getSiegeProgress(structureForCombat.StructureID, getStructureMaxHP(structureForCombat));
+        if (sp.hp > 0 || getStructureMaxHP(structureForCombat) === 0) {
+          // 함락되지 않은 상태 (HP>0) — 자동으로 다음 사이클 (2초 딜레이)
+          setTimeout(() => {
+            // 사이클 사이 안전 체크: 파티 리더 살아있는지
+            const leaderId = party.slots[0];
+            const leader = leaderId != null ? getCharacter(leaderId) : null;
+            if (leader && leader.hp > 0 && !isStructureCaptured(structureForCombat.StructureID)) {
+              executeCombat(party, hexRow, mode);
+            }
+          }, 2000);
+        }
+      }
     });
     worldmap.requestDraw();
   }
@@ -1764,6 +1783,152 @@ async function boot() {
       renderQuestContent(btn.dataset.qsub);
     });
   });
+
+  // ─────── 모집 (가챠) 탭 ───────
+  const gachaPanel = document.getElementById("gacha-panel");
+  const gachaBtn = document.querySelector('#tab-dock button[data-tab="gacha"]');
+  const gachaContent = document.getElementById("gacha-content");
+  let lastGachaResults = null; // 직전 뽑기 결과 (재렌더 시 표시 유지)
+
+  function openGachaPanel() {
+    closeFamilyPanel();
+    closeQuestPanel();
+    gachaPanel.hidden = false;
+    gachaBtn.classList.add("active");
+    wmBtn.classList.remove("active");
+    renderGachaContent();
+  }
+  function closeGachaPanel() {
+    gachaPanel.hidden = true;
+    gachaBtn.classList.remove("active");
+    lastGachaResults = null;
+    if (familyPanel.hidden && questPanel.hidden) wmBtn.classList.add("active");
+  }
+  gachaBtn.addEventListener("click", () => {
+    if (gachaPanel.hidden) openGachaPanel(); else closeGachaPanel();
+  });
+  wmBtn.addEventListener("click", () => closeGachaPanel());
+  document.getElementById("btn-close-gacha")?.addEventListener("click", closeGachaPanel);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !gachaPanel.hidden) closeGachaPanel();
+  });
+  gachaPanel.addEventListener("click", (e) => {
+    if (e.target === gachaPanel) closeGachaPanel();
+  });
+
+  function renderGachaContent() {
+    const gs = getState();
+    const gem = gs.resources?.gem || 0;
+    const scroll = gs.resources?.scroll || 0;
+    const cost1Gem = getGachaCost(1, "gem", tables);
+    const cost10Gem = getGachaCost(10, "gem", tables);
+    const cost1Scroll = getGachaCost(1, "scroll", tables);
+    const cost10Scroll = getGachaCost(10, "scroll", tables);
+
+    // 확률 표
+    const rates = tables.gacha.all().filter(r => r.ConfigType === "rate")
+      .sort((a, b) => a.Rate - b.Rate);
+
+    let html = `<div class="gc-head">
+      <div class="gc-res"><span>💎 젬</span><b>${gem}</b></div>
+      <div class="gc-res"><span>📜 모집권</span><b>${scroll}</b></div>
+    </div>`;
+
+    html += `<div class="gc-buttons">
+      <button class="gc-btn single" data-pulls="1" data-currency="gem" ${gem<cost1Gem?"disabled":""}>
+        <div>단발</div><small>💎 ${cost1Gem}</small>
+      </button>
+      <button class="gc-btn ten" data-pulls="10" data-currency="gem" ${gem<cost10Gem?"disabled":""}>
+        <div>10연차</div><small>💎 ${cost10Gem}</small>
+      </button>
+      <button class="gc-btn single scroll" data-pulls="1" data-currency="scroll" ${scroll<cost1Scroll?"disabled":""}>
+        <div>단발</div><small>📜 ${cost1Scroll}</small>
+      </button>
+      <button class="gc-btn ten scroll" data-pulls="10" data-currency="scroll" ${scroll<cost10Scroll?"disabled":""}>
+        <div>10연차</div><small>📜 ${cost10Scroll}</small>
+      </button>
+    </div>`;
+
+    // 결과
+    if (lastGachaResults) {
+      html += `<div class="gc-results"><div class="gc-results-title">결과 ${lastGachaResults.length}명</div><div class="gc-results-grid">`;
+      for (const r of lastGachaResults) {
+        const color = GRADE_COLOR[r.grade];
+        const kr = GRADE_KR[r.grade];
+        const dupeStr = r.duplicate ? `<div class="gc-dupe">+조각 ${r.shardCount}</div>` : "";
+        html += `<div class="gc-result-card" style="border-color:${color}">
+          <canvas width="48" height="48" data-portrait="${r.char?.PrefabPath?.split('/')[1] || ''}" data-ko="false"></canvas>
+          <div class="gc-grade" style="color:${color}">★${r.char?.Rarity || '?'} ${kr}</div>
+          <div class="gc-name">${r.char?.Name || 'N/A'}</div>
+          ${dupeStr}
+        </div>`;
+      }
+      html += `</div></div>`;
+    }
+
+    // 확률 표시
+    html += `<div class="gc-rates"><div class="gc-rates-title">📊 확률 (기본 배너)</div>`;
+    for (const r of rates.reverse()) {
+      const color = GRADE_COLOR[r.Grade];
+      html += `<div class="gc-rate-row"><span style="color:${color}">● ${GRADE_KR[r.Grade]} (${r.Remark || ''})</span><b>${r.Rate}%</b></div>`;
+    }
+    html += `</div>`;
+
+    gachaContent.innerHTML = html;
+
+    // 캔버스 초상화
+    gachaContent.querySelectorAll("canvas[data-portrait]").forEach(cv => {
+      if (cv.dataset.portrait) drawFacePortrait(cv, cv.dataset.portrait, false);
+    });
+
+    // 버튼 핸들러
+    gachaContent.querySelectorAll(".gc-btn").forEach(btn => {
+      btn.addEventListener("click", () => doGachaPull(Number(btn.dataset.pulls), btn.dataset.currency));
+    });
+  }
+
+  function doGachaPull(count, currency) {
+    const gs = getState();
+    const cost = getGachaCost(count, currency, tables);
+    if ((gs.resources[currency] || 0) < cost) {
+      showToast(`${currency} 부족`, "warn");
+      return;
+    }
+    pushUndo(`${count}연차 (${currency})`);
+    spendResource(currency, cost);
+
+    const results = [];
+    for (let i = 0; i < count; i++) {
+      const one = rollOnce(tables);
+      if (!one.char) continue;
+      // 중복 체크
+      const existingIds = new Set(gs.characters.map(c => c.id));
+      if (existingIds.has(one.char.ID)) {
+        const shardCount = getDupeShardCount(one.grade, tables);
+        addCharacterShard(one.char.ID, shardCount);
+        results.push({ ...one, duplicate: true, shardCount });
+      } else {
+        const r = addCharacterToRoster(one.char, 1);
+        results.push({ ...one, duplicate: false, addedOk: r.ok });
+        // 신규 캐릭 퀘스트 진행도 (있다면)
+        try { reportProgress(gs, tables, "recruit", 1); } catch {}
+      }
+    }
+    lastGachaResults = results;
+    // 스프라이트 프리로드
+    const newSprites = results
+      .filter(r => !r.duplicate && r.char?.PrefabPath)
+      .map(r => r.char.PrefabPath.split("/")[1]);
+    if (newSprites.length) preloadSprites(newSprites);
+    renderGachaContent();
+    // 성급 높은 거 있으면 축하 토스트
+    const bestGrade = results.reduce((best, r) =>
+      (["normal","high","rare","unique","legend"].indexOf(r.grade) > ["normal","high","rare","unique","legend"].indexOf(best) ? r.grade : best),
+    "normal");
+    if (bestGrade === "legend" || bestGrade === "unique") {
+      showToast(`✨ ${GRADE_KR[bestGrade]} 획득!`, "levelup");
+    }
+  }
 
   function renderQuestContent(qtype) {
     const gs = getState();

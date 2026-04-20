@@ -37,6 +37,17 @@
     <!-- 좌측 파티 목록 (로스터는 편성 모달에만) -->
     <aside id="party-list"></aside>
 
+    <!-- 가챠 패널 (C - 모집) -->
+    <section id="gacha-panel" hidden>
+      <div class="fp-card">
+        <header class="fp-header">
+          <h2>🎲 모집</h2>
+          <button class="fp-close" id="btn-close-gacha" type="button">✕</button>
+        </header>
+        <div class="fp-content" id="gacha-content"></div>
+      </div>
+    </section>
+
     <!-- 파티 편성 모달 (B) -->
     <section id="editor-panel" hidden>
       <div class="fp-card">
@@ -114,7 +125,7 @@
         <span class="tab-icon">📋</span><span class="tab-label">임무</span>
         <span class="tab-badge" id="quest-badge" hidden>0</span>
       </button>
-      <button data-tab="gacha" type="button" disabled>
+      <button data-tab="gacha" type="button">
         <span class="tab-icon">🎲</span><span class="tab-label">모집</span>
       </button>
     </nav>

@@ -344,6 +344,59 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 }
 #quest-panel[hidden] { display: none; }
 
+/* 가챠(모집) 패널 — quest-panel과 동일 구조 */
+#gacha-panel {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 40; pointer-events: auto;
+  animation: fp-back-in 0.2s ease;
+}
+#gacha-panel[hidden] { display: none; }
+#gacha-panel h2 { font-size: 16px; color: #ffd452; font-weight: bold; margin: 0; }
+
+.gc-head { display: flex; justify-content: center; gap: 16px; margin-bottom: 12px;
+  padding: 10px; background: rgba(40,30,15,0.5);
+  border: 1px solid #5a4a30; border-radius: 6px; }
+.gc-res { display: flex; align-items: center; gap: 8px; font-size: 14px; color: #ccc; }
+.gc-res b { color: #ffd452; font-size: 16px; }
+
+.gc-buttons { display: grid; grid-template-columns: repeat(4, 1fr);
+  gap: 8px; margin-bottom: 14px; }
+.gc-btn { padding: 12px 8px; border-radius: 6px; cursor: pointer;
+  border: 2px solid #8a6020; background: linear-gradient(180deg, #d4a843, #a08030);
+  color: #2a1a00; font-weight: bold; font-size: 13px; text-align: center; }
+.gc-btn small { display: block; margin-top: 4px; font-size: 11px; opacity: 0.85; }
+.gc-btn:hover:not(:disabled) { filter: brightness(1.15); }
+.gc-btn.ten { background: linear-gradient(180deg, #f0b840, #b08830); }
+.gc-btn.scroll { background: linear-gradient(180deg, #a086d4, #6a5aa0);
+  color: #fff; border-color: #5a4a80; }
+.gc-btn:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(0.5); }
+
+.gc-results { margin-bottom: 14px; padding: 10px;
+  background: rgba(20,40,60,0.4); border: 1px solid #3a5a78; border-radius: 6px; }
+.gc-results-title { color: #ffd452; font-weight: bold; margin-bottom: 6px; font-size: 13px; }
+.gc-results-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.gc-result-card { padding: 6px 4px; background: rgba(0,0,0,0.4);
+  border: 2px solid #555; border-radius: 5px; text-align: center; position: relative; }
+.gc-result-card canvas { width: 48px; height: 48px; image-rendering: pixelated; }
+.gc-grade { font-size: 10px; font-weight: bold; margin-top: 2px; }
+.gc-name { font-size: 10px; color: #ddd; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis; }
+.gc-dupe { position: absolute; top: -4px; right: -4px; background: #5a5;
+  color: #000; font-size: 9px; font-weight: bold; padding: 1px 5px;
+  border-radius: 4px; border: 1px solid #000; }
+
+.gc-rates { padding: 10px; background: rgba(20,20,20,0.6);
+  border: 1px solid #333; border-radius: 6px; }
+.gc-rates-title { color: #aaa; font-size: 11px; font-weight: bold;
+  margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+.gc-rate-row { display: flex; justify-content: space-between; font-size: 11px;
+  padding: 2px 0; color: #ccc; }
+.gc-rate-row b { color: #fff; }
+
 /* 임무 카드 리스트 */
 .quest-list { display: flex; flex-direction: column; gap: 8px; max-width: 600px; margin: 0 auto; }
 .quest-card { display: flex; gap: 10px; align-items: stretch;
