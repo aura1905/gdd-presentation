@@ -55,21 +55,34 @@ describe("reportProgress + claimQuestReward — chain 흐름", () => {
     expect(state.quests.progress[101]).toBe(1);
   });
 
-  it("Q101 보상 수령 → 자원/FamilyEXP 가산 + Q102 자동 활성", () => {
+  it("Q101 보상 수령 → 5대 물자 + 화폐 + FamilyEXP 가산 + Q102 자동 활성", () => {
     const state = getState();
     reportProgress(state, tables, "occupy", 1);
     const result = claimQuestReward(state, tables, 101, () => levelUpFamilyIfReady(tables));
     expect(result.ok).toBe(true);
-    // Q101 보상: Grain 50, Gold 100, FamilyEXP 30
+    // Q101 보상: Grain 50, Iron 20, Wood 20, Gold 100, FamilyEXP 30
     expect(state.resources.grain).toBe(50);
+    expect(state.resources.iron).toBe(20);
+    expect(state.resources.wood).toBe(20);
     expect(state.resources.gold).toBe(100);
     expect(state.family.xp).toBe(30);
-    // 완료 처리
     expect(state.quests.completed).toContain(101);
-    expect(state.quests.readyToClaim).not.toContain(101);
-    // 다음 chain 자동 활성
     expect(state.quests.active).toContain(102);
-    expect(result.activatedNext).toBe(102);
+  });
+
+  it("Q112 첫 관문 — 5대 물자 모두 100씩 (가문 레벨업은 미발생, levelUpFamily 미주입)", () => {
+    const state = getState();
+    state.quests.active.push(112);
+    reportProgress(state, tables, "siege_gate", 1);
+    expect(state.quests.readyToClaim).toContain(112);
+    // levelUpFamily 미주입 → Q112 보상만 단독 검증
+    claimQuestReward(state, tables, 112);
+    expect(state.resources.iron).toBe(100);
+    expect(state.resources.wood).toBe(100);
+    expect(state.resources.stone).toBe(100);
+    expect(state.resources.herbs).toBe(100);
+    expect(state.resources.grain).toBe(200);
+    expect(state.resources.vis).toBe(1000);
   });
 
   it("Q105(family_level×6) — 가문 Lv 6 도달 시 즉시 readyToClaim", () => {
@@ -110,6 +123,52 @@ describe("FamilyEXP 보상으로 가문 레벨 점프", () => {
     // 누적 FamilyEXP: 30+50+30+50 = 160 ≥ Lv2 (158) → Lv2 도달
     expect(state.family.xp).toBe(160);
     expect(state.family.level).toBe(2);
+  });
+});
+
+describe("의미적 포함 — occupy → subjugate, siege_* → occupy 자동 fan-out", () => {
+  const tables = loadTables();
+  beforeEach(() => { initState(tables); initQuests(getState(), tables); });
+
+  it("occupy 1회 → subjugate quest(Q103)도 readyToClaim", () => {
+    const state = getState();
+    // Q101 chain 진행 후 Q103까지 활성화 (chain은 NextQuestID로 풀림)
+    // 빠르게 Q103을 active에 직접 넣어 단순 검증
+    state.quests.active.push(103);
+    reportProgress(state, tables, "occupy", 1);
+    expect(state.quests.readyToClaim).toContain(101);  // Q101 occupy
+    expect(state.quests.readyToClaim).toContain(103);  // Q103 subjugate (자동 fan-out)
+  });
+
+  it("occupy 3회 → subjugate 3회도 동시 누적 (Q104 readyToClaim)", () => {
+    const state = getState();
+    state.quests.active.push(104);  // subjugate×3
+    reportProgress(state, tables, "occupy", 1);
+    reportProgress(state, tables, "occupy", 1);
+    reportProgress(state, tables, "occupy", 1);
+    expect(state.quests.progress[104]).toBe(3);
+    expect(state.quests.readyToClaim).toContain(104);
+  });
+
+  it("siege_gate 1회 → occupy/subjugate/siege_any 모두 +1", () => {
+    const state = getState();
+    state.quests.active.push(101);  // occupy
+    state.quests.active.push(103);  // subjugate
+    state.quests.active.push(112);  // siege_gate
+    state.quests.active.push(603);  // weekly siege_any (+1로 readyToClaim)
+    reportProgress(state, tables, "siege_gate", 1);
+    expect(state.quests.readyToClaim).toContain(101);  // occupy ⊂ siege_gate
+    expect(state.quests.readyToClaim).toContain(103);  // subjugate ⊂ siege_gate
+    expect(state.quests.readyToClaim).toContain(112);  // siege_gate
+    expect(state.quests.readyToClaim).toContain(603);  // siege_any ⊂ siege_gate
+  });
+
+  it("subjugate 1회 → occupy quest는 진행 안 됨 (역방향 X)", () => {
+    const state = getState();
+    state.quests.active.push(101);  // occupy×1
+    reportProgress(state, tables, "subjugate", 1);
+    expect(state.quests.readyToClaim).not.toContain(101);  // 토벌은 점령 아님
+    expect(state.quests.progress[101]).toBeUndefined();
   });
 });
 

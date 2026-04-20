@@ -309,8 +309,11 @@ export function grantExp(charId, amount, expTable) {
   return { gained: amount, before, after: ch.level, total: ch.xp };
 }
 
-/** Apply level-based stat growth from FieldObjectTable Growth fields. */
-export function recomputeStatsFromLevel(charId, fieldObjectsTable) {
+/**
+ * Apply level-based stat growth from FieldObjectTable Growth fields.
+ * tables 인자가 주어지면 훈련 보정도 함께 적용 (M5-B).
+ */
+export function recomputeStatsFromLevel(charId, fieldObjectsTable, tables) {
   const ch = getCharacter(charId);
   if (!ch) return;
   // Find the original FieldObject row to get growth values
@@ -325,8 +328,23 @@ export function recomputeStatsFromLevel(charId, fieldObjectsTable) {
   ch.stats.spd = (tmpl.BaseSPD ?? 0) + (tmpl.GrowthSPD ?? 0) * lvUp;
   ch.stats.cri = (tmpl.BaseCRI ?? 5) + (tmpl.GrowthCRI ?? 0) * lvUp;
   ch.stats.crd = (tmpl.BaseCRD ?? 130) + (tmpl.GrowthCRD ?? 0) * lvUp;
+
+  // M5-B: 훈련 보정 적용 (tables가 주어진 경우만)
+  if (tables) applyTrainingToCharacter(ch, tables);
+
   // HP cap clamping
   if (ch.hp > ch.maxHp) ch.hp = ch.maxHp;
+}
+
+/**
+ * 모든 캐릭터의 stats 재계산 — 훈련 투자 직후 호출.
+ * 모든 직업 캐릭터의 maxFatigue/% 보정을 새 누적치로 갱신.
+ */
+export function recomputeAllCharacters(tables) {
+  if (!state?.characters || !tables?.fieldObjects) return;
+  for (const ch of state.characters) {
+    recomputeStatsFromLevel(ch.id, tables.fieldObjects, tables);
+  }
 }
 
 /** Recover fatigue (heal toward max). */
@@ -518,6 +536,63 @@ export function canOccupyMore() {
 /** 해당 TrainingType의 현재 투자 레벨 (0 = 미투자). */
 export function getTrainingLevel(trainingType) {
   return state?.training?.[trainingType] || 0;
+}
+
+/**
+ * 누적 효과 값 — Lv 1부터 currentLv까지 EffectValue/EffectValue2 합산.
+ * 각 Lv 행의 값을 "이 레벨이 추가하는 증가분"으로 해석 (delta).
+ * @returns {number} 누적 효과량 (effectType 일치하는 행만)
+ */
+export function getTrainingEffectSum(trainingType, effectType, tables) {
+  if (!tables?.training) return 0;
+  const cur = getTrainingLevel(trainingType);
+  if (cur === 0) return 0;
+  let sum = 0;
+  const rows = tables.training.all().filter(
+    r => r.TrainingType === trainingType && r.Level <= cur
+  );
+  for (const r of rows) {
+    if (r.EffectType === effectType) sum += (r.EffectValue || 0);
+    if (r.EffectType2 === effectType) sum += (r.EffectValue2 || 0);
+  }
+  return sum;
+}
+
+/** JobClass(F/S/M/W/L) → 해당 class_X 훈련 키. */
+const JOBCLASS_TO_TRAINING = {
+  F: "class_F", S: "class_S", M: "class_M", W: "class_W", L: "class_L",
+};
+
+/**
+ * 캐릭터 1명에게 훈련 효과 적용 (recomputeStatsFromLevel 직후 호출용).
+ * - stamina: maxFatigue += 누적
+ * - 병종 (class_F/S/M/W/L): EffectType이 ATK_PCT/DEF_PCT/SPD_PCT/CRI_PCT/INT_PCT/RES_PCT/PEN_PCT
+ *   → 해당 ch.stats.* 에 (1 + sum/100) 곱
+ *
+ * INT/RES는 현재 ch.stats에 없으므로 스킵 (Wizard/Warlock 후속).
+ */
+function applyTrainingToCharacter(ch, tables) {
+  if (!ch || !tables?.training) return;
+  // stamina → maxFatigue
+  const staminaBonus = getTrainingEffectSum("stamina", "maxFatigue", tables);
+  ch.maxFatigue = 100 + staminaBonus;
+  if (ch.fatigue > ch.maxFatigue) ch.fatigue = ch.maxFatigue;
+
+  // 병종 % 보정
+  const classKey = JOBCLASS_TO_TRAINING[ch.jobClass];
+  if (!classKey) return;
+  const PCT_FIELDS = {
+    ATK_PCT: "atk", DEF_PCT: "def", SPD_PCT: "spd", CRI_PCT: "cri",
+    PEN_PCT: "pen",
+    // INT_PCT/RES_PCT는 현재 stats에 미존재 — Wizard/Warlock UI 시 추가
+  };
+  for (const [effectType, statKey] of Object.entries(PCT_FIELDS)) {
+    const pct = getTrainingEffectSum(classKey, effectType, tables);
+    if (pct === 0) continue;
+    if (ch.stats[statKey] != null) {
+      ch.stats[statKey] = Math.round(ch.stats[statKey] * (1 + pct / 100));
+    }
+  }
 }
 
 /**

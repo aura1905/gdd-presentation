@@ -18,6 +18,18 @@
 
 import { emit } from "../util/events.js";
 
+// 의미적 포함 관계 — 한 이벤트가 다른 이벤트들도 트리거.
+//   - occupy(점령) ⊃ subjugate(토벌)  : 점령했으면 적도 격파한 것
+//   - siege_gate ⊃ occupy ⊃ subjugate, + siege_any
+//   - siege_fort ⊃ occupy ⊃ subjugate, + siege_any
+// 이 매핑은 1단계만 따로 풀고, fan-out 시 재귀적으로 펼침 (cycle 방지).
+const TARGET_IMPLIES = {
+  occupy:     ["subjugate"],
+  siege_gate: ["occupy", "siege_any"],
+  siege_fort: ["occupy", "siege_any"],
+  // siege_any는 더 이상 펼치지 않음 (총괄 키)
+};
+
 /** 신규 게임 시작 시 호출. chain Phase1 첫 quest + 모든 daily/weekly/achievement 활성화. */
 export function initQuests(state, tables) {
   if (state.quests) return;  // 이미 초기화됨
@@ -70,13 +82,27 @@ export function getClaimableQuests(state, tables) {
 }
 
 /**
- * 진행도 보고 — 이벤트 발생 시 호출.
+ * 진행도 보고 — 이벤트 발생 시 호출. TARGET_IMPLIES 따라 자동 fan-out.
+ * 예: occupy 1회 보고 → subjugate quest도 자동 진행.
  * @param {string} eventType  - TargetType과 매칭 ("occupy"/"subjugate"/"family_level" 등)
  * @param {number} amount     - 증가량 (기본 1). family_level은 "현재 레벨"을 그대로 전달
  */
 export function reportProgress(state, tables, eventType, amount = 1) {
   if (!state.quests) return;
-  const all = tables.quests.all();
+  // 의미적 포함 관계 따라 펼침 (재귀, cycle 방지용 visited)
+  const visited = new Set();
+  const queue = [eventType];
+  while (queue.length) {
+    const t = queue.shift();
+    if (visited.has(t)) continue;
+    visited.add(t);
+    _applyOneType(state, tables, t, amount);
+    for (const implied of (TARGET_IMPLIES[t] || [])) queue.push(implied);
+  }
+  emit("state:changed", { path: "quests", action: "progress", eventType });
+}
+
+function _applyOneType(state, tables, eventType, amount) {
   for (const qid of state.quests.active) {
     if (state.quests.completed.includes(qid)) continue;
     if (state.quests.readyToClaim.includes(qid)) continue;
@@ -101,7 +127,6 @@ export function reportProgress(state, tables, eventType, amount = 1) {
       state.quests.readyToClaim.push(qid);
     }
   }
-  emit("state:changed", { path: "quests", action: "progress", eventType });
 }
 
 /**
@@ -116,22 +141,24 @@ export function claimQuestReward(state, tables, questId, levelUpFamily) {
   const q = tables.quests.get(questId);
   if (!q) return { ok: false, reason: "unknown_quest" };
 
-  // 보상 가산
+  // 보상 가산 — 5대 물자 (grain/iron/wood/stone/herbs) + 화폐 (gold/vis/gem) + scroll + familyExp
   const rewards = {
     grain: q.RwdGrain || 0,
-    gold: q.RwdGold || 0,
-    vis: q.RwdVis || 0,
-    gem: q.RwdGem || 0,
+    iron:  q.RwdIron  || 0,
+    wood:  q.RwdWood  || 0,
+    stone: q.RwdStone || 0,
+    herbs: q.RwdHerbs || 0,
+    gold:  q.RwdGold  || 0,
+    vis:   q.RwdVis   || 0,
+    gem:   q.RwdGem   || 0,
     scroll: q.RwdScroll || 0,
     familyExp: q.RwdFamilyEXP || 0,
-    item: q.RwdItem || null,
+    item:    q.RwdItem || null,
     itemQty: q.RwdItemQty || 0,
   };
-  if (rewards.grain) state.resources.grain = (state.resources.grain || 0) + rewards.grain;
-  if (rewards.gold)  state.resources.gold  = (state.resources.gold  || 0) + rewards.gold;
-  if (rewards.vis)   state.resources.vis   = (state.resources.vis   || 0) + rewards.vis;
-  if (rewards.gem)   state.resources.gem   = (state.resources.gem   || 0) + rewards.gem;
-  if (rewards.scroll) state.resources.scroll = (state.resources.scroll || 0) + rewards.scroll;
+  for (const code of ["grain", "iron", "wood", "stone", "herbs", "gold", "vis", "gem", "scroll"]) {
+    if (rewards[code]) state.resources[code] = (state.resources[code] || 0) + rewards[code];
+  }
   if (rewards.familyExp) state.family.xp = (state.family.xp || 0) + rewards.familyExp;
   // 아이템 처리는 후속 (item 시스템 보류)
 

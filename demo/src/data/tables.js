@@ -35,7 +35,9 @@ const TABLE_CONFIG = {
 };
 
 async function fetchJson(path) {
-  const r = await fetch(path);
+  // Cache-busting — 데이터 테이블이 자주 갱신되므로 항상 fresh fetch.
+  // 브라우저가 옛 JSON을 들고 있어서 변경이 안 보이는 문제 해결.
+  const r = await fetch(path, { cache: "no-cache" });
   if (!r.ok) throw new Error(`fetch ${path}: ${r.status}`);
   return await r.json();
 }

@@ -64,18 +64,18 @@ describe("levelUpFamilyIfReady", () => {
     expect(state.family.level).toBe(maxLv);
   });
 
-  it("훈련 잠금 해제 흐름 — Lv 6 도달 시 회복 수련 해금", () => {
+  it("훈련 잠금 해제 흐름 — Lv 5 도달 시 모든 훈련 해금 (Wizard/Warlock 포함)", () => {
     const state = getState();
-    // 회복 수련(class별이 아닌 recovery)는 UnlockFamilyLv=6
-    const recoveryRow = tables.training.all().find(r => r.TrainingType === "recovery" && r.Level === 1);
-    expect(recoveryRow.UnlockFamilyLv).toBe(6);
+    // 가장 늦게 풀리는 항목: Wizard/Warlock = Lv 5
+    const wizardRow = tables.training.all().find(r => r.TrainingType === "class_W" && r.Level === 1);
+    expect(wizardRow.UnlockFamilyLv).toBe(5);
 
-    // Lv6 누적 XP까지 부여
+    // Lv6 누적 XP까지 부여 (5 도달 보장)
     const lv6 = tables.familyLevel.get(6);
     state.family.xp = lv6.CumulativeXP;
     levelUpFamilyIfReady(tables);
     expect(state.family.level).toBe(6);
-    // 가문 Lv 6 ≥ recovery UnlockFamilyLv 6 → 잠금 해제 조건 충족
-    expect(state.family.level).toBeGreaterThanOrEqual(recoveryRow.UnlockFamilyLv);
+    // 가문 Lv 6 ≥ Wizard UnlockFamilyLv 5 → 잠금 해제 조건 충족
+    expect(state.family.level).toBeGreaterThanOrEqual(wizardRow.UnlockFamilyLv);
   });
 });

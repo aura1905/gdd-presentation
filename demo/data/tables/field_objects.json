@@ -8377,9 +8377,9 @@
     "Phases": 0,
     "RoundLimit": 0,
     "SkillList": "17201,17402,17303",
-    "PrefabPath": "FieldObject/mon_gargoyle/Prefab/mon_gargoyle",
-    "PivotX": 0,
-    "PivotY": 0
+    "PrefabPath": "FieldObject/mon_phobitan/Prefab/mon_phobitan",
+    "PivotX": -0.43,
+    "PivotY": -0.42
   },
   {
     "IsActivate": true,
@@ -8423,9 +8423,9 @@
     "Phases": 0,
     "RoundLimit": 0,
     "SkillList": "12601,12302,13803",
-    "PrefabPath": "FieldObject/mon_gargoyle/Prefab/mon_gargoyle",
-    "PivotX": 0,
-    "PivotY": 0
+    "PrefabPath": "FieldObject/mon_abyss_knight/Prefab/mon_abyss_knight",
+    "PivotX": -0.5,
+    "PivotY": -0.31
   },
   {
     "IsActivate": true,
@@ -8469,9 +8469,9 @@
     "Phases": 0,
     "RoundLimit": 0,
     "SkillList": "17401,17302,17403",
-    "PrefabPath": "FieldObject/mon_gargoyle/Prefab/mon_gargoyle",
-    "PivotX": 0,
-    "PivotY": 0
+    "PrefabPath": "FieldObject/mon_sellyne/Prefab/mon_sellyne",
+    "PivotX": -0.46,
+    "PivotY": -0.34
   },
   {
     "IsActivate": true,
@@ -8561,9 +8561,9 @@
     "Phases": 0,
     "RoundLimit": 0,
     "SkillList": "110701,110602,110803",
-    "PrefabPath": "FieldObject/mon_gargoyle/Prefab/mon_gargoyle",
-    "PivotX": 0,
-    "PivotY": 0
+    "PrefabPath": "FieldObject/mon_dilos_latemn/Prefab/mon_dilos_latemn",
+    "PivotX": -0.38,
+    "PivotY": -0.37
   },
   {
     "IsActivate": true,

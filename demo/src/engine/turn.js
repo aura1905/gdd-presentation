@@ -15,6 +15,7 @@
 //
 // 예외/누락 케이스는 throw 대신 0 반환 (데이터 없음).
 import { CONFIG } from "../config.js";
+import { getTrainingEffectSum } from "../state/gameState.js";
 
 const RESOURCE_KEYS = ["grain", "iron", "wood", "stone", "herbs", "gold", "vis", "gem", "scroll", "rp", "mana"];
 
@@ -97,7 +98,10 @@ export function computeFatigueRecovery(state, tables) {
       perMin = fieldRow?.RecoveryPerMin ?? baseRecPerMin;
     }
 
-    const recovery = perMin * minutes;
+    // M5-B: recovery 훈련 보정 (Lv당 +0.02/min)
+    // 도시(InstantRecovery=-1)일 땐 어차피 full이므로 영향 없음.
+    const recoveryBonusPerMin = getTrainingEffectSum("recovery", "recoveryPerMin", tables);
+    const recovery = (perMin + recoveryBonusPerMin) * minutes;
 
     for (const cid of party.slots || []) {
       if (cid == null) continue;

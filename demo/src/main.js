@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -39,6 +39,14 @@ const RES_DOT_CLASS = {
   iron: "iron", wood: "wood", stone: "stone", herbs: "herbs",
   gem: "gem", scroll: "scroll", rp: "rp", mana: "mana",
 };
+// 자원 아이콘 emoji — 필드(worldmap.js resourceIcon) 와 동일.
+// vis/scroll/rp는 필드에 없는 보조 자원이라 적합한 emoji 별도 선택.
+const RES_EMOJI = {
+  grain: "🌾", iron: "⛏️", wood: "🌲", stone: "🪨", herbs: "🌿",
+  gold: "💰", gem: "💎", mana: "🔮",
+  vis: "✨", scroll: "📜", rp: "📘",
+};
+const resEmoji = (code) => RES_EMOJI[code] || "❓";
 
 async function boot() {
   const canvas = document.getElementById("worldmap");
@@ -69,6 +77,8 @@ async function boot() {
   else initQuests(gameState, tables);
   // 신규/복원 직후 가문 레벨 진행 quest 즉시 평가 (이미 도달한 마일스톤 처리)
   reportProgress(gameState, tables, "family_level", gameState.family.level || 1);
+  // M5-B: 부팅 시 모든 캐릭터에 훈련 보정 반영 (옛 세이브 호환)
+  recomputeAllCharacters(tables);
   recomputeFog(gameState, tables);
 
   // GDD §9-3: 리더 사망한 파티는 전장 잔류 불가 — 복원 시 자동 퇴각(구 세이브 호환)
@@ -139,9 +149,12 @@ async function boot() {
 
   function updateHud() {
     const gs = getState();
-    document.getElementById("res-grain").textContent = gs.resources.grain;
-    document.getElementById("res-gold").textContent = gs.resources.gold;
-    document.getElementById("res-vis").textContent = gs.resources.vis;
+    // 10종 자원 모두 갱신 (HUD에 전체 노출)
+    const HUD_RES = ["grain", "iron", "wood", "stone", "herbs", "gold", "vis", "gem", "scroll", "rp"];
+    for (const code of HUD_RES) {
+      const el = document.getElementById(`res-${code}`);
+      if (el) el.textContent = gs.resources[code] || 0;
+    }
     document.getElementById("turn-num").textContent = gs.meta.turn;
     const territoryEl = document.getElementById("hud-territory");
     if (territoryEl) {
@@ -763,23 +776,19 @@ async function boot() {
         const sp = getSiegeProgress(structureForCombat.StructureID, maxHp);
         siegeInfo = { damage, hp: sp.hp, maxHp, fell: fellHP, allCleared: true };
         if (fellHP && mode === "occupy") {
-          // 함락! 점령 처리
+          // 함락! 점령 처리 — siege_gate/fort 1번이면 occupy/subjugate/siege_any 자동 fan-out
           ownHex(hexRow.HexID);
           captureStructure(structureForCombat.StructureID);
-          reportProgress(getState(), tables, "occupy", 1);
-          // 구조물 종류별 quest 진행
           const sType = structureForCombat.StructureType;
           if (sType === "Gate") reportProgress(getState(), tables, "siege_gate", 1);
-          if (sType === "Fort") reportProgress(getState(), tables, "siege_fort", 1);
-          reportProgress(getState(), tables, "siege_any", 1);
+          else if (sType === "Fort") reportProgress(getState(), tables, "siege_fort", 1);
+          else reportProgress(getState(), tables, "occupy", 1);
         }
       } else if (maxHp === 0 && allCleared && mode === "occupy") {
         // 거점(Fort) — 내구도 없음, 수비대 전멸 시 즉시 함락
         ownHex(hexRow.HexID);
         captureStructure(structureForCombat.StructureID);
-        reportProgress(getState(), tables, "occupy", 1);
-        reportProgress(getState(), tables, "siege_fort", 1);
-        reportProgress(getState(), tables, "siege_any", 1);
+        reportProgress(getState(), tables, "siege_fort", 1);  // → occupy/subjugate/siege_any 자동
         siegeInfo = { damage: 0, hp: 0, maxHp: 0, fell: true, allCleared: true };
       }
     }
@@ -895,7 +904,7 @@ async function boot() {
             if (cid == null) continue;
             const expResult = grantExp(cid, actualExp, tables.characterExp);
             if (expResult) {
-              recomputeStatsFromLevel(cid, tables.fieldObjects);
+              recomputeStatsFromLevel(cid, tables.fieldObjects, tables);
               const ch = getCharacter(cid);
               if (expResult.after > expResult.before) {
                 expLines.push(`<span style="color:#ffd452">★${ch.name} Lv${expResult.before}→${expResult.after}!</span>`);
@@ -1105,7 +1114,7 @@ async function boot() {
       const before = getCharacter(cid)?.level;
       const result = grantExp(cid, actualExp, tables.characterExp);
       if (!result) continue;
-      recomputeStatsFromLevel(cid, tables.fieldObjects);
+      recomputeStatsFromLevel(cid, tables.fieldObjects, tables);
       const ch = getCharacter(cid);
       if (result.after > result.before) {
         showToast(`★ ${ch.name} Lv${result.before} → Lv${result.after}!`, "levelup");
@@ -1230,14 +1239,13 @@ async function boot() {
 
   function pulseHudResources(gained) {
     if (!gained) return;
-    // HUD에 노출된 자원(grain/gold/vis)만 펄스 처리
-    for (const code of ["grain", "gold", "vis"]) {
+    // HUD에 노출된 모든 자원 (10종)
+    for (const code of ["grain", "iron", "wood", "stone", "herbs", "gold", "vis", "gem", "scroll", "rp"]) {
       if (!(gained[code] > 0)) continue;
       const valEl = document.getElementById(`res-${code}`);
       const chip = valEl?.parentElement;
       if (!chip) continue;
       chip.classList.remove("pulse");
-      // reflow 후 재추가하여 애니메이션 재시작
       void chip.offsetWidth;
       chip.classList.add("pulse");
       setTimeout(() => chip.classList.remove("pulse"), 1000);
@@ -1251,7 +1259,7 @@ async function boot() {
       .sort(([a], [b]) => a.localeCompare(b));
     const gainHtml = gainEntries.length
       ? gainEntries.map(([code, v]) =>
-          `<span class="ts-res"><i class="res-icon ${RES_DOT_CLASS[code] || ''}"></i>${RES_LABEL[code] || code} <b>+${v}</b></span>`
+          `<span class="ts-res"><span class="res-emoji">${resEmoji(code)}</span>${RES_LABEL[code] || code} <b>+${v}</b></span>`
         ).join("")
       : `<span class="ts-empty">수급된 자원 없음</span>`;
 
@@ -1477,7 +1485,7 @@ async function boot() {
         const have = gs.resources[c.res] || 0;
         const lack = have < c.amt;
         const label = RES_LABEL[c.res] || c.res;
-        return `<span class="train-cost ${lack ? 'lack' : ''}"><i class="res-icon ${RES_DOT_CLASS[c.res] || ''}"></i>${label} ${c.amt}</span>`;
+        return `<span class="train-cost ${lack ? 'lack' : ''}"><span class="res-emoji">${resEmoji(c.res)}</span>${label} ${c.amt}</span>`;
       }).join("");
 
       let btnLabel = `Lv ${cur + 1} 투자`;
@@ -1512,6 +1520,8 @@ async function boot() {
         pushUndo(`훈련 투자: ${categoryName}`);
         const result = investTraining(type, tables);
         if (result.ok) {
+          // M5-B: 투자 직후 모든 캐릭터 stats 재계산 (maxFatigue + 병종 % 보정)
+          recomputeAllCharacters(tables);
           showToast(`${TRAIN_ICONS[type] || ""} ${result.row.Name} 투자 완료`, "exp");
           // Quest 진행도: 모든 훈련 = "training", 병종 훈련 = "class_train" + class_train_level
           reportProgress(getState(), tables, "training", 1);
@@ -1617,11 +1627,21 @@ async function boot() {
 
       // 보상 표시
       const rewards = [];
-      if (q.RwdGrain) rewards.push(`<span class="qrw"><i class="res-icon grain"></i>${q.RwdGrain}</span>`);
-      if (q.RwdGold)  rewards.push(`<span class="qrw"><i class="res-icon gold"></i>${q.RwdGold}</span>`);
-      if (q.RwdVis)   rewards.push(`<span class="qrw"><i class="res-icon vis"></i>${q.RwdVis}</span>`);
-      if (q.RwdGem)   rewards.push(`<span class="qrw"><i class="res-icon gem"></i>${q.RwdGem}</span>`);
-      if (q.RwdScroll) rewards.push(`<span class="qrw"><i class="res-icon scroll"></i>${q.RwdScroll}</span>`);
+      // 보상 표시 — 5대 물자 + 화폐 (5대 물자: grain/iron/wood/stone/herbs)
+      const rwdMap = [
+        ["grain",  q.RwdGrain],
+        ["iron",   q.RwdIron],
+        ["wood",   q.RwdWood],
+        ["stone",  q.RwdStone],
+        ["herbs",  q.RwdHerbs],
+        ["gold",   q.RwdGold],
+        ["vis",    q.RwdVis],
+        ["gem",    q.RwdGem],
+        ["scroll", q.RwdScroll],
+      ];
+      for (const [code, amt] of rwdMap) {
+        if (amt) rewards.push(`<span class="qrw"><span class="res-emoji">${resEmoji(code)}</span>${amt}</span>`);
+      }
       if (q.RwdFamilyEXP) rewards.push(`<span class="qrw qrw-fexp">🏰 ${q.RwdFamilyEXP}</span>`);
 
       let btn;
@@ -1657,9 +1677,14 @@ async function boot() {
         if (result.ok) {
           const lines = [];
           if (result.rewards.familyExp) lines.push(`🏰 가문EXP +${result.rewards.familyExp}`);
-          if (result.rewards.gold) lines.push(`골드 +${result.rewards.gold}`);
-          if (result.rewards.vis) lines.push(`비스 +${result.rewards.vis}`);
-          showToast(`✓ 보상 수령: ${lines.join(", ")}`, "exp");
+          // 5대 물자 + 화폐 모두 토스트에 표시
+          for (const code of ["grain", "iron", "wood", "stone", "herbs", "gold", "vis", "gem", "scroll"]) {
+            const v = result.rewards[code];
+            if (v) lines.push(`${resEmoji(code)} +${v}`);
+          }
+          showToast(`✓ 보상 수령: ${lines.join(" · ")}`, "exp");
+          // 펄스도 트리거 (자원 변화 시각화)
+          pulseHudResources(result.rewards);
           for (const ev of (result.levelUps || [])) {
             showToast(`🏰 가문 Lv${ev.from} → <b>Lv${ev.to}</b>!`, "levelup");
           }

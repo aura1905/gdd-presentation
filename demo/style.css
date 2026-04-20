@@ -22,21 +22,15 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   pointer-events: none; z-index: 10; }
 #hud-top * { pointer-events: auto; }
 .hud-group { display: flex; gap: 10px; align-items: center; }
-.res { display: inline-flex; align-items: center; gap: 4px; font-size: 13px;
-  background: rgba(30,30,30,0.85); padding: 4px 8px; border-radius: 4px;
+.hud-resources { gap: 3px; flex-wrap: wrap; max-width: 60%; }
+.res { display: inline-flex; align-items: center; gap: 3px; font-size: 12px;
+  background: rgba(30,30,30,0.85); padding: 3px 6px; border-radius: 3px;
   border: 1px solid #333; }
-.res-icon { width: 12px; height: 12px; border-radius: 50%; display: inline-block; }
-.res-icon.grain { background: #d4b460; }
-.res-icon.gold { background: #ffd452; }
-.res-icon.vis { background: #a368d8; }
-.res-icon.iron { background: #8a8a96; }
-.res-icon.wood { background: #8b5a2b; }
-.res-icon.stone { background: #a0a0a0; }
-.res-icon.herbs { background: #5ec060; }
-.res-icon.gem { background: #66d4d4; }
-.res-icon.scroll { background: #d2c4a0; }
-.res-icon.rp { background: #6abff0; }
-.res-icon.mana { background: #b066d4; }
+/* 자원 emoji 아이콘 — 필드(worldmap)와 동일 통일성 */
+.res-emoji { display: inline-block; font-size: 13px; line-height: 1;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
+/* (.res-icon 컬러 점은 폐기 — 옛 호환만) */
+.res-icon { display: none; }
 
 /* HUD 자원 변화 펄스 (M4-A 턴 정산) */
 .res.pulse { animation: res-pulse 0.9s ease; }
@@ -314,7 +308,8 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   display: inline-flex; align-items: center; justify-content: center;
   border: 1px solid rgba(255,255,255,0.4); }
 @keyframes fp-back-in { from { opacity: 0; } to { opacity: 1; } }
-#family-panel .fp-card {
+/* .fp-card / .fp-header — #family-panel + #quest-panel 공유 */
+.fp-card {
   width: min(720px, 92%);
   height: min(80%, 720px);
   background: linear-gradient(180deg, #1a1410, #0f0c08);
@@ -326,7 +321,7 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   overflow: hidden;
 }
 @keyframes fp-pop { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
-#family-panel .fp-header { display: flex; justify-content: space-between; align-items: center;
+.fp-header { display: flex; justify-content: space-between; align-items: center;
   padding: 10px 16px; background: rgba(40,30,15,0.6); border-bottom: 1px solid #443;
 }
 #family-panel h2 { font-size: 16px; color: #ffd452; font-weight: bold; margin: 0; }
