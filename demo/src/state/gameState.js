@@ -371,6 +371,49 @@ export function getMaxParties() {
   return state?.maxParties ?? 2;
 }
 
+/**
+ * 배럭 확장 비용 (maxParties → maxParties + 1).
+ * 2→3은 자원만, 3→4~는 가문 레벨 게이트 추가 예정 (D 단계 후속).
+ */
+export const BARRACKS_EXPAND_COST = {
+  3: { wood: 30, stone: 20 },                 // 2→3
+  4: { wood: 80, stone: 50, grain: 100 },     // 3→4
+  5: { wood: 200, stone: 150, grain: 300, gold: 2000 },   // 4→5
+  6: { wood: 500, stone: 400, grain: 800, gold: 5000 },   // 5→6
+};
+
+/** 배럭 확장 비용 조회 (다음 레벨). */
+export function getBarracksExpandCost() {
+  const next = (state?.maxParties ?? 2) + 1;
+  if (next > 6) return null;
+  return BARRACKS_EXPAND_COST[next];
+}
+
+/** 배럭 확장 가능 여부 체크. */
+export function canExpandBarracks() {
+  const cost = getBarracksExpandCost();
+  if (!cost) return { ok: false, reason: "at_max" };
+  if (!state?.resources) return { ok: false, reason: "no_state" };
+  for (const [res, amt] of Object.entries(cost)) {
+    if ((state.resources[res] || 0) < amt) {
+      return { ok: false, reason: "insufficient", missing: res, need: amt, have: state.resources[res] || 0 };
+    }
+  }
+  return { ok: true, cost };
+}
+
+/** 배럭 확장 실행 — 자원 차감 + maxParties +1. */
+export function expandBarracks() {
+  const check = canExpandBarracks();
+  if (!check.ok) return check;
+  for (const [res, amt] of Object.entries(check.cost)) {
+    state.resources[res] = (state.resources[res] || 0) - amt;
+  }
+  state.maxParties = (state.maxParties || 2) + 1;
+  emit("state:changed", { path: "maxParties", action: "expand" });
+  return { ok: true, newMax: state.maxParties };
+}
+
 /** 파티 추가. 빈 슬롯 3개. 최대치 초과 시 실패. */
 export function createParty() {
   if (!state) return { ok: false, reason: "no_state" };

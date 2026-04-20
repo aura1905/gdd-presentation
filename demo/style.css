@@ -142,6 +142,18 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .ep-party-head { display: flex; flex-direction: column; min-width: 60px; }
 .ep-party-head b { color: #ffd452; font-size: 13px; }
 .ep-party-head small { color: #888; font-size: 10px; }
+.ep-expand { margin-top: 8px; padding: 10px; background: rgba(40,30,15,0.5);
+  border: 1px solid #5a4a30; border-radius: 6px; }
+.ep-expand-head { color: #ffd452; font-size: 12px; font-weight: bold; margin-bottom: 4px; }
+.ep-expand-head b { color: #fff; }
+.ep-expand-cost { font-size: 11px; color: #ccc; margin-bottom: 6px;
+  display: flex; gap: 8px; flex-wrap: wrap; }
+.ep-btn-expand { padding: 6px 14px; border-radius: 5px; cursor: pointer;
+  font-size: 12px; font-weight: bold; border: 1px solid #8a6020;
+  background: linear-gradient(180deg, #d4a843, #a08030);
+  color: #2a1a00; }
+.ep-btn-expand:hover:not(:disabled) { filter: brightness(1.15); }
+.ep-btn-expand:disabled { opacity: 0.5; cursor: not-allowed; background: #555; color: #888; }
 .ep-party-actions { display: flex; gap: 8px; margin-top: 6px; margin-bottom: 6px; }
 .ep-party-actions button { padding: 6px 12px; border-radius: 5px; cursor: pointer;
   font-size: 12px; font-weight: bold; border: 1px solid #555; }

@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -198,7 +198,15 @@ async function boot() {
     // 타이머 활성 중이면 매초 화면 갱신 (링 + 팝업 카운트다운)
     if (anyActive || anyExpired) {
       worldmap.requestDraw();
-      if (selectedHexRow?.StructureID) showTilePanel(selectedHexRow, null, tables, 0, 0);
+      // 패널이 이미 열려있을 때만 갱신 — 강제 표시 X (좌상단 (0,0)으로 매초 리셋되던 버그 수정)
+      const hexPanel = document.getElementById("hex-panel");
+      if (selectedHexRow?.StructureID && !hexPanel.hidden) {
+        const left = hexPanel.style.left;
+        const top  = hexPanel.style.top;
+        showTilePanel(selectedHexRow, null, tables, 0, 0);
+        if (left) hexPanel.style.left = left;
+        if (top)  hexPanel.style.top  = top;
+      }
     }
   }, 1000);
 
@@ -240,14 +248,34 @@ async function boot() {
       }
       html += `</div></div>`;
     }
-    // 분대 추가 / 삭제 버튼
+    // 분대 추가 / 삭제 / 배럭 확장 버튼
     const canAdd = gs.parties.length < maxP;
     html += `<div class="ep-party-actions">`;
-    html += `<button class="ep-btn-add" ${canAdd ? "" : "disabled"} type="button">➕ 분대 추가 ${canAdd ? "" : `(최대 ${maxP}개)`}</button>`;
+    html += `<button class="ep-btn-add" ${canAdd ? "" : "disabled"} type="button">➕ 분대 추가 ${canAdd ? `(${gs.parties.length}/${maxP})` : `(${maxP}/${maxP} 가득)`}</button>`;
     if (gs.parties.length > 1) {
       html += `<button class="ep-btn-del" type="button">🗑 마지막 분대 삭제</button>`;
     }
     html += `</div>`;
+
+    // 배럭 확장 (maxParties < 6일 때만)
+    const expandCost = getBarracksExpandCost();
+    if (expandCost) {
+      const exCheck = canExpandBarracks();
+      const RES_LBL = { wood: "🪵목재", stone: "🪨석재", grain: "🌾곡물", gold: "💰금화", iron: "⛏️철", herbs: "🌿약초" };
+      const costStr = Object.entries(expandCost)
+        .map(([res, amt]) => {
+          const have = gs.resources?.[res] || 0;
+          const ok = have >= amt;
+          return `<span style="color:${ok ? "#8c8" : "#f66"}">${RES_LBL[res] || res} ${have}/${amt}</span>`;
+        }).join(" · ");
+      html += `<div class="ep-expand">
+        <div class="ep-expand-head">🏗️ 배럭 확장 — 최대 분대 <b>${maxP}</b> → <b>${maxP + 1}</b></div>
+        <div class="ep-expand-cost">${costStr}</div>
+        <button class="ep-btn-expand" ${exCheck.ok ? "" : "disabled"} type="button">${exCheck.ok ? "확장" : "자원 부족"}</button>
+      </div>`;
+    } else {
+      html += `<div class="ep-expand"><div class="ep-expand-head">🏗️ 배럭 최대치 (6분대) 도달</div></div>`;
+    }
 
     html += `<div class="ep-roster-section"><div class="ep-roster-title">📋 로스터 (클릭으로 선택)</div><div class="ep-roster-grid">`;
     for (const ch of roster) {
@@ -279,6 +307,15 @@ async function boot() {
       if (!last) return;
       pushUndo(`분대 삭제: ${last.name}`);
       deleteParty(last.id);
+    });
+    el.querySelector(".ep-btn-expand")?.addEventListener("click", () => {
+      pushUndo("배럭 확장");
+      const r = expandBarracks();
+      if (r.ok) {
+        showToast(`🏗️ 배럭 확장! 최대 분대 ${r.newMax}개`, "levelup");
+      } else if (r.reason === "insufficient") {
+        showToast(`자원 부족: ${r.missing} ${r.have}/${r.need}`, "warn");
+      }
     });
 
     // 로스터 캐릭 선택
