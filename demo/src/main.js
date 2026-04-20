@@ -1835,13 +1835,33 @@ async function boot() {
 
   function updateQuestBadge() {
     const gs = getState();
-    const n = gs.quests?.readyToClaim?.length || 0;
+    const ready = gs.quests?.readyToClaim || [];
+    // 하단 도크 전체 합계
+    const n = ready.length;
     if (n > 0) {
       questBadge.textContent = n;
       questBadge.hidden = false;
     } else {
       questBadge.hidden = true;
     }
+    // 서브탭별 카운트 — chain/daily/weekly/achievement 각각
+    const perType = { chain: 0, daily: 0, weekly: 0, achievement: 0 };
+    for (const qid of ready) {
+      const q = tables.quests.get(qid);
+      if (q && perType.hasOwnProperty(q.QuestType)) perType[q.QuestType]++;
+    }
+    document.querySelectorAll('#quest-subtabs button').forEach(btn => {
+      const type = btn.dataset.qsub;
+      const cnt = perType[type] || 0;
+      // 기존 배지 제거 후 재삽입 (정확성)
+      btn.querySelectorAll('.subtab-badge').forEach(el => el.remove());
+      if (cnt > 0) {
+        const b = document.createElement("span");
+        b.className = "subtab-badge";
+        b.textContent = cnt;
+        btn.appendChild(b);
+      }
+    });
   }
 
   // 미션 진행 변동 시 패널 갱신 + 배지 업데이트
