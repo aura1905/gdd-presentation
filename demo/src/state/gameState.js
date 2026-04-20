@@ -376,10 +376,11 @@ export function getMaxParties() {
  * 2→3은 자원만, 3→4~는 가문 레벨 게이트 추가 예정 (D 단계 후속).
  */
 export const BARRACKS_EXPAND_COST = {
-  3: { wood: 30, stone: 20 },                 // 2→3
-  4: { wood: 80, stone: 50, grain: 100 },     // 3→4
-  5: { wood: 200, stone: 150, grain: 300, gold: 2000 },   // 4→5
-  6: { wood: 500, stone: 400, grain: 800, gold: 5000 },   // 5→6
+  // 테스트 편의로 초기 자원(곡물/금화)로 바로 가능하게 낮춤. 추후 목재/석재 복원 예정.
+  3: { grain: 100, gold: 500 },                // 2→3
+  4: { grain: 300, gold: 1500, wood: 20 },     // 3→4
+  5: { grain: 600, gold: 3000, wood: 50, stone: 30 },   // 4→5
+  6: { grain: 1200, gold: 6000, wood: 120, stone: 80, herbs: 50 },  // 5→6
 };
 
 /** 배럭 확장 비용 조회 (다음 레벨). */
