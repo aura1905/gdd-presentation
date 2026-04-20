@@ -421,6 +421,7 @@ async function boot() {
           <div class="pc-icon" style="background:${color}" title="리더 병종: ${leaderJobName}">${leader?.jobClass || "?"}</div>
           <div class="pc-name">${party.name}</div>
           <div class="pc-leader-job" style="color:${color}">${leaderJobName}</div>
+          <button class="pc-edit-btn" data-edit-party="${party.id}" type="button" title="분대 편성">⚙</button>
         </div>
         <div class="pc-members">${memberHtml}</div>`;
 
@@ -431,6 +432,12 @@ async function boot() {
         const cv = card.querySelector(`#pcm-face-${party.id}-${slotIdx}`);
         if (!cv) return;
         drawFacePortrait(cv, m.spriteName, m.hp <= 0);
+      });
+
+      // 편성 버튼 — 파티 카드 click 이벤트보다 먼저 처리
+      card.querySelector(".pc-edit-btn")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openPartyEditor();
       });
 
       card.addEventListener("click", () => {
