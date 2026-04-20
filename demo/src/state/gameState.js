@@ -443,6 +443,78 @@ export function createParty() {
   return { ok: true, party: newParty };
 }
 
+/**
+ * 자동 배치 — 모든 파티 슬롯을 가장 좋은 조합으로 채움.
+ *
+ * 룰:
+ *   Slot 0 (리더, 사망=강제 퇴각): Tanker 우선 → 없으면 Dealer
+ *   Slot 1 (DPS):                  Dealer 우선 → Support → Healer
+ *   Slot 2 (유틸):                 Healer 우선 → Support → Dealer
+ *
+ * 분배: 각 슬롯별 best-first round-robin (1분대 = 최강 Tanker/Dealer/Healer 조합,
+ *       2분대 = 두번째, ...) → 각 파티 균형 + 1분대가 가장 강함
+ *
+ * @returns {{ ok, assigned, unassigned }} assigned 캐릭 ID 배열
+ */
+export function autoAssignBestParties() {
+  if (!state?.parties || !state.characters) return { ok: false, reason: "no_state" };
+
+  // 1) 모든 파티 슬롯 초기화
+  for (const p of state.parties) p.slots = [null, null, null];
+
+  // 2) Role별 풀 (레벨 desc 정렬)
+  const byRole = (role) => state.characters
+    .filter(c => c.role === role)
+    .sort((a, b) => (b.level || 1) - (a.level || 1));
+  const pools = {
+    Tanker: byRole("Tanker"),
+    Dealer: byRole("Dealer"),
+    Healer: byRole("Healer"),
+    Support: byRole("Support"),
+  };
+  const usedIds = new Set();
+
+  // 3) 슬롯별 우선순위 큐
+  const SLOT_PRIORITY = [
+    ["Tanker", "Dealer", "Support", "Healer"],   // Slot 0: Tanker → Dealer fallback
+    ["Dealer", "Support", "Healer", "Tanker"],   // Slot 1: DPS
+    ["Healer", "Support", "Dealer", "Tanker"],   // Slot 2: 유틸
+  ];
+
+  function pickNext(slotIdx) {
+    for (const role of SLOT_PRIORITY[slotIdx]) {
+      const pool = pools[role];
+      while (pool.length > 0) {
+        const c = pool.shift();
+        if (!usedIds.has(c.id)) {
+          usedIds.add(c.id);
+          return c.id;
+        }
+      }
+    }
+    return null;  // 풀 고갈
+  }
+
+  // 4) Slot별 round-robin: 모든 파티 Slot0 먼저, 그다음 Slot1, Slot2
+  const assigned = [];
+  for (let slotIdx = 0; slotIdx < 3; slotIdx++) {
+    for (const party of state.parties) {
+      const cid = pickNext(slotIdx);
+      if (cid != null) {
+        party.slots[slotIdx] = cid;
+        assigned.push(cid);
+      }
+    }
+  }
+
+  emit("state:changed", { path: "parties", action: "auto-assign" });
+  return {
+    ok: true,
+    assigned,
+    unassigned: state.characters.filter(c => !usedIds.has(c.id)).map(c => c.id),
+  };
+}
+
 /** 파티 삭제. 편성된 캐릭 해제 (로스터로 복귀). */
 export function deleteParty(partyId) {
   if (!state) return { ok: false };

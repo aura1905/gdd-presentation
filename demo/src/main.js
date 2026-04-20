@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignBestParties } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -250,9 +250,10 @@ async function boot() {
       }
       html += `</div></div>`;
     }
-    // 분대 추가 / 삭제 / 배럭 확장 버튼
+    // 분대 추가 / 자동 배치 / 삭제 / 배럭 확장 버튼
     const canAdd = gs.parties.length < maxP;
     html += `<div class="ep-party-actions">`;
+    html += `<button class="ep-btn-auto" type="button" title="모든 슬롯을 가장 좋은 조합으로 자동 채움 (Tanker 리더 + Dealer + Healer)">🎯 자동 배치</button>`;
     html += `<button class="ep-btn-add" ${canAdd ? "" : "disabled"} type="button">➕ 분대 추가 ${canAdd ? `(${gs.parties.length}/${maxP})` : `(${maxP}/${maxP} 가득)`}</button>`;
     if (gs.parties.length > 1) {
       html += `<button class="ep-btn-del" type="button">🗑 마지막 분대 삭제</button>`;
@@ -302,6 +303,21 @@ async function boot() {
       const r = createParty();
       if (!r.ok && r.reason === "limit_reached") {
         showToast(`최대 분대 수 ${r.limit}개 도달`, "warn");
+        return;
+      }
+      if (r.ok) {
+        showToast(`✓ ${r.party.name} 추가됨`, "exp");
+        // 좌측 파티 목록 + 모달 안 신규 카드로 자동 스크롤 (다음 tick에 DOM 갱신 후)
+        setTimeout(() => {
+          // 좌측 목록
+          const list = document.getElementById("party-list");
+          if (list) list.scrollTop = list.scrollHeight;
+          // 편성 모달 콘텐츠 (모달 열려있을 때)
+          const editorContent = document.getElementById("editor-content");
+          if (editorContent && !document.getElementById("editor-panel").hidden) {
+            editorContent.scrollTop = editorContent.scrollHeight;
+          }
+        }, 50);
       }
     });
     el.querySelector(".ep-btn-del")?.addEventListener("click", () => {
@@ -309,6 +325,22 @@ async function boot() {
       if (!last) return;
       pushUndo(`분대 삭제: ${last.name}`);
       deleteParty(last.id);
+    });
+    el.querySelector(".ep-btn-auto")?.addEventListener("click", () => {
+      showConfirm({
+        title: "🎯 자동 배치",
+        body: `현재 모든 분대 편성을 초기화하고 가장 좋은 조합으로 자동 채웁니다.\n\n룰:\n· Slot 0 (리더): Tanker 우선\n· Slot 1: Dealer\n· Slot 2: Healer/Support\n\n레벨 desc 분배 — 1분대가 가장 강한 조합.`,
+        confirmLabel: "자동 배치",
+        onConfirm: () => {
+          pushUndo("자동 배치");
+          const r = autoAssignBestParties();
+          if (r.ok) {
+            showToast(`🎯 자동 배치 완료 — ${r.assigned.length}명 편성, ${r.unassigned.length}명 대기`, "exp");
+          } else {
+            showToast(`자동 배치 실패: ${r.reason}`, "warn");
+          }
+        },
+      });
     });
     el.querySelector(".ep-btn-expand")?.addEventListener("click", () => {
       pushUndo("배럭 확장");
