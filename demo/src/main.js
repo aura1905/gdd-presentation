@@ -1834,6 +1834,22 @@ async function boot() {
       <div class="gc-res"><span>📜 모집권</span><b>${scroll}</b></div>
     </div>`;
 
+    // 배너 쇼케이스 — 최상급 캐릭터 4명의 실루엣
+    const featured = tables.fieldObjects.all()
+      .filter(p => p.ObjectType === "Player" && p.IsActivate && p.Rarity >= 6 && p.PrefabPath)
+      .slice(0, 4);
+    html += `<div class="gc-banner">
+      <div class="gc-banner-sparkle"></div>
+      <div class="gc-banner-title">★ Featured</div>
+      <div class="gc-banner-headline">전설의 인재 모집</div>
+      <div class="gc-banner-subline">★6~7 등장 확률 1.5% · 영웅 8%</div>
+      <div class="gc-silhouettes">`;
+    for (const p of featured) {
+      const sp = p.PrefabPath.split("/")[1];
+      html += `<div class="gc-silhouette"><canvas width="64" height="80" data-portrait="${sp}" data-ko="false"></canvas></div>`;
+    }
+    html += `</div></div>`;
+
     html += `<div class="gc-buttons">
       <button class="gc-btn single" data-pulls="1" data-currency="gem" ${gem<cost1Gem?"disabled":""}>
         <div>단발</div><small>💎 ${cost1Gem}</small>
@@ -1856,7 +1872,7 @@ async function boot() {
         const color = GRADE_COLOR[r.grade];
         const kr = GRADE_KR[r.grade];
         const dupeStr = r.duplicate ? `<div class="gc-dupe">+조각 ${r.shardCount}</div>` : "";
-        html += `<div class="gc-result-card" style="border-color:${color}">
+        html += `<div class="gc-result-card grade-${r.grade}" style="border-color:${color}">
           <canvas width="48" height="48" data-portrait="${r.char?.PrefabPath?.split('/')[1] || ''}" data-ko="false"></canvas>
           <div class="gc-grade" style="color:${color}">★${r.char?.Rarity || '?'} ${kr}</div>
           <div class="gc-name">${r.char?.Name || 'N/A'}</div>
