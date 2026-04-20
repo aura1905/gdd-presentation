@@ -1834,9 +1834,9 @@ async function boot() {
       <div class="gc-res"><span>📜 모집권</span><b>${scroll}</b></div>
     </div>`;
 
-    // 배너 쇼케이스 — 최상급 캐릭터 4명의 실루엣
+    // 배너 쇼케이스 — 실제 스프라이트 폴더 있는 최상급 캐릭 중 4명
     const featured = tables.fieldObjects.all()
-      .filter(p => p.ObjectType === "Player" && p.IsActivate && p.Rarity >= 6 && p.PrefabPath)
+      .filter(p => p.ObjectType === "Player" && p.Rarity >= 5 && p.PrefabPath && resolveSpriteFolder(p.PrefabPath.split("/")[1]))
       .slice(0, 4);
     html += `<div class="gc-banner">
       <div class="gc-banner-sparkle"></div>

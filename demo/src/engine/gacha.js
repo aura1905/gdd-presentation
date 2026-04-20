@@ -1,5 +1,13 @@
 // Gacha engine — roll grade via rate table, pick character from pool.
 // GDD: gacha.json (rate/pity/banner/cost/dupe_shard/disassemble)
+import { resolveSpriteFolder } from "../render/charSprites.js";
+
+/** 실제 스프라이트 폴더가 존재하는 캐릭터인지 (charSprites.js KNOWN_FOLDERS 기준). */
+function hasSprite(p) {
+  if (!p.PrefabPath) return false;
+  const name = p.PrefabPath.split("/")[1];
+  return resolveSpriteFolder(name) != null;
+}
 
 // Grade → Rarity 매핑
 const GRADE_RARITY = {
@@ -41,13 +49,20 @@ export function rollGrade(tables, rng = Math.random) {
   return rates[rates.length - 1]?.Grade || "normal";
 }
 
-/** grade에 해당하는 캐릭터 풀에서 1명 랜덤 픽. */
+/** grade에 해당하는 캐릭터 풀에서 1명 랜덤 픽 — 실제 스프라이트 폴더 있는 것만. */
 export function pickCharacter(grade, tables, rng = Math.random) {
   const rarityList = GRADE_RARITY[grade] || [2];
   const pool = tables.fieldObjects.all().filter(p =>
-    p.ObjectType === "Player" && p.IsActivate && rarityList.includes(p.Rarity)
+    p.ObjectType === "Player" && hasSprite(p) && rarityList.includes(p.Rarity)
   );
-  if (pool.length === 0) return null;
+  if (pool.length === 0) {
+    // Fallback: 전체 Player(실제 스프라이트 있는)에서 랜덤
+    const anyPool = tables.fieldObjects.all().filter(p =>
+      p.ObjectType === "Player" && hasSprite(p)
+    );
+    if (anyPool.length === 0) return null;
+    return anyPool[Math.floor(rng() * anyPool.length)];
+  }
   return pool[Math.floor(rng() * pool.length)];
 }
 
