@@ -4536,7 +4536,7 @@
     "RegionID": 1,
     "TerrainID": 2,
     "HexLevel": 2,
-    "ResourceCode": "iron"
+    "ResourceCode": "herbs"
   },
   {
     "HexID": 5747,
@@ -4634,7 +4634,7 @@
     "RegionID": 2,
     "TerrainID": 2,
     "HexLevel": 2,
-    "ResourceCode": "iron"
+    "ResourceCode": "stone"
   },
   {
     "HexID": 5147,
@@ -4830,7 +4830,7 @@
     "RegionID": 3,
     "TerrainID": 14,
     "HexLevel": 2,
-    "ResourceCode": "grain",
+    "ResourceCode": "wood",
     "StructureID": 1
   },
   {
@@ -4840,7 +4840,7 @@
     "RegionID": 3,
     "TerrainID": 1,
     "HexLevel": 2,
-    "ResourceCode": "iron"
+    "ResourceCode": "stone"
   },
   {
     "HexID": 5347,
@@ -4876,7 +4876,7 @@
     "RegionID": 3,
     "TerrainID": 1,
     "HexLevel": 2,
-    "ResourceCode": "iron"
+    "ResourceCode": "herbs"
   },
   {
     "HexID": 5052,
@@ -12564,7 +12564,7 @@
     "RegionID": 38,
     "TerrainID": 7,
     "HexLevel": 2,
-    "ResourceCode": "iron"
+    "ResourceCode": "wood"
   },
   {
     "HexID": 4943,
@@ -12573,7 +12573,7 @@
     "RegionID": 38,
     "TerrainID": 7,
     "HexLevel": 2,
-    "ResourceCode": "iron"
+    "ResourceCode": "stone"
   },
   {
     "HexID": 5042,

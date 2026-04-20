@@ -29,6 +29,8 @@ describe("levelUpFamilyIfReady", () => {
 
   it("Lv 2 누적 XP(158) 도달 → Lv 2로 자동 레벨업 + 보상", () => {
     const state = getState();
+    // 시작 자원 (init 시점) 기록 — 가챠 데모용 gem 3000/scroll 5 등 변동 가능
+    const before = { ...state.resources };
     state.family.xp = 158;
     const events = levelUpFamilyIfReady(tables);
     expect(events.length).toBe(1);
@@ -36,10 +38,11 @@ describe("levelUpFamilyIfReady", () => {
     expect(events[0].to).toBe(2);
     expect(state.family.level).toBe(2);
     // family_level.json Lv2 보상: Grain 100 / Gold 200 / Vis 500 / Gem 10
-    expect(state.resources.grain).toBe(100);
-    expect(state.resources.gold).toBe(200);
-    expect(state.resources.vis).toBe(500);
-    expect(state.resources.gem).toBe(10);
+    // 시작 자원 + 보상 합산 검증
+    expect(state.resources.grain).toBe((before.grain || 0) + 100);
+    expect(state.resources.gold).toBe((before.gold || 0) + 200);
+    expect(state.resources.vis).toBe((before.vis || 0) + 500);
+    expect(state.resources.gem).toBe((before.gem || 0) + 10);
   });
 
   it("대량 XP 누적 시 여러 레벨 연속 업 (Lv1 → Lv5)", () => {
