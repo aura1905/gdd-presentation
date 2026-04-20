@@ -66,14 +66,12 @@ export function getDupeShardCount(grade, tables) {
   return row?.ShardCount || 1;
 }
 
-/** 비용 조회 (CurrencyType + 횟수). */
+/** 비용 조회 (CurrencyType + 횟수). cost 행 2개를 Amount 오름차순으로 정렬해 single/10-pull 매핑. */
 export function getGachaCost(count, currency, tables) {
-  // count: 1 (단차) or 10 (10연차)
-  // currency: 'gem' or 'scroll'
-  const row = tables.gacha.all().find(r =>
-    r.ConfigType === "cost" &&
-    r.CurrencyType === currency &&
-    ((count === 1 && r.Amount < 1000) || (count === 10 && r.Amount >= 1000))
-  );
-  return row?.Amount || (count === 10 ? 2800 : 280);
+  const rows = tables.gacha.all()
+    .filter(r => r.ConfigType === "cost" && r.CurrencyType === currency)
+    .sort((a, b) => (a.Amount || 0) - (b.Amount || 0));
+  if (count === 1) return rows[0]?.Amount ?? (currency === "gem" ? 280 : 1);
+  if (count === 10) return rows[1]?.Amount ?? (currency === "gem" ? 2800 : 10);
+  return 0;
 }

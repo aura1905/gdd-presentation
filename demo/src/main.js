@@ -22,7 +22,7 @@ import { getSiegeProgress, getStructureCurrentHP, markDefenderDefeated, isDefend
 import { recomputeFog, applyScout, getFogState, bumpAction } from "./engine/fog.js";
 import { endTurn, computeHexIncome } from "./engine/turn.js";
 import { initQuests, ensureQuestsState, getActiveQuests, getClaimableQuests, reportProgress, claimQuestReward } from "./engine/quests.js";
-import { addCharacterToRoster, addCharacterShard } from "./state/gameState.js";
+import { addCharacterToRoster, addCharacterShard, spendResource } from "./state/gameState.js";
 import { rollOnce, getDupeShardCount, getGachaCost, GRADE_COLOR, GRADE_KR } from "./engine/gacha.js";
 
 const status = (msg) => {
