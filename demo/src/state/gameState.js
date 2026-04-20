@@ -209,20 +209,31 @@ export function moveParty(partyId, targetQ, targetR, fatigueCost) {
       else ch.status = "normal";
     }
   }
-  // 홈 헥스 도착 시 자동 풀 회복 (HP/피로/상태 정상화)
+  // GDD: 홈 자동 풀회복 제거. 대신 탈진(피로≤0) 파티에 대해 "최소 10 보장"만 적용
+  // → 집에서 이동은 가능한 상태로. HP/피로 풀회복은 유료("휴식" 버튼) 또는 턴 자연 회복.
   const home = state.family?.homeHex;
   if (home && targetQ === home.q && targetR === home.r) {
-    for (const cid of party.slots) {
-      if (cid == null) continue;
-      const ch = state.characters.find(c => c.id === cid);
-      if (ch) {
-        ch.hp = ch.maxHp;
-        ch.fatigue = ch.maxFatigue;
-        ch.status = "normal";
-      }
-    }
+    ensureMinFatigue(partyId, 10);
   }
   emit("state:changed", { path: "parties", partyId, action: "move" });
+}
+
+/**
+ * 파티 전원 피로도가 최소값 미만이면 최소값까지 상승시킴.
+ * 탈진 상태로 집에 도착한 파티가 최소한 밖으로 나갈 수 있게 보장.
+ */
+export function ensureMinFatigue(partyId, minVal = 10) {
+  const party = state?.parties.find(p => p.id === partyId);
+  if (!party) return;
+  for (const cid of party.slots) {
+    if (cid == null) continue;
+    const ch = state.characters.find(c => c.id === cid);
+    if (ch && ch.fatigue < minVal) {
+      ch.fatigue = minVal;
+      if (ch.fatigue > 30) ch.status = "normal";
+      else if (ch.fatigue > 0) ch.status = "tired";
+    }
+  }
 }
 
 // Restore from saved JSON (localStorage)

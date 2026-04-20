@@ -473,10 +473,22 @@ async function boot() {
 
       const leaderJobMap = { F: "파이터", S: "스카우트", M: "머스킷티어", W: "위자드", L: "워록" };
       const leaderJobName = leaderJobMap[leader?.jobClass] || "?";
+
+      // 파티 주둔지 표시 (피로 회복 UX)
+      const home = gs.family?.homeHex;
+      const isHome = home && party.location.q === home.q && party.location.r === home.r;
+      const pHex = tables.worldHex.get(hexId(party.location.q, party.location.r));
+      const pStruct = pHex?.StructureID ? tables.structures.get(pHex.StructureID) : null;
+      let locIcon = "🏞️", locLabel = "필드 (+1/턴)";
+      if (isHome || pStruct?.StructureType === "City") { locIcon = "🏛️"; locLabel = "도시 (즉시 회복)"; }
+      else if (pStruct?.StructureType === "Fort") { locIcon = "🏰"; locLabel = "거점 (+30/턴)"; }
+      else if (pStruct?.StructureType === "Gate") { locIcon = "🚪"; locLabel = "관문"; }
+
       card.innerHTML = `
         <div class="pc-header">
           <div class="pc-icon" style="background:${color}" title="리더 병종: ${leaderJobName}">${leader?.jobClass || "?"}</div>
           <div class="pc-name">${party.name}</div>
+          <div class="pc-location" title="${locLabel}">${locIcon}</div>
           <div class="pc-leader-job" style="color:${color}">${leaderJobName}</div>
           <button class="pc-edit-btn" data-edit-party="${party.id}" type="button" title="분대 편성">⚙</button>
         </div>
@@ -947,9 +959,13 @@ async function boot() {
       }
     }
 
-    // 전투 피로 소모 (GDD: 100=최상 → 감소). 전투당 5 차감.
+    // 전투 피로 소모 (GDD energy.json: BaseCombatCost=5 + CostPerRound=1 × 라운드 수)
+    const rounds = lastResult?.record?.totalTurns || 1;
+    const fatigueCost = 5 + rounds;
     for (const ch of playerChars) {
-      ch.fatigue = Math.max(0, ch.fatigue - 5);
+      ch.fatigue = Math.max(0, ch.fatigue - fatigueCost);
+      if (ch.fatigue <= 0) ch.status = "exhausted";
+      else if (ch.fatigue <= 30) ch.status = "tired";
     }
 
     // 4. 결과 처리
@@ -1007,10 +1023,16 @@ async function boot() {
       // 토벌 승리 (점령 X)
       reportProgress(getState(), tables, "subjugate", 1);
     } else if (!allWon || leaderDead) {
-      // 패배 또는 리더 사망 → 자동 귀환 + 거점 도착 즉시 전체 회복
+      // 패배/리더사망 → 자동 귀환. HP만 풀회복 (Phase 2 부상 시스템 전 임시), 피로는 자연회복 대기.
       const home = getState().family.homeHex;
       moveParty(party.id, home.q, home.r, 0);
-      fullRestParty(party.id);
+      const partyObj = getState().parties.find(p => p.id === party.id);
+      for (const cid of partyObj?.slots || []) {
+        if (cid == null) continue;
+        const ch = getCharacter(cid);
+        if (ch) { ch.hp = ch.maxHp; }   // HP만 복구 (부상 시스템 Phase 2에서 분리 예정)
+      }
+      showToast(leaderDead ? "💀 리더 사망 — 강제 귀환" : "❌ 패배 — 자동 귀환", "warn");
     }
     // 토벌 승리 (리더 생존): 파티는 해당 헥스에 유지 (점령 안 함)
 
@@ -1384,8 +1406,9 @@ async function boot() {
     document.getElementById("hex-panel").hidden = true;
     animatedMove(party.id, path, () => {
       moveParty(party.id, home.q, home.r, cost);
-      // 거점 도착 시 자동 풀 회복 (HP/피로/상태)
-      fullRestParty(party.id);
+      // 자동 풀회복 제거. 피로는 moveParty에서 최소 10 보장.
+      // 풀회복 원하면 "휴식" 버튼 사용, 피로 자연 회복은 턴 경과 시.
+      showToast("🏠 집 도착 — 피로 자연 회복 시작 (턴 종료 시)", "exp");
       cancelInteraction();
       saveState(getState());
     });
