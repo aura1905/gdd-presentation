@@ -1996,6 +1996,7 @@
     <a class="nav-item" data-tab="economy">💰 경제</a>
     <a class="nav-item" data-tab="gacha">🎰 뽑기/성장</a>
     <a class="nav-item" data-tab="familygrowth">🏛️ 가문성장</a>
+    <a class="nav-item" data-tab="missions">📋 미션 시스템</a>
     <a class="nav-item" data-tab="ui">📱 UI/온보딩</a>
     <a class="nav-item" data-tab="deep">📖 심화기획</a>
     <a class="nav-item" data-tab="bgart">🎨 배경아트</a>
@@ -3928,6 +3929,7 @@
           <div class="sub-tab active" data-sub="eco-currency">화폐 체계</div>
           <div class="sub-tab" data-sub="eco-balance">수입/지출</div>
           <div class="sub-tab" data-sub="eco-maintain">유지비</div>
+          <div class="sub-tab" data-sub="eco-income5">자원 수급 5경로 <span class="badge badge-gold">NEW</span></div>
         </div>
 
         <div class="sub-content active" data-sub="eco-currency">
@@ -4101,6 +4103,68 @@
               </div>
             </div>
           </div>
+
+          <!-- 자원 수급 5경로 (2026-04-20 신규) -->
+          <div class="sub-content" data-sub="eco-income5">
+            <div class="card">
+              <h3>📥 자원 수급 5경로</h3>
+              <p>10종 자원 (5대 물자 <code>grain/iron/wood/stone/herbs</code> + 화폐 <code>gold/vis/gem</code> + 특수 <code>scroll/rp</code>)이 들어오는 모든 경로.</p>
+
+              <h4 style="margin-top:14px">A. 헥스 점령 즉시 보상</h4>
+              <ul>
+                <li><strong>테이블</strong>: <code>DropTable.xml</code> (BattleType=<code>occupy</code>, HexLevel별)</li>
+                <li><strong>컬럼</strong>: <code>Gold</code>, <code>Vis</code>, <code>SupplyGrain</code>, <code>ResourceQty</code>, <code>MaterialQty</code>, <code>CharEXP</code>, <code>FamilyEXP</code></li>
+                <li><strong>룰</strong>: <code>ResourceQty</code>는 <strong>점령한 헥스의 ResourceCode 자원</strong>에 가산<br>예: iron HL2 점령 → state.resources.iron += 3</li>
+              </ul>
+
+              <h4 style="margin-top:14px">B. 토벌 즉시 보상</h4>
+              <ul>
+                <li><strong>테이블</strong>: 동일 (<code>BattleType=subjugate</code>)</li>
+                <li>양은 occupy의 절반~3분의2 (헥스 영구 확보 차이)</li>
+              </ul>
+
+              <h4 style="margin-top:14px">C. 턴 종료 정기 수급</h4>
+              <ul>
+                <li><strong>테이블</strong>: <code>WorldHexTable.xml</code> × <code>ResourceTable.xml</code></li>
+                <li><strong>공식</strong>: <code>ProductionPerMin × ValueMultiplier × MinutesPerTurn</code> (데모: 1턴 = 10분)</li>
+                <li>예: iron HL1 헥스 1개 = <strong>30 iron/턴</strong></li>
+                <li>조건: HexLevel ≥ 1 + ResourceCode 보유 헥스만 (HL0 통로/구조물은 제외)</li>
+              </ul>
+
+              <h4 style="margin-top:14px">D. 미션 보상 수령</h4>
+              <ul>
+                <li><strong>테이블</strong>: <code>QuestTable.xml</code></li>
+                <li><strong>5대 물자 컬럼</strong> (2026-04-20 신규): <code>RwdGrain / RwdIron / RwdWood / RwdStone / RwdHerbs</code></li>
+                <li><strong>화폐</strong>: <code>RwdGold / RwdVis / RwdGem / RwdScroll</code></li>
+                <li><strong>그 외</strong>: <code>RwdFamilyEXP</code>, <code>RwdItem</code> / <code>RwdItemQty</code></li>
+                <li>사용자가 "보상 수령" 버튼 클릭 시 일괄 가산</li>
+              </ul>
+
+              <h4 style="margin-top:14px">E. 가문 레벨업 자동 보상</h4>
+              <ul>
+                <li><strong>테이블</strong>: <code>FamilyLevelTable.xml</code></li>
+                <li><strong>컬럼</strong>: <code>RwdGrain / RwdGold / RwdVis / RwdGem / RwdScroll</code>, <code>RwdFatigueReset</code></li>
+                <li><strong>트리거</strong>: <code>family.xp ≥ CumulativeXP</code> 도달 시 자동 레벨업 + 보상 가산 (한 번에 여러 레벨도 처리)</li>
+              </ul>
+
+              <div class="highlight-box" style="margin-top:14px">
+                <p><strong>관련 코드 (웹 데모 참고용)</strong>:</p>
+                <ul style="font-size:13px">
+                  <li><code>demo/src/engine/turn.js</code> — computeHexIncome / endTurn</li>
+                  <li><code>demo/src/engine/combat.js</code> — lookupDropReward</li>
+                  <li><code>demo/src/engine/quests.js</code> — claimQuestReward</li>
+                  <li><code>demo/src/state/gameState.js</code> — levelUpFamilyIfReady</li>
+                </ul>
+                <p style="margin-top:8px"><strong>관련 기획 문서</strong>:</p>
+                <ul style="font-size:13px">
+                  <li>Planning/gdd_economy_system.md — 자원 시스템 전반</li>
+                  <li>Planning/gdd_family_growth_system.md §2 — 8종 자원 체계</li>
+                  <li>Planning/gdd_early_reward_system.md §3-5 (RwdFamilyEXP), §3-7 (5대 물자), §4-4 (점령/토벌 즉시 보상)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -4619,7 +4683,7 @@
             </table>
             <p style="font-size:12px;color:var(--text-dim)">레벨 캡: 가문 Lv의 절반. 비용 설계: 일일 곡물의 30~40%를 투자하면 Chapter 진행과 보조 맞음.</p>
 
-            <h4 style="margin-top:16px">C2. 회복력 강화 — 🌿 약재 | 해금 Lv.6 | 최대 Lv.50</h4>
+            <h4 style="margin-top:16px">C2. 회복력 강화 — 🌿 약재 | 해금 <span style="color:#5a9">Lv.2 <small>(2026-04-20 완화: 옛 Lv.6)</small></span> | 최대 Lv.50</h4>
             <p>효과: 자연 회복 = <code>5 + 회복력Lv × 0.1</code>/h, 배럭 = 자연×1.6. 기존 <code>5 + familyLv/20</code> 대체.</p>
             <table class="tbl">
               <tr><th>Lv</th><th>🌿 약재(G1)</th><th>골드</th><th>자연/h</th><th>배럭/h</th><th>8시간 수면(배럭)</th></tr>
@@ -4641,12 +4705,13 @@
             <h4>직업별 기본 정보</h4>
             <table class="tbl">
               <tr><th>#</th><th>직업</th><th>해금</th><th>주 자원</th><th>보조</th><th>1차 효과/Lv</th><th>2차 효과/Lv</th><th>대상</th></tr>
-              <tr><td>B1</td><td><strong>Fighter</strong></td><td>Lv.8</td><td>⛏️ 철광석</td><td>TXP</td><td>ATK +1%</td><td>DEF +0.5%</td><td>33명</td></tr>
-              <tr><td>B2</td><td><strong>Scout</strong></td><td>Lv.8</td><td>🪵 목재</td><td>TXP</td><td>SPD +1%</td><td>CRI +0.5%</td><td>24명</td></tr>
-              <tr><td>B3</td><td><strong>Musketeer</strong></td><td>Lv.8</td><td>⛏️+🪨</td><td>TXP</td><td>ATK +0.8%</td><td>CRI +0.5%</td><td>22명</td></tr>
-              <tr><td>B4</td><td><strong>Wizard</strong></td><td>Lv.20</td><td>🌿 약재</td><td>RP</td><td>INT +1%</td><td>RES +0.5%</td><td>22명</td></tr>
-              <tr><td>B5</td><td><strong>Warlock</strong></td><td>Lv.20</td><td>🌿+🪨</td><td>RP</td><td>INT +0.8%</td><td>PEN +0.5%</td><td>22명</td></tr>
+              <tr><td>B1</td><td><strong>Fighter</strong></td><td><span style="color:#5a9">Lv.3</span></td><td>⛏️ 철광석</td><td>TXP</td><td>ATK +1%</td><td>DEF +0.5%</td><td>33명</td></tr>
+              <tr><td>B2</td><td><strong>Scout</strong></td><td><span style="color:#5a9">Lv.3</span></td><td>🪵 목재</td><td>TXP</td><td>SPD +1%</td><td>CRI +0.5%</td><td>24명</td></tr>
+              <tr><td>B3</td><td><strong>Musketeer</strong></td><td><span style="color:#5a9">Lv.3</span></td><td>⛏️+🪨</td><td>TXP</td><td>ATK +0.8%</td><td>CRI +0.5%</td><td>22명</td></tr>
+              <tr><td>B4</td><td><strong>Wizard</strong></td><td><span style="color:#5a9">Lv.5</span></td><td>🌿 약재</td><td>RP</td><td>INT +1%</td><td>RES +0.5%</td><td>22명</td></tr>
+              <tr><td>B5</td><td><strong>Warlock</strong></td><td><span style="color:#5a9">Lv.5</span></td><td>🌿+🪨</td><td>RP</td><td>INT +0.8%</td><td>PEN +0.5%</td><td>22명</td></tr>
             </table>
+            <p style="font-size:12px;color:var(--text-dim);margin-top:6px">※ 2026-04-20 완화: 옛 Fighter/Scout/Musketeer=Lv.8, Wizard/Warlock=Lv.20 → 초반 도파민 페이스 개선</p>
 
             <h4 style="margin-top:16px">레벨 테이블 (Fighter 기준, 비용 구조 동일)</h4>
             <table class="tbl">
@@ -4982,6 +5047,130 @@
               <tr><td><code>CharacterExpTable.xml</code></td><td>200</td><td>Lv.1~200 필요 EXP/골드/누적 (구간배수 ×1.0~×2.5)</td><td>100%</td></tr>
             </table>
             <p style="font-size:12px;color:var(--text-dim)">경로: <code>Assets/ClientCore/Resources/Datatables/</code>. 비용 수치는 밸런스 시뮬 후 확정 예정.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- TAB: 미션 시스템 (2026-04-20 신규) -->
+    <!-- ══════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-missions">
+      <div class="container">
+        <div class="section">
+          <div class="section-header">
+            <div class="section-icon" style="background:rgba(212,168,67,0.12)">📋</div>
+            <h2>미션 시스템 (Quest System)</h2>
+            <span class="tag">M6-lite 구현 완료</span>
+          </div>
+          <div class="highlight-box">
+            <p><strong>핵심 페이스 메이커</strong>: 그라인드만으론 가문 진척이 너무 느림 (Lv2 도달 158 XP, subjugate Lv1=8 XP).
+            미션 보상이 페이스 메이커 역할 — Phase1 chain 클리어 시 누적 XP만으로 ~Lv 6 도달, Phase2 클리어 시 ~Lv 12.</p>
+          </div>
+
+          <div class="card">
+            <h3>📑 미션 종류 (4분류)</h3>
+            <table class="tbl">
+              <tr><th>QuestType</th><th>설명</th><th>QuestID 대역</th><th>리셋</th><th>활성화</th></tr>
+              <tr><td><strong>chain</strong></td><td>미션 체인 (순서대로 해금, 1회성)</td><td>101~115 (Phase1), 201~206 (Phase2)</td><td>없음</td><td>NextQuestID로 자동 활성화</td></tr>
+              <tr><td><strong>daily</strong></td><td>일일 미션</td><td>501~506</td><td>매일</td><td>처음부터 모두 활성</td></tr>
+              <tr><td><strong>weekly</strong></td><td>주간 미션</td><td>601~604</td><td>매주</td><td>처음부터 모두 활성</td></tr>
+              <tr><td><strong>achievement</strong></td><td>업적 (1회성, 장기 목표)</td><td>301~304</td><td>없음</td><td>처음부터 모두 활성</td></tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>🎯 TargetType (이벤트 트리거 유형)</h3>
+            <table class="tbl">
+              <tr><th>TargetType</th><th>설명</th><th>구현 상태</th></tr>
+              <tr><td><code>occupy</code></td><td>헥스 점령</td><td>✅</td></tr>
+              <tr><td><code>subjugate</code></td><td>토벌 (헥스 미점령)</td><td>✅</td></tr>
+              <tr><td><code>siege_gate</code></td><td>관문 함락</td><td>✅</td></tr>
+              <tr><td><code>siege_fort</code></td><td>거점 함락</td><td>✅</td></tr>
+              <tr><td><code>siege_any</code></td><td>관문/거점 어느 쪽이든</td><td>✅</td></tr>
+              <tr><td><code>family_level</code></td><td>가문 레벨 도달 (절대 비교)</td><td>✅</td></tr>
+              <tr><td><code>training</code></td><td>훈련 1회 수행</td><td>✅</td></tr>
+              <tr><td><code>class_train</code></td><td>병종 훈련 1회</td><td>✅</td></tr>
+              <tr><td><code>class_train_level</code></td><td>병종 훈련 누적 Lv 도달</td><td>✅</td></tr>
+              <tr><td><code>discover_gate</code></td><td>관문 헥스 도달</td><td>⏸ 미구현 (시스템 미구현)</td></tr>
+              <tr><td><code>enter_region</code></td><td>새 리전 진입</td><td>⏸</td></tr>
+              <tr><td><code>craft_food</code> / <code>craft_equip</code></td><td>음식/장비 제작</td><td>⏸</td></tr>
+              <tr><td><code>facility_level</code></td><td>시설 Lv 도달</td><td>⏸</td></tr>
+              <tr><td><code>kill_named</code></td><td>네임드 보스 처치</td><td>⏸</td></tr>
+              <tr><td><code>occupy_special</code></td><td>특수자원 헥스 점령</td><td>⏸</td></tr>
+              <tr><td><code>patrol</code></td><td>순찰</td><td>⏸</td></tr>
+              <tr><td><code>daily_all</code> / <code>weekly_all</code></td><td>일일/주간 전부 완료 (집계)</td><td>⏸</td></tr>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>🔁 의미적 포함 관계 (TARGET_IMPLIES, 자동 fan-out)</h3>
+            <p>한 행동이 여러 quest 타입을 동시에 진행시킴. 예: "첫 점령" 했는데 "첫 토벌" quest가 그대로면 어색.</p>
+            <pre style="background:#1a1a1a;padding:12px;border-radius:6px;color:#cfc;font-size:13px">
+siege_gate ──┐
+siege_fort ──┼──▶ occupy ──▶ subjugate
+             │
+             └──▶ siege_any
+            </pre>
+            <ul>
+              <li><strong>occupy ⊃ subjugate</strong>: 점령 = 적 격파 + 헥스 소유권. 점령 시 토벌 quest 자동 진행</li>
+              <li><strong>siege_gate/fort ⊃ occupy + siege_any</strong>: 구조물 함락 = 점령의 한 종류, 함락 카운트도 누적</li>
+              <li><strong>역방향 X</strong>: 토벌만으론 점령 quest 진행 X (헥스 소유권 변동 없음)</li>
+            </ul>
+            <p style="font-size:12px;color:var(--text-dim)">구현: <code>engine/quests.js</code>의 <code>TARGET_IMPLIES</code> 매핑. <code>reportProgress()</code>가 BFS로 펼침 (cycle 방지).</p>
+          </div>
+
+          <div class="card">
+            <h3>🎁 보상 컬럼</h3>
+            <table class="tbl">
+              <tr><th>컬럼</th><th>설명</th><th>비고</th></tr>
+              <tr><td><code>RwdGrain / RwdIron / RwdWood / RwdStone / RwdHerbs</code></td><td>5대 물자</td><td><span class="badge badge-gold">2026-04-20 신규</span></td></tr>
+              <tr><td><code>RwdGold / RwdVis / RwdGem / RwdScroll</code></td><td>화폐 + 주문서</td><td>기존</td></tr>
+              <tr><td><code>RwdFamilyEXP</code></td><td>가문 XP</td><td><span class="badge badge-gold">2026-04-17 신규</span></td></tr>
+              <tr><td><code>RwdItem / RwdItemQty</code></td><td>아이템 (exp_book 등)</td><td>raw 자원("herbs"/"iron")은 마이그레이션 완료</td></tr>
+            </table>
+            <p style="font-size:12px;color:var(--text-dim);margin-top:6px">※ 옛 데이터의 <code>RwdItem="herbs"/100</code> 같은 raw 자원 entry는 <code>RwdHerbs=100</code>으로 마이그레이션 완료. RwdItem은 이제 진짜 아이템만.</p>
+          </div>
+
+          <div class="card">
+            <h3>📊 Phase1 chain RwdFamilyEXP 페이스 (예시)</h3>
+            <table class="tbl">
+              <tr><th>QuestID</th><th>미션</th><th>FamilyEXP</th><th>비고</th></tr>
+              <tr><td>101</td><td>첫 헥스 점령</td><td>30</td><td></td></tr>
+              <tr><td>102</td><td>3헥스 점령</td><td>50</td><td></td></tr>
+              <tr><td>103</td><td>첫 토벌</td><td>30</td><td></td></tr>
+              <tr><td>105</td><td>가문 Lv.6 도달</td><td>0</td><td>family_level 마일스톤 (자기참조 방지)</td></tr>
+              <tr><td>108</td><td>10헥스 점령</td><td>150</td><td></td></tr>
+              <tr><td>112</td><td>첫 관문 함락</td><td>250</td><td>큰 이벤트</td></tr>
+              <tr><td>114</td><td>20헥스 점령</td><td>250</td><td></td></tr>
+            </table>
+            <p style="font-size:12px;color:var(--text-dim)">Phase1 chain 누적 ~1100 XP (마일스톤 제외) → 그라인드와 합산 시 가문 Lv 6~8 자연 도달</p>
+          </div>
+
+          <div class="card">
+            <h3>🔄 진행 흐름 (Sequence)</h3>
+            <ol>
+              <li><strong>이벤트 발생</strong> (점령/토벌/훈련 등) → <code>reportProgress(state, tables, "occupy", 1)</code></li>
+              <li><strong>fan-out</strong>: TARGET_IMPLIES 매핑 따라 관련 quest 모두 평가</li>
+              <li><strong>진행 카운트 누적</strong>: <code>state.quests.progress[qid] += amount</code></li>
+              <li><strong>임계 도달 시 readyToClaim 으로 이동</strong></li>
+              <li><strong>UI 배지 점멸</strong>: 임무 탭 도크 + 서브탭별 빨간 카운트</li>
+              <li><strong>사용자 보상 수령</strong> → <code>claimQuestReward(state, tables, qid, levelUpFamily)</code></li>
+              <li><strong>자원/FamilyEXP 가산</strong>: 5대 물자 + 화폐 + FamilyEXP</li>
+              <li><strong>FamilyEXP 가산 직후 자동 레벨업 체크</strong>: <code>levelUpFamilyIfReady()</code></li>
+              <li><strong>chain</strong>: <code>NextQuestID</code> 자동 활성화</li>
+              <li><strong>family_level 타입 next quest는 즉시 평가</strong> (이미 가문 Lv 충족 가능성)</li>
+            </ol>
+          </div>
+
+          <div class="card">
+            <h3>📁 관련 코드 / 데이터 / 기획</h3>
+            <ul>
+              <li><strong>코드</strong>: <code>demo/src/engine/quests.js</code> (initQuests / reportProgress / claimQuestReward / TARGET_IMPLIES)</li>
+              <li><strong>데이터</strong>: <code>Assets/ClientCore/Resources/Datatables/QuestTable.xml</code> (35행) → <code>demo/data/tables/quests.json</code></li>
+              <li><strong>기획</strong>: <code>Planning/gdd_early_reward_system.md</code> §3 (미션 체인) / §3-5 (RwdFamilyEXP) / §3-6 (TARGET_IMPLIES) / §3-7 (5대 물자 컬럼)</li>
+              <li><strong>UI 위치</strong>: 데모 하단 도크의 "📋 임무" 탭 → 4개 서브탭 (체인/일일/주간/업적)</li>
+            </ul>
           </div>
         </div>
       </div>
