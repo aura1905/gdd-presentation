@@ -202,41 +202,6 @@ async function boot() {
     }
   }, 1000);
 
-  // ─────── 로스터 패널 (A) ───────
-  const JOB_COLOR = { F: "#c86464", S: "#5aaa5a", M: "#c8a03c", W: "#5a82c8", L: "#a050b4" };
-  function renderRoster() {
-    const roster = getRosterWithStatus();
-    const countEl = document.getElementById("roster-count");
-    const gridEl = document.getElementById("roster-grid");
-    if (!gridEl) return;
-    if (countEl) countEl.textContent = roster.length;
-    gridEl.innerHTML = "";
-    for (const ch of roster) {
-      const slot = document.createElement("div");
-      slot.className = "roster-slot" + (ch.assignedPartyId ? " assigned" : "") + (ch.hp <= 0 ? " ko" : "");
-      slot.title = `${ch.name} Lv${ch.level} ${ch.jobClass}${ch.assignedPartyId ? ` · ${ch.assignedPartyId}` : " · 미배치"}`;
-      const cv = document.createElement("canvas");
-      cv.width = 38; cv.height = 38;
-      slot.appendChild(cv);
-      const jobBadge = document.createElement("div");
-      jobBadge.className = "rs-job";
-      jobBadge.textContent = ch.jobClass || "?";
-      jobBadge.style.background = JOB_COLOR[ch.jobClass] || "#888";
-      slot.appendChild(jobBadge);
-      const lvBadge = document.createElement("div");
-      lvBadge.className = "rs-lv";
-      lvBadge.textContent = ch.level;
-      slot.appendChild(lvBadge);
-      slot.addEventListener("click", () => openPartyEditor(ch.id));
-      gridEl.appendChild(slot);
-      drawFacePortrait(cv, ch.spriteName, ch.hp <= 0);
-    }
-  }
-  // 로스터 토글
-  document.getElementById("btn-roster-toggle")?.addEventListener("click", () => {
-    document.getElementById("roster-panel")?.classList.toggle("collapsed");
-  });
-
   // ─────── 분대 편성 모달 (B) ───────
   let editorSelectedCharId = null;
   function openPartyEditor(highlightCharId) {
@@ -346,13 +311,10 @@ async function boot() {
     });
   }
 
-  // 로스터 갱신: state 변경 시 같이
+  // 편성 모달 열려있으면 state 변경 시 갱신
   on("state:changed", () => {
-    renderRoster();
     if (!document.getElementById("editor-panel")?.hidden) renderPartyEditor();
   });
-  on("state:init", renderRoster);
-  renderRoster();
 
   // ESC / 외부 클릭으로 편성 모달 닫기
   document.getElementById("editor-panel")?.addEventListener("click", (e) => {
