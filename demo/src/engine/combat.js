@@ -134,12 +134,41 @@ export function lookupDropReward(battleType, tables, hexLevel) {
   return {
     gold: row.Gold || 0,
     vis: row.Vis || 0,
-    grain: row.SupplyGrain || 0,
+    // 보상 곡물은 일단 0 (GDD상 전투에서 식량 드랍은 없음). SupplyGrain은 cost.
+    grain: 0,
     charExp: row.CharEXP || 0,
     familyExp: row.FamilyEXP || 0,
     resourceQty: row.ResourceQty || 0,
     materialQty: row.MaterialQty || 0,
   };
+}
+
+/**
+ * 전투 보급 비용 조회 (GDD gdd_combat_cost_system §2).
+ * 출격 전 체크 → 자원 부족 시 버튼 비활성화.
+ * 공성(거점/관문/도시)도 동일 테이블 참조 (battleType: "occupy" + hexLevel=5 대체 매핑 TBD).
+ */
+export function lookupSupplyCost(battleType, tables, hexLevel, structureType) {
+  // 공성전은 구조물 타입 기반 고정 비용 (GDD §2-2 테이블)
+  if (structureType) {
+    if (structureType === "Fort")    return { grain: 30, gold: 300 };
+    if (structureType === "Gate")    return { grain: 50, gold: 500 };
+    if (structureType === "City")    return { grain: 80, gold: 800 };
+    if (structureType === "Dungeon") return { grain: 20, gold: 200 };
+  }
+  const drops = tables.drops.all();
+  const row = drops.find(d => d.BattleType === battleType && d.HexLevel === hexLevel)
+            || drops.find(d => d.BattleType === battleType
+                            && (d.HexLevelMin ?? d.HexLevel) <= hexLevel
+                            && (d.HexLevelMax ?? d.HexLevel) >= hexLevel);
+  if (!row) return { grain: 0, gold: 0 };
+  return { grain: row.SupplyGrain || 0, gold: row.SupplyGold || 0 };
+}
+
+/** 자원으로 보급 비용 감당 가능한지 체크. */
+export function canAffordSupply(cost, resources) {
+  return (resources?.grain || 0) >= (cost?.grain || 0)
+      && (resources?.gold  || 0) >= (cost?.gold  || 0);
 }
 
 /** Find enemy parties for a hex by RegionID + HexLevel match. */
