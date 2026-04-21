@@ -425,8 +425,10 @@ async function boot() {
         }
         const fatPct = Math.round(m.fatigue / m.maxFatigue * 100);
         const hpPct = Math.round(m.hp / m.maxHp * 100);
-        const fatColor = fatPct <= 30 ? "#e44" : fatPct <= 60 ? "#da2" : "#5a5";
-        const hpColor = hpPct <= 25 ? "#e44" : hpPct <= 50 ? "#da2" : "#5a5";
+        // HP = 빨강 계열 (생명선): 건강할수록 선명한 빨강, 부상 시 흐림
+        const hpColor = hpPct <= 25 ? "#f55" : hpPct <= 50 ? "#e74a5a" : "#c73a47";
+        // 피로 = 파랑 계열 (스태미너): 충분하면 파랑, 피곤하면 노랑→빨강
+        const fatColor = fatPct <= 20 ? "#f55" : fatPct <= 40 ? "#fa4" : fatPct <= 70 ? "#6ab" : "#4a9edd";
 
         const nextLvRow = tables.characterExp.get(m.level + 1);
         const cumNext = nextLvRow?.CumulativeEXP ?? null;
@@ -464,9 +466,15 @@ async function boot() {
             <div class="pcm-lv-badge">${m.level}</div>
             <div class="pcm-name">${m.name}</div>
             <div class="pcm-bars">
-              <div class="pcm-bar" title="HP ${m.hp}/${m.maxHp}"><div class="pcm-bar-fill" style="width:${hpPct}%;background:${hpColor}"></div></div>
-              <div class="pcm-bar" title="피로 ${fatPct}%"><div class="pcm-bar-fill" style="width:${fatPct}%;background:${fatColor}"></div></div>
-              <div class="pcm-bar" title="EXP ${xpPct}%"><div class="pcm-bar-fill" style="width:${xpPct}%;background:#fa3"></div></div>
+              <div class="pcm-bar pcm-bar-hp" title="HP ${m.hp}/${m.maxHp} (${hpPct}%)">
+                <div class="pcm-bar-fill" style="width:${hpPct}%;background:${hpColor}"></div>
+                <span class="pcm-bar-label">HP ${hpPct}</span>
+              </div>
+              <div class="pcm-bar pcm-bar-fat" title="피로 ${m.fatigue}/${m.maxFatigue} (${fatPct}%)">
+                <div class="pcm-bar-fill" style="width:${fatPct}%;background:${fatColor}"></div>
+                <span class="pcm-bar-label">피로 ${fatPct}</span>
+              </div>
+              <div class="pcm-bar pcm-bar-xp" title="EXP ${xpPct}%"><div class="pcm-bar-fill" style="width:${xpPct}%;background:#fa3"></div></div>
             </div>
           </div>`;
       }).join("");
@@ -488,15 +496,37 @@ async function boot() {
       else if (pStruct?.StructureType === "Gate") { locIcon = "🚪"; locLabel = "관문"; }
 
       const autoReturnOn = !!party.autoReturn;
+
+      // 파티 평균 HP/피로 — 요약 배지
+      const avgHpPct = members.length
+        ? Math.round(members.reduce((s, m) => s + (m.hp / m.maxHp * 100), 0) / members.length)
+        : 0;
+      const avgFatPct = members.length
+        ? Math.round(members.reduce((s, m) => s + (m.fatigue / m.maxFatigue * 100), 0) / members.length)
+        : 0;
+      const hpSummaryClass = avgHpPct <= 30 ? "critical" : avgHpPct <= 60 ? "warn" : "";
+      const fatSummaryClass = avgFatPct <= 30 ? "critical" : avgFatPct <= 60 ? "warn" : "";
+
+      // 주둔지 회복 속도 텍스트 (아이콘 옆에 표시)
+      let locRateText = "";
+      if (isHome || pStruct?.StructureType === "City") locRateText = `+${5 * minPerTurn}/턴`;
+      else if (pStruct?.StructureType === "Fort") locRateText = `+${3 * minPerTurn}/턴`;
+      else if (pStruct?.StructureType === "Bunker") locRateText = `+${1.5 * minPerTurn}/턴`;
+      else locRateText = `+${(0.1 * minPerTurn).toFixed(1)}/턴`;
+
       card.innerHTML = `
         <div class="pc-header">
           <div class="pc-icon" style="background:${color}" title="리더 병종: ${leaderJobName}">${leader?.jobClass || "?"}</div>
           <div class="pc-name">${party.name}</div>
-          <div class="pc-location" title="${locLabel}">${locIcon}</div>
           <div class="pc-leader-job" style="color:${color}">${leaderJobName}</div>
           <button class="pc-autoreturn-btn ${autoReturnOn ? 'on' : ''}" data-autoreturn="${party.id}" type="button"
                   title="전투 후 자동 귀환 ${autoReturnOn ? 'ON' : 'OFF'} (클릭으로 토글)">🏠</button>
           <button class="pc-edit-btn" data-edit-party="${party.id}" type="button" title="분대 편성">⚙</button>
+        </div>
+        <div class="pc-summary">
+          <span class="pc-summary-hp ${hpSummaryClass}" title="파티 평균 HP">❤️ ${avgHpPct}%</span>
+          <span class="pc-summary-fat ${fatSummaryClass}" title="파티 평균 피로">⚡ ${avgFatPct}%</span>
+          <span class="pc-summary-loc" title="${locLabel}">${locIcon} ${locRateText}</span>
         </div>
         <div class="pc-members">${memberHtml}</div>`;
 

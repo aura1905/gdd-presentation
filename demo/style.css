@@ -324,10 +324,37 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   pointer-events: none; }
 .party-card .pcm-name { font-size: 9px; color: #ddd; max-width: 100%;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left; }
-.party-card .pcm-bars { width: 100%; display: flex; flex-direction: column; gap: 1px; }
-.party-card .pcm-bar { height: 3px; background: #1a1a1a; border-radius: 2px;
+.party-card .pcm-bars { width: 100%; display: flex; flex-direction: column; gap: 2px; }
+.party-card .pcm-bar { position: relative; background: #0a0a0a; border-radius: 3px;
   overflow: hidden; border: 1px solid #000; }
-.party-card .pcm-bar-fill { height: 100%; transition: width 0.2s; }
+.party-card .pcm-bar-hp  { height: 7px; }
+.party-card .pcm-bar-fat { height: 7px; }
+.party-card .pcm-bar-xp  { height: 2px; opacity: 0.7; }
+.party-card .pcm-bar-fill { height: 100%; transition: width 0.3s; }
+.party-card .pcm-bar-label { position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 8px; color: #fff; font-weight: bold;
+  text-shadow: 0 0 2px #000, 0 0 2px #000, 0 1px 0 #000;
+  pointer-events: none; letter-spacing: 0.3px; line-height: 1; }
+
+/* 파티 카드 상태 요약 (헤더 아래) */
+.party-card .pc-summary { display: flex; gap: 6px; align-items: center;
+  margin: 4px 0 6px; font-size: 10px; font-weight: bold; color: #ddd; }
+.party-card .pc-summary > span { padding: 2px 6px; border-radius: 6px;
+  background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); }
+.party-card .pc-summary-hp { color: #f88; }
+.party-card .pc-summary-hp.warn { color: #fa4; background: rgba(120,60,20,0.4); }
+.party-card .pc-summary-hp.critical { color: #fcc; background: rgba(140,30,30,0.5);
+  border-color: #f44; animation: pc-pulse 1.2s ease-in-out infinite; }
+.party-card .pc-summary-fat { color: #8cf; }
+.party-card .pc-summary-fat.warn { color: #fa4; background: rgba(120,90,20,0.4); }
+.party-card .pc-summary-fat.critical { color: #fcc; background: rgba(140,30,30,0.5);
+  border-color: #f44; animation: pc-pulse 1.2s ease-in-out infinite; }
+.party-card .pc-summary-loc { margin-left: auto; color: #bfb; font-size: 10px; }
+@keyframes pc-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
 
 /* 우측 줌 컨트롤 */
 #controls-right { position: absolute; top: 50%; right: 8px; transform: translateY(-50%);
