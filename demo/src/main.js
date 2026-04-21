@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail, getPartyHome, setPartyHome } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail, getPartyHome, setPartyHome, getFortMaxParties, getFortDeployedParties } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -984,29 +984,31 @@ async function boot() {
     }
 
     // 거점 배치 — 점령된 Fort 헥스에 분대 배치 (이동 + 홈 등록).
-    // 룰: 거점당 최대 1분대 (다른 파티가 이미 등록했으면 막힘)
+    // 룰: 거점 캡 = getFortMaxParties(structure) — 현재 1, 미래 GarrisonLv 확장
     if (party && structure && isCaptured && structure.StructureType === "Fort") {
-      const occupant = getState().parties.find(p =>
-        p.id !== party.id && p.homeHex && p.homeHex.q === row.HexQ && p.homeHex.r === row.HexR
-      );
+      const cap = getFortMaxParties(structure);
+      const deployed = getFortDeployedParties(row.HexQ, row.HexR);
       const partyHomeAtHere = party.homeHex && party.homeHex.q === row.HexQ && party.homeHex.r === row.HexR;
+      const others = deployed.filter(p => p.id !== party.id);
+      const isFull = others.length >= cap;
 
       if (partyHomeAtHere) {
         // 이미 이 거점에 배치된 파티 — 해제 옵션
-        addAction(actions, `🏠 ${party.name} 배치 해제`, "#7a5a3a", () => {
+        addAction(actions, `🏠 ${party.name} 배치 해제 (${deployed.length}/${cap})`, "#7a5a3a", () => {
           pushUndo(`${party.name} 배치 해제`);
           setPartyHome(party.id, null, null);
           showToast(`🏠 ${party.name} 배치 해제 (귀환지: 가문 도시)`, "exp");
         });
-      } else if (occupant) {
-        // 다른 파티가 이미 점유 — 비활성 버튼
-        const btn = addAction(actions, `🏠 ${occupant.name} 배치됨`, "#444", () => {});
+      } else if (isFull) {
+        // 캡 초과 — 비활성 버튼 + 점유 파티 표시
+        const btn = addAction(actions, `🏠 만석 ${deployed.length}/${cap}`, "#444", () => {});
         btn.disabled = true;
-        btn.title = `이 거점은 ${occupant.name}이 점유 중. 거점당 1분대만 가능.`;
+        btn.title = `이 거점은 ${others.map(p => p.name).join(", ")} 점유 중. 거점 캡 ${cap} (미래 GarrisonLv 업그레이드로 증가).`;
       } else {
         // 배치 가능 — 이미 거점에 있으면 즉시 등록, 아니면 이동 + 도착 시 등록
         const alreadyHere = party.location.q === row.HexQ && party.location.r === row.HexR;
-        const label = alreadyHere ? `🏠 ${party.name} 배치` : `🏠 ${party.name} 배치 (이동 후)`;
+        const suffix = alreadyHere ? "" : " (이동 후)";
+        const label = `🏠 ${party.name} 배치${suffix} (${deployed.length}/${cap})`;
         addAction(actions, label, "#3a7a5a", () => {
           pushUndo(`${party.name} 배치 → ${structure.Name || "Fort"}`);
           const finishDeploy = () => {

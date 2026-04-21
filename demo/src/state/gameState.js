@@ -620,6 +620,30 @@ export function autoAssignParty(partyId) {
 }
 
 /**
+ * 거점(Fort)에 배치 가능한 최대 파티 수.
+ * 현재: 1 고정. 미래: GarrisonLv/시설 업그레이드로 확장 (Lv5에서 2, Lv10에서 3 등).
+ * @param {object} structure - StructureTable row
+ * @returns {number}
+ */
+export function getFortMaxParties(structure) {
+  if (!structure) return 0;
+  if (structure.StructureType === "City") return Infinity;  // 도시는 모든 파티 공유
+  if (structure.StructureType !== "Fort") return 0;
+  // TODO(거점 운영 확장): structure.GarrisonLv 또는 별도 fortification 시설 레벨로 확장
+  // 예시 룰 후보:
+  //   - GarrisonLv 1~3: 1분대
+  //   - GarrisonLv 4~6: 2분대
+  //   - GarrisonLv 7~10: 3분대
+  return 1;
+}
+
+/** 해당 헥스에 배치된 파티들 (homeHex 매칭). */
+export function getFortDeployedParties(q, r) {
+  if (!state?.parties) return [];
+  return state.parties.filter(p => p.homeHex && p.homeHex.q === q && p.homeHex.r === r);
+}
+
+/**
  * 파티의 홈 헥스 — 등록되어 있으면 해당 좌표, 아니면 가문 홈(도시).
  * 귀환(자동/패배/리더사망) 시 이 위치로 이동.
  */
@@ -656,12 +680,16 @@ export function setPartyHome(partyId, q, r) {
     }
   }
   if (!validShelter) return { ok: false, reason: "not_shelter" };
-  // 1파티/거점 제약 (Fort만 — 가문 도시는 모든 파티 공유 가능)
-  if (!isHomeCity) {
-    const occupant = state.parties.find(p =>
+  // 거점 캡 체크 — getFortMaxParties (현재 Fort=1, City=Infinity, 미래 GarrisonLv 확장 가능)
+  if (!isHomeCity && hex.StructureID) {
+    const struct = _tablesRef?.structures?.get(hex.StructureID);
+    const cap = getFortMaxParties(struct);
+    const others = state.parties.filter(p =>
       p.id !== partyId && p.homeHex && p.homeHex.q === q && p.homeHex.r === r
     );
-    if (occupant) return { ok: false, reason: "occupied", occupantId: occupant.id, occupantName: occupant.name };
+    if (others.length >= cap) {
+      return { ok: false, reason: "occupied", cap, deployed: others.length, occupantName: others[0]?.name };
+    }
   }
   party.homeHex = { q, r };
   emit("state:changed", { path: "parties", partyId, action: "set-home" });
