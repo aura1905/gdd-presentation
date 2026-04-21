@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -484,12 +484,15 @@ async function boot() {
       else if (pStruct?.StructureType === "Fort") { locIcon = "🏰"; locLabel = "거점 (+30/턴)"; }
       else if (pStruct?.StructureType === "Gate") { locIcon = "🚪"; locLabel = "관문"; }
 
+      const autoReturnOn = !!party.autoReturn;
       card.innerHTML = `
         <div class="pc-header">
           <div class="pc-icon" style="background:${color}" title="리더 병종: ${leaderJobName}">${leader?.jobClass || "?"}</div>
           <div class="pc-name">${party.name}</div>
           <div class="pc-location" title="${locLabel}">${locIcon}</div>
           <div class="pc-leader-job" style="color:${color}">${leaderJobName}</div>
+          <button class="pc-autoreturn-btn ${autoReturnOn ? 'on' : ''}" data-autoreturn="${party.id}" type="button"
+                  title="전투 후 자동 귀환 ${autoReturnOn ? 'ON' : 'OFF'} (클릭으로 토글)">🏠</button>
           <button class="pc-edit-btn" data-edit-party="${party.id}" type="button" title="분대 편성">⚙</button>
         </div>
         <div class="pc-members">${memberHtml}</div>`;
@@ -507,6 +510,14 @@ async function boot() {
       card.querySelector(".pc-edit-btn")?.addEventListener("click", (e) => {
         e.stopPropagation();
         openPartyEditor();
+      });
+      // 자동 귀환 토글 — 카드 click 이벤트 차단
+      card.querySelector(".pc-autoreturn-btn")?.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const r = togglePartyAutoReturn(party.id);
+        if (r.ok) {
+          showToast(`🏠 ${party.name} 자동 귀환 ${r.value ? "ON" : "OFF"}`, "exp");
+        }
       });
 
       card.addEventListener("click", () => {
@@ -1000,6 +1011,12 @@ async function boot() {
           if (sType === "Gate") reportProgress(getState(), tables, "siege_gate", 1);
           else if (sType === "Fort") reportProgress(getState(), tables, "siege_fort", 1);
           else reportProgress(getState(), tables, "occupy", 1);
+          // 자동 귀환 옵션
+          if (party.autoReturn) {
+            const home = getState().family.homeHex;
+            moveParty(party.id, home.q, home.r, 0);
+            showToast(`🏠 ${party.name} 자동 귀환`, "exp");
+          }
         }
       } else if (maxHp === 0 && allCleared && mode === "occupy") {
         // 거점(Fort) — 내구도 없음, 수비대 전멸 시 즉시 함락
@@ -1007,6 +1024,11 @@ async function boot() {
         captureStructure(structureForCombat.StructureID);
         reportProgress(getState(), tables, "siege_fort", 1);  // → occupy/subjugate/siege_any 자동
         siegeInfo = { damage: 0, hp: 0, maxHp: 0, fell: true, allCleared: true };
+        if (party.autoReturn) {
+          const home = getState().family.homeHex;
+          moveParty(party.id, home.q, home.r, 0);
+          showToast(`🏠 ${party.name} 자동 귀환`, "exp");
+        }
       }
     }
 
@@ -1018,10 +1040,20 @@ async function boot() {
       // 일반 헥스 점령 (리더 생존 시에만)
       ownHex(hexRow.HexID);
       reportProgress(getState(), tables, "occupy", 1);
-      // 파티는 점령 헥스에 유지
+      // 파티는 점령 헥스에 유지 (자동 귀환 옵션 시 홈으로 이동)
+      if (party.autoReturn) {
+        const home = getState().family.homeHex;
+        moveParty(party.id, home.q, home.r, 0);
+        showToast(`🏠 ${party.name} 자동 귀환`, "exp");
+      }
     } else if (allWon && !isStructureSiege && mode === "subjugate" && !leaderDead) {
-      // 토벌 승리 (점령 X)
+      // 토벌 승리 (점령 X) — 자동 귀환 옵션 시 홈으로
       reportProgress(getState(), tables, "subjugate", 1);
+      if (party.autoReturn) {
+        const home = getState().family.homeHex;
+        moveParty(party.id, home.q, home.r, 0);
+        showToast(`🏠 ${party.name} 자동 귀환`, "exp");
+      }
     } else if (!allWon || leaderDead) {
       // 패배/리더사망 → 자동 귀환. HP만 풀회복 (Phase 2 부상 시스템 전 임시), 피로는 자연회복 대기.
       const home = getState().family.homeHex;

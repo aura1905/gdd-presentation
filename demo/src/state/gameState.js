@@ -526,6 +526,15 @@ export function autoAssignParty(partyId) {
   return { ok: true, assigned };
 }
 
+/** 파티의 자동 귀환 옵션 토글 — 전투 후 자동으로 홈 헥스로 이동. */
+export function togglePartyAutoReturn(partyId) {
+  const party = state?.parties.find(p => p.id === partyId);
+  if (!party) return { ok: false, reason: "not_found" };
+  party.autoReturn = !party.autoReturn;
+  emit("state:changed", { path: "parties", partyId, action: "auto-return-toggle" });
+  return { ok: true, value: party.autoReturn };
+}
+
 /** 파티 삭제. 편성된 캐릭 해제 (로스터로 복귀). */
 export function deleteParty(partyId) {
   if (!state) return { ok: false };
