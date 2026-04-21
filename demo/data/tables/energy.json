@@ -15,31 +15,31 @@
     "Name": "필드 (기본)",
     "LocationType": "field",
     "InstantRecovery": 0,
-    "RecoveryPerMin": 1
+    "RecoveryPerMin": 0.1
   },
   {
     "ID": 3,
     "ConfigType": "location_recovery",
     "Name": "벙커",
     "LocationType": "bunker",
-    "InstantRecovery": 30,
-    "RecoveryPerMin": 2
+    "InstantRecovery": 0,
+    "RecoveryPerMin": 1.5
   },
   {
     "ID": 4,
     "ConfigType": "location_recovery",
     "Name": "거점 (Fort)",
     "LocationType": "fort",
-    "InstantRecovery": 50,
-    "RecoveryPerMin": 2
+    "InstantRecovery": 0,
+    "RecoveryPerMin": 3
   },
   {
     "ID": 5,
     "ConfigType": "location_recovery",
     "Name": "도시 (City)",
     "LocationType": "city",
-    "InstantRecovery": -1,
-    "RecoveryPerMin": 0
+    "InstantRecovery": 0,
+    "RecoveryPerMin": 5
   },
   {
     "ID": 10,

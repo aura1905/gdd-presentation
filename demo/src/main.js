@@ -479,9 +479,12 @@ async function boot() {
       const isHome = home && party.location.q === home.q && party.location.r === home.r;
       const pHex = tables.worldHex.get(hexId(party.location.q, party.location.r));
       const pStruct = pHex?.StructureID ? tables.structures.get(pHex.StructureID) : null;
-      let locIcon = "🏞️", locLabel = "필드 (+1/턴)";
-      if (isHome || pStruct?.StructureType === "City") { locIcon = "🏛️"; locLabel = "도시 (즉시 회복)"; }
-      else if (pStruct?.StructureType === "Fort") { locIcon = "🏰"; locLabel = "거점 (+30/턴)"; }
+      // 턴당 회복량 = energy.json RecoveryPerMin × CONFIG.turn.minutesPerTurn
+      const minPerTurn = CONFIG.turn?.minutesPerTurn || 10;
+      let locIcon = "🏞️", locLabel = `필드 (피로 +${(0.1 * minPerTurn).toFixed(1)}/턴)`;
+      if (isHome || pStruct?.StructureType === "City") { locIcon = "🏛️"; locLabel = `도시 (피로 +${5 * minPerTurn}/턴 · 2턴 풀회복)`; }
+      else if (pStruct?.StructureType === "Fort") { locIcon = "🏰"; locLabel = `거점 (피로 +${3 * minPerTurn}/턴 · 3~4턴 풀회복)`; }
+      else if (pStruct?.StructureType === "Bunker") { locIcon = "⛺"; locLabel = `벙커 (피로 +${1.5 * minPerTurn}/턴)`; }
       else if (pStruct?.StructureType === "Gate") { locIcon = "🚪"; locLabel = "관문"; }
 
       const autoReturnOn = !!party.autoReturn;
