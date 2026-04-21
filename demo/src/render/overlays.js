@@ -166,14 +166,56 @@ export function createOverlays() {
       }
     }
 
-    // 파티 이름 (위쪽)
+    // 파티 라벨 (위쪽) — 삼전식: 이름 + 상태 + 피로 바
     if (hexSize > 12) {
-      ctx.font = `bold ${Math.max(8, hexSize * 0.26)}px 'Segoe UI'`;
-      ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-      ctx.shadowColor = "#000"; ctx.shadowBlur = 4;
+      const labelY = baseY - portraitH;
+      const nameFontSize = Math.max(8, hexSize * 0.26);
+      const statusFontSize = Math.max(7, hexSize * 0.20);
+
+      // 1) 파티 이름 + 상태 배경 패널 (반투명 검정)
+      const nameW = ctx.measureText(party.name).width + 6;
+      const statusW = party.statusLabel ? hexSize * 0.45 : 0;
+      const panelW = Math.max(40, hexSize * 1.1);
+      const panelH = statusFontSize + nameFontSize + 8;
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.fillRect(cx - panelW / 2, labelY - panelH - 3, panelW, panelH);
+      ctx.strokeStyle = isSelected ? "rgba(255,212,82,0.8)" : "rgba(255,255,255,0.25)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(cx - panelW / 2, labelY - panelH - 3, panelW, panelH);
+
+      // 2) 이름
+      ctx.font = `bold ${nameFontSize}px 'Segoe UI'`;
+      ctx.textAlign = "center"; ctx.textBaseline = "top";
       ctx.fillStyle = isSelected ? "#ffd452" : "#fff";
-      ctx.fillText(party.name, cx, baseY - portraitH);
-      ctx.shadowBlur = 0;
+      ctx.fillText(party.name, cx, labelY - panelH + 1);
+
+      // 3) 상태 라벨
+      if (party.statusLabel) {
+        ctx.font = `${statusFontSize}px 'Segoe UI'`;
+        const statusColor = {
+          "대기": "#8c8", "주둔": "#ac8", "행군": "#8ac", "전투": "#f66", "귀환": "#ca6",
+        }[party.statusLabel] || "#ccc";
+        ctx.fillStyle = statusColor;
+        ctx.fillText(party.statusLabel, cx, labelY - panelH + nameFontSize + 2);
+      }
+
+      // 4) 피로 바 (라벨 패널 아래, 얇게)
+      if (party.fatiguePct != null) {
+        const barW = panelW * 0.9;
+        const barH = Math.max(3, hexSize * 0.10);
+        const barX = cx - barW / 2;
+        const barY = labelY - 2;
+        ctx.fillStyle = "rgba(0,0,0,0.7)";
+        ctx.fillRect(barX, barY, barW, barH);
+        const pct = party.fatiguePct;
+        const fill = (pct / 100) * barW;
+        const fatColor = pct <= 20 ? "#f55" : pct <= 40 ? "#fa4" : pct <= 70 ? "#6ab" : "#4a9edd";
+        ctx.fillStyle = fatColor;
+        ctx.fillRect(barX, barY, fill, barH);
+        ctx.strokeStyle = "rgba(0,0,0,0.8)";
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(barX, barY, barW, barH);
+      }
     }
   }
 

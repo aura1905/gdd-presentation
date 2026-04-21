@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -126,8 +126,17 @@ async function boot() {
   // --- Sync overlays with game state ---
   function syncOverlays() {
     const gs = getState();
+    const home = gs.family?.homeHex;
     overlays.setParties(gs.parties.map(p => {
       const leader = p.slots[0] != null ? getCharacter(p.slots[0]) : null;
+      // 파티 최하 피로원 기준 (삼전식)
+      const members = p.slots.filter(id => id != null).map(id => getCharacter(id)).filter(Boolean);
+      const minFat = members.length ? Math.min(...members.map(m => m.fatigue / m.maxFatigue)) : 1;
+      // 상태 판정
+      const isHome = home && p.location.q === home.q && p.location.r === home.r;
+      let statusLabel = isHome ? "대기" : "주둔";
+      if (p.state === "moving") statusLabel = "행군";
+      else if (p.state === "fighting") statusLabel = "전투";
       return {
         id: p.id,
         q: p.location.q,
@@ -136,6 +145,8 @@ async function boot() {
         jobClass: leader?.jobClass || "?",
         spriteName: leader?.spriteName || null,
         selected: gs.selectedPartyId === p.id,
+        fatiguePct: Math.round(minFat * 100),
+        statusLabel,
       };
     }));
     worldmap.requestDraw();
@@ -1685,11 +1696,140 @@ async function boot() {
   function renderFamilyContent(sub) {
     if (sub === "training") {
       renderTrainingTab();
+    } else if (sub === "research") {
+      renderGrowthTab("research", RESEARCH_META);
+    } else if (sub === "fortify") {
+      renderGrowthTab("fortification", FORTIFY_META);
     } else if (sub === "level") {
       renderFamilyLevelTab();
     } else {
-      familyContent.innerHTML = `<div class="fp-empty">준비 중 (M5-B)</div>`;
+      familyContent.innerHTML = `<div class="fp-empty">준비 중</div>`;
     }
+  }
+
+  // 연구/축성 메타 — type 키별 한국어명 + 아이콘
+  // research.json ResearchType: weapon_SWD/GRT/SAB/RAP/BLT/DGR/TWN/KAT/GTL/PST/RFL/BYN/CAN/XBW/STF/ROD/WND/ORB/BRC/GRM + exploration
+  const RESEARCH_META = {
+    order: ["weapon_SWD", "weapon_GRT", "weapon_SAB", "weapon_RAP", "weapon_BLT",
+            "weapon_DGR", "weapon_TWN", "weapon_KAT", "weapon_GTL", "weapon_PST",
+            "weapon_RFL", "weapon_BYN", "weapon_CAN", "weapon_XBW",
+            "weapon_STF", "weapon_ROD", "weapon_WND", "weapon_ORB",
+            "weapon_BRC", "weapon_GRM", "exploration"],
+    label: {
+      weapon_SWD: { name: "한손검 연구", icon: "🗡️" },
+      weapon_GRT: { name: "대검 연구", icon: "⚔️" },
+      weapon_SAB: { name: "사브르 연구", icon: "🗡️" },
+      weapon_RAP: { name: "레이피어 연구", icon: "🗡️" },
+      weapon_BLT: { name: "둔기 연구", icon: "🔨" },
+      weapon_DGR: { name: "단검 연구", icon: "🗡️" },
+      weapon_TWN: { name: "쌍수검 연구", icon: "⚔️" },
+      weapon_KAT: { name: "카타르 연구", icon: "🗡️" },
+      weapon_GTL: { name: "건틀릿 연구", icon: "🥊" },
+      weapon_PST: { name: "권총 연구", icon: "🔫" },
+      weapon_RFL: { name: "라이플 연구", icon: "🔫" },
+      weapon_BYN: { name: "바요넷 연구", icon: "🔫" },
+      weapon_CAN: { name: "대포 연구", icon: "💣" },
+      weapon_XBW: { name: "석궁 연구", icon: "🏹" },
+      weapon_STF: { name: "지팡이 연구", icon: "🔮" },
+      weapon_ROD: { name: "로드 연구", icon: "🔮" },
+      weapon_WND: { name: "완드 연구", icon: "🔮" },
+      weapon_ORB: { name: "오브 연구", icon: "🔮" },
+      weapon_BRC: { name: "팔찌 연구", icon: "✨" },
+      weapon_GRM: { name: "마도서 연구", icon: "📕" },
+      exploration: { name: "탐색 장비", icon: "🧭" },
+    },
+  };
+
+  // fortification.json FortType: wall / gate / durability / barracks / territory
+  const FORTIFY_META = {
+    order: ["wall", "gate", "durability", "barracks", "territory"],
+    label: {
+      wall:       { name: "성벽 강화", icon: "🧱" },
+      gate:       { name: "관문 강화", icon: "🚪" },
+      durability: { name: "내구도 강화", icon: "🛡️" },
+      barracks:   { name: "배럭 확장", icon: "🏠" },
+      territory:  { name: "영지 확장", icon: "🏰" },
+    },
+  };
+
+  /**
+   * 일반화된 성장 탭 렌더 — research/fortification 공용.
+   * @param {"research"|"fortification"} category
+   * @param {{order: string[], label: {[type]: {name, icon}}}} meta
+   */
+  function renderGrowthTab(category, meta) {
+    const gs = getState();
+    const items = meta.order.map(type => {
+      const cur = getGrowthLevel(category, type);
+      const next = getNextGrowthRow(category, type, tables);
+      const lbl = meta.label[type] || { name: type, icon: "•" };
+      const lastRow = tables[category].all().filter(r =>
+        (r.ResearchType || r.FortType) === type
+      ).slice(-1)[0];
+      const descRow = next || lastRow;
+      const desc = formatEffectDescription(descRow);
+
+      if (!next) {
+        return `<div class="train-card">
+          <div class="train-icon">${lbl.icon}</div>
+          <div class="train-body">
+            <div class="train-name">${lbl.name} <span class="train-lv">Lv ${cur} (MAX)</span></div>
+            <div class="train-desc">${desc}</div>
+          </div>
+        </div>`;
+      }
+
+      const check = canAffordGrowth(next);
+      const costs = [];
+      if (next.CostRes1 && next.CostAmt1) costs.push({ res: next.CostRes1, amt: next.CostAmt1 });
+      if (next.CostRes2 && next.CostAmt2) costs.push({ res: next.CostRes2, amt: next.CostAmt2 });
+      if (next.CostRes3 && next.CostAmt3) costs.push({ res: next.CostRes3, amt: next.CostAmt3 });
+      const costHtml = costs.map(c => {
+        const have = gs.resources[c.res] || 0;
+        const lack = have < c.amt;
+        const label = RES_LABEL[c.res] || c.res;
+        return `<span class="train-cost ${lack ? 'lack' : ''}"><span class="res-emoji">${resEmoji(c.res)}</span>${label} ${c.amt}</span>`;
+      }).join("");
+
+      let btnLabel = `Lv ${cur + 1} 투자`;
+      let tooltip = `${next.Name} (Lv ${cur} → Lv ${cur + 1})`;
+      let disabled = !check.ok;
+      if (check.reason === "locked") {
+        btnLabel = `🔒 가문 Lv${check.unlockLv} 필요`;
+        tooltip = `가문 레벨 ${check.unlockLv} 이상에서 해금`;
+      } else if (check.reason === "cost") {
+        const lacks = Object.entries(check.missing).map(([r, n]) => `${RES_LABEL[r] || r} ${n} 부족`).join(", ");
+        tooltip = lacks;
+      }
+
+      return `<div class="train-card ${disabled ? 'disabled' : ''}" data-type="${type}">
+        <div class="train-icon">${lbl.icon}</div>
+        <div class="train-body">
+          <div class="train-name">${lbl.name} <span class="train-lv">Lv ${cur}</span></div>
+          <div class="train-desc">${desc}</div>
+          <div class="train-costs">${costHtml}</div>
+        </div>
+        <button class="train-btn" data-invest="${type}" ${disabled ? "disabled" : ""} title="${tooltip}">${btnLabel}</button>
+      </div>`;
+    }).join("");
+
+    familyContent.innerHTML = `<div class="train-list">${items}</div>`;
+
+    familyContent.querySelectorAll('button[data-invest]').forEach(btn => {
+      btn.addEventListener("click", () => {
+        const type = btn.dataset.invest;
+        const lbl = meta.label[type] || { name: type, icon: "" };
+        pushUndo(`${category} 투자: ${lbl.name}`);
+        const result = investGrowth(category, type, tables);
+        if (result.ok) {
+          showToast(`${lbl.icon} ${result.row.Name} 투자 완료`, "exp");
+          renderGrowthTab(category, meta);
+          updateHud();
+        } else {
+          showToast(`투자 실패: ${result.reason}`, "warn");
+        }
+      });
+    });
   }
 
   // 가문 시설/콘텐츠 키 → 한국어 라벨 (family_level.json Unlock 컬럼)
@@ -1855,6 +1995,8 @@ async function boot() {
     const active = document.querySelector('#family-subtabs button.active');
     if (!active) return;
     if (active.dataset.sub === "training") renderTrainingTab();
+    else if (active.dataset.sub === "research") renderGrowthTab("research", RESEARCH_META);
+    else if (active.dataset.sub === "fortify")  renderGrowthTab("fortification", FORTIFY_META);
     else if (active.dataset.sub === "level") renderFamilyLevelTab();
   });
 
