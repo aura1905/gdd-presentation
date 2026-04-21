@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail, advanceOnboarding, skipOnboarding, completeOnboarding } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -2445,43 +2445,6 @@ async function boot() {
 
   status(`준비 완료 · ${tables.worldHex.count()} 헥스 · 파티 ${getState().parties.length}개`);
   setTimeout(() => document.getElementById("splash").classList.add("hide"), 400);
-
-  // ─── 온보딩 (M6) — 신규 시작 시 자동 노출 ───
-  const ONBOARDING_STEPS = [
-    { title: "환영합니다 — GE 개척시대",
-      body: "헥스 월드맵에서 분대를 운영하는 가문 경영 전략 게임. 먼저 핵심 5가지를 안내합니다." },
-    { title: "1. 분대 이동",
-      body: "좌측 분대 카드를 클릭 → 월드맵에서 이동할 헥스 클릭. 피로도가 줄고 적이 있으면 전투." },
-    { title: "2. 헥스 점령",
-      body: "적 헥스 클릭 → 하단에 [점령] 버튼. 승리 시 즉시 자원 보상 + 정기 수급 헥스 추가됨." },
-    { title: "3. 자원 수급",
-      body: "상단 HUD 10종 자원 표시. 턴 종료 (우상단 [턴 종료]) 시 보유 헥스에서 자원 자동 정산." },
-    { title: "4. 임무 + 가문 성장",
-      body: "하단 [임무] 탭 — 미션 보상으로 가문 XP. [가문] 탭 — 자원 투자해 훈련/연구/축성으로 캐릭터 강화." },
-  ];
-  const obPanel = document.getElementById("onboarding");
-  function renderOnboarding() {
-    const ob = getState().onboarding || { step: 0 };
-    if (ob.completed) { obPanel.hidden = true; return; }
-    const step = ob.step || 0;
-    if (step >= ONBOARDING_STEPS.length) { completeOnboarding(); obPanel.hidden = true; return; }
-    const s = ONBOARDING_STEPS[step];
-    document.getElementById("ob-step").textContent = `${step + 1} / ${ONBOARDING_STEPS.length}`;
-    document.getElementById("ob-title").textContent = s.title;
-    document.getElementById("ob-body").textContent = s.body;
-    document.getElementById("ob-next").textContent = (step + 1 >= ONBOARDING_STEPS.length) ? "완료 ✓" : "다음 →";
-    obPanel.hidden = false;
-  }
-  document.getElementById("ob-next")?.addEventListener("click", () => {
-    advanceOnboarding();
-    renderOnboarding();
-  });
-  document.getElementById("ob-skip")?.addEventListener("click", () => {
-    skipOnboarding();
-    obPanel.hidden = true;
-  });
-  // 부팅 시 자동 노출 (완료/건너뛰기 안 한 경우만)
-  setTimeout(renderOnboarding, 600);
 
   if (CONFIG.debug.showStats) {
     window.__demo = { tables, camera, worldmap, overlays, getState, clearSave };

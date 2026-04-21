@@ -705,36 +705,6 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .quest-btn.done { background: #2a3a2a; border-color: #485; color: #8a8; cursor: default; }
 .quest-btn:disabled:not(.done) { background: #333; border-color: #555; color: #888; cursor: not-allowed; }
 
-/* 온보딩 (M6) — 우상단 카드 */
-#onboarding[hidden] { display: none !important; }
-#onboarding { position: absolute; inset: 0; z-index: 60;
-  display: flex; align-items: flex-start; justify-content: center;
-  padding-top: 80px; pointer-events: auto;
-  background: rgba(0,0,0,0.4);
-  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
-  animation: fp-back-in 0.2s ease; }
-.ob-card { width: min(440px, 92%); padding: 18px 22px;
-  background: linear-gradient(180deg, #2a1f15, #1a1410);
-  border: 2px solid #c8a848; border-radius: 12px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
-  animation: fp-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1); }
-.ob-step { font-size: 11px; color: #888; font-weight: 700;
-  text-transform: uppercase; letter-spacing: 1px; }
-.ob-title { font-size: 17px; color: #ffd452; font-weight: 700;
-  margin-top: 4px; margin-bottom: 8px; }
-.ob-body { font-size: 13px; color: #ddd; line-height: 1.6;
-  margin-bottom: 16px; }
-.ob-actions { display: flex; gap: 8px; justify-content: flex-end; }
-.ob-skip { padding: 7px 14px; border-radius: 5px;
-  background: transparent; border: 1px solid #555; color: #aaa;
-  font-size: 12px; cursor: pointer; }
-.ob-skip:hover { background: rgba(60,60,60,0.5); color: #ddd; }
-.ob-next { padding: 7px 16px; border-radius: 5px;
-  background: linear-gradient(180deg, #2c5aa6, #1a3a76);
-  border: 1px solid #4d7dc7; color: #fff;
-  font-size: 12px; font-weight: 700; cursor: pointer; }
-.ob-next:hover { filter: brightness(1.2); }
-
 /* 우편함 (M6) */
 .mail-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; }
 .mail-mark-all { padding: 6px 14px; border-radius: 5px; cursor: pointer;

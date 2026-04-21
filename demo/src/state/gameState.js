@@ -176,8 +176,6 @@ export function initState(tables) {
     // 우편함 (M6): 전투/이벤트 결과 아카이브
     // { id, type: "battle"|"levelup"|"system", turn, title, body, claimed, expiresTurn }
     mailbox: [],
-    // 온보딩 진행 (M6): 신규 시작 시 자동 노출
-    onboarding: { step: 0, completed: false, skipped: false },
   };
 
   emit("state:init", state);
@@ -269,7 +267,6 @@ export function restoreState(saved, tables) {
   if (!state.research) state.research = {};
   if (!state.fortification) state.fortification = {};
   if (!Array.isArray(state.mailbox)) state.mailbox = [];
-  if (!state.onboarding) state.onboarding = { step: 0, completed: false, skipped: false };
 
   // Migration: 옛 세이브에 누적된 family.xp 즉시 레벨 반영 (M5-A 이전 세이브 호환)
   levelUpFamilyIfReady(tables);
@@ -455,34 +452,6 @@ export function markAllMailRead() {
   }
   if (n > 0) emit("state:changed", { path: "mailbox", action: "read-all" });
   return n;
-}
-
-// ─────── 온보딩 (M6) ───────
-
-/** 다음 단계로 이동. */
-export function advanceOnboarding() {
-  if (!state) return null;
-  if (!state.onboarding) state.onboarding = { step: 0, completed: false, skipped: false };
-  state.onboarding.step += 1;
-  emit("state:changed", { path: "onboarding", action: "advance" });
-  return state.onboarding.step;
-}
-
-/** 온보딩 건너뛰기 (영구). */
-export function skipOnboarding() {
-  if (!state) return;
-  if (!state.onboarding) state.onboarding = {};
-  state.onboarding.skipped = true;
-  state.onboarding.completed = true;
-  emit("state:changed", { path: "onboarding", action: "skip" });
-}
-
-/** 온보딩 완료 마킹. */
-export function completeOnboarding() {
-  if (!state) return;
-  if (!state.onboarding) state.onboarding = {};
-  state.onboarding.completed = true;
-  emit("state:changed", { path: "onboarding", action: "complete" });
 }
 
 /** 만료된 우편 자동 삭제 (턴 종료 시 호출 권장). */
