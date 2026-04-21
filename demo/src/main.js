@@ -189,30 +189,30 @@ async function boot() {
     if (!tip) return;
     let currentTarget = null;
 
-    function show(el) {
+    function show(el, ev) {
       const raw = el.getAttribute("data-tip");
       if (!raw) return;
       const [title, body] = raw.includes("|") ? raw.split("|") : [raw, ""];
       tip.innerHTML = `<div class="tip-title">${title}</div>${body ? `<div class="tip-body">${body}</div>` : ""}`;
       tip.hidden = false;
-      positionNearEl(el);
+      positionAtMouse(ev.clientX, ev.clientY);
     }
-    /** 타깃 요소 바로 옆에 붙임 — 위쪽 우선, 공간 없으면 아래. 좌우 클램프. */
-    function positionNearEl(el) {
-      if (tip.hidden || !el) return;
-      const r = el.getBoundingClientRect();
+    /** 마우스 커서 바로 옆(오른쪽 아래)에 붙임. 화면 밖이면 반대편으로 플립. */
+    function positionAtMouse(mx, my) {
+      if (tip.hidden) return;
       const vw = window.innerWidth, vh = window.innerHeight;
       const tw = tip.offsetWidth, th = tip.offsetHeight;
-      const gap = 6;
-      // x: 요소 가운데 기준 가운데 정렬
-      let x = r.left + r.width / 2 - tw / 2;
-      // y: 요소 위쪽에 붙임 (공간 부족 시 아래)
-      let y = r.top - th - gap;
-      if (y < 4) y = r.bottom + gap;
-      // 좌우 클램프
-      if (x + tw > vw - 4) x = vw - tw - 4;
+      const gap = 12;
+      // 기본: 오른쪽-아래
+      let x = mx + gap;
+      let y = my + gap;
+      // 오른쪽 초과 → 왼쪽
+      if (x + tw > vw - 4) x = mx - tw - gap;
+      // 아래쪽 초과 → 위쪽
+      if (y + th > vh - 4) y = my - th - gap;
+      // 여전히 화면 밖이면 클램프
       if (x < 4) x = 4;
-      if (y + th > vh - 4) y = vh - th - 4;
+      if (y < 4) y = 4;
       tip.style.left = `${x}px`;
       tip.style.top = `${y}px`;
     }
@@ -222,8 +222,11 @@ async function boot() {
       const el = e.target.closest("[data-tip]");
       if (el && el !== currentTarget) {
         currentTarget = el;
-        show(el);
+        show(el, e);
       }
+    });
+    document.addEventListener("mousemove", (e) => {
+      if (currentTarget) positionAtMouse(e.clientX, e.clientY);
     });
     document.addEventListener("mouseout", (e) => {
       if (currentTarget && !currentTarget.contains(e.relatedTarget)) hide();
