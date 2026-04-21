@@ -13,6 +13,7 @@ export function createOverlays() {
     pathPreview: null,   // [{q, r, cost}] or null
     animations: [],      // [{partyId, path, progress, speed, onComplete}]
     battleScene: null,   // {q, r, players, enemies, won, startMs, onDone}
+    labelHits: [],       // [{partyId, x, y, w, h}] — 매 draw마다 갱신, 클릭 hit-test용
   };
 
   function hexVertsIso(cx, cy, size) {
@@ -64,6 +65,9 @@ export function createOverlays() {
       const s = camera.worldToScreen(p.x, p.y);
       strokeHex(ctx, s.x, s.y, size, "#ffd452", Math.max(1.5, 3 * camera.scale));
     }
+
+    // 매 draw마다 라벨 hit-test 영역 초기화
+    state.labelHits = [];
 
     // Advance animations
     const now = performance.now();
@@ -188,6 +192,14 @@ export function createOverlays() {
       const panelY = labelY - panelH - 6;
       const radius = Math.min(6, panelH * 0.3);
 
+      // 클릭 영역 등록 (피로 바까지 포함, 살짝 여유)
+      const hitH = panelH + (party.fatiguePct != null ? Math.max(4, hexSize * 0.13) + 4 : 6);
+      state.labelHits.push({
+        partyId: party.id,
+        x: panelX - 2, y: panelY - 2,
+        w: panelW + 4, h: hitH,
+      });
+
       // 1) 그림자 (depth)
       ctx.save();
       ctx.shadowColor = "rgba(0,0,0,0.6)";
@@ -297,6 +309,18 @@ export function createOverlays() {
     const g = Math.min(255, ((n >> 8) & 0xff) + Math.round(255 * amount));
     const b = Math.min(255, (n & 0xff) + Math.round(255 * amount));
     return `rgb(${r},${g},${b})`;
+  }
+
+  /** 화면 좌표(sx, sy)가 어떤 파티 라벨 영역에 들어있는지 반환 (가장 위에 그려진 것 우선). */
+  function hitTestLabel(sx, sy) {
+    // 마지막 push가 가장 위에 그려진 것 → 역순 검사
+    for (let i = state.labelHits.length - 1; i >= 0; i--) {
+      const h = state.labelHits[i];
+      if (sx >= h.x && sx <= h.x + h.w && sy >= h.y && sy <= h.y + h.h) {
+        return h.partyId;
+      }
+    }
+    return null;
   }
 
   function setSelected(q, r) { state.selectedHex = { q, r }; }
@@ -505,5 +529,6 @@ export function createOverlays() {
   return {
     draw, setSelected, clearSelected, setParties, setPathPreview, clearPathPreview,
     animateParty, isAnimating, setRequestDraw, startBattleScene, state,
+    hitTestLabel,
   };
 }

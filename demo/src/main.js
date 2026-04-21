@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -583,6 +583,27 @@ async function boot() {
   let selectedHexRow = null;
 
   camera.onClick((sx, sy) => {
+    // 1) 맵 위 파티 라벨 클릭 우선 체크 → 해당 파티 선택
+    const labelPartyId = overlays.hitTestLabel(sx, sy);
+    if (labelPartyId) {
+      selectParty(labelPartyId);
+      const gsL = getState();
+      const p = gsL.parties.find(x => x.id === labelPartyId);
+      if (p) {
+        overlays.setSelected(p.location.q, p.location.r);
+        const pw = hexWorld(p.location.q, p.location.r);
+        camera.centerOn(pw.x, pw.y);
+        const pHexRow = tables.worldHex.get(hexId(p.location.q, p.location.r));
+        if (pHexRow) {
+          selectedHexRow = pHexRow;
+          const ps = camera.worldToScreen(pw.x, pw.y);
+          showTilePanel(pHexRow, null, tables, ps.x, ps.y + 40);
+        }
+      }
+      worldmap.requestDraw();
+      return;
+    }
+
     const world = camera.screenToWorld(sx, sy);
     const { q, r } = worldToHex(world.x, world.y);
     const id = hexId(q, r);
@@ -1129,6 +1150,14 @@ async function boot() {
 
     overlays.startBattleScene(hexRow.HexQ, hexRow.HexR, sceneChars, enemySlots, allWon, () => {
       showBattleResult(hexRow, lastResult, totalWins, enemies.length, mode, ps, siegeInfo);
+      // M6 우편함: 전투 결과 자동 보관
+      const modeLbl = mode === "occupy" ? "점령" : "토벌";
+      const resLbl = allWon ? (siegeInfo?.fell ? "함락" : "승리") : (leaderDead ? "리더 사망" : "패배");
+      addMail({
+        type: "battle",
+        title: `${resLbl} — ${modeLbl} #${hexRow.HexID}`,
+        body: `${party.name} · 웨이브 ${totalWins}/${enemies.length}`,
+      });
       saveState(getState());
       worldmap.requestDraw();
 
@@ -1187,6 +1216,12 @@ async function boot() {
         const lvUps = levelUpFamilyIfReady(tables);
         for (const ev of lvUps) {
           showToast(`🏰 가문 Lv${ev.from} → <b>Lv${ev.to}</b>!`, "levelup");
+          // M6 우편함: 가문 레벨업 알림 자동 보관
+          addMail({
+            type: "levelup",
+            title: `🏰 가문 Lv${ev.from} → Lv${ev.to}`,
+            body: `자원 보상 자동 지급 + 새 콘텐츠 해금 가능`,
+          });
         }
         // 가문 레벨 변동 시 family_level 타입 quest 즉시 평가
         if (lvUps.length > 0) {
@@ -2208,6 +2243,10 @@ async function boot() {
   }
 
   function renderQuestContent(qtype) {
+    if (qtype === "mail") {
+      renderMailTab();
+      return;
+    }
     const gs = getState();
     if (!gs.quests) {
       questContent.innerHTML = `<div class="fp-empty">미션 데이터 미초기화</div>`;
@@ -2306,19 +2345,73 @@ async function boot() {
     });
   }
 
+  function renderMailTab() {
+    const gs = getState();
+    purgeExpiredMail();  // 만료 자동 정리
+    const mails = gs.mailbox || [];
+    if (mails.length === 0) {
+      questContent.innerHTML = `<div class="fp-empty">📭 우편 없음 — 전투/레벨업 시 자동 보관됨</div>`;
+      return;
+    }
+    const TYPE_ICON = { battle: "⚔️", levelup: "🏰", system: "📢" };
+    const html = mails.map(m => {
+      const icon = TYPE_ICON[m.type] || "📬";
+      const turnsLeft = (m.expiresTurn || 0) - (gs.meta?.turn || 1);
+      const exp = turnsLeft > 0 ? `${turnsLeft}턴 후 자동 삭제` : "곧 만료";
+      return `<div class="mail-card ${m.read ? '' : 'unread'}" data-mail="${m.id}">
+        <div class="mail-icon">${icon}</div>
+        <div class="mail-body">
+          <div class="mail-head">
+            <span class="mail-title">${m.title}</span>
+            <span class="mail-turn">턴 ${m.turn}</span>
+          </div>
+          <div class="mail-desc">${m.body || ''}</div>
+          <div class="mail-foot">${exp}</div>
+        </div>
+        <button class="mail-del" data-mail-del="${m.id}" type="button" title="삭제">✕</button>
+      </div>`;
+    }).join("");
+
+    const actions = `<div class="mail-actions">
+      <button class="mail-mark-all" type="button">📖 모두 읽음</button>
+    </div>`;
+    questContent.innerHTML = actions + `<div class="mail-list">${html}</div>`;
+
+    // 클릭 = 읽음 처리
+    questContent.querySelectorAll('.mail-card').forEach(el => {
+      el.addEventListener("click", (e) => {
+        if (e.target.closest('.mail-del')) return;  // 삭제 버튼은 별도
+        markMailRead(el.dataset.mail);
+      });
+    });
+    // 삭제
+    questContent.querySelectorAll('button[data-mail-del]').forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        deleteMail(btn.dataset.mailDel);
+      });
+    });
+    // 모두 읽음
+    questContent.querySelector('.mail-mark-all')?.addEventListener("click", () => {
+      const n = markAllMailRead();
+      if (n > 0) showToast(`📖 ${n}개 읽음 처리`, "exp");
+    });
+  }
+
   function updateQuestBadge() {
     const gs = getState();
     const ready = gs.quests?.readyToClaim || [];
-    // 하단 도크 전체 합계
-    const n = ready.length;
+    const unreadMail = getUnreadMailCount();
+    // 하단 도크 전체 합계 (수령 가능 + 미읽음 우편)
+    const n = ready.length + unreadMail;
     if (n > 0) {
       questBadge.textContent = n;
       questBadge.hidden = false;
     } else {
       questBadge.hidden = true;
     }
-    // 서브탭별 카운트 — chain/daily/weekly/achievement 각각
-    const perType = { chain: 0, daily: 0, weekly: 0, achievement: 0 };
+    // 서브탭별 카운트 (mail은 별도 카운트 — readyToClaim 아님)
+    const perType = { chain: 0, daily: 0, weekly: 0, achievement: 0, mail: unreadMail };
     for (const qid of ready) {
       const q = tables.quests.get(qid);
       if (q && perType.hasOwnProperty(q.QuestType)) perType[q.QuestType]++;
