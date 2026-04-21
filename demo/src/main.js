@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail, getPartyHome, setPartyHome } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -189,25 +189,30 @@ async function boot() {
     if (!tip) return;
     let currentTarget = null;
 
-    function show(el, ev) {
+    function show(el) {
       const raw = el.getAttribute("data-tip");
       if (!raw) return;
       const [title, body] = raw.includes("|") ? raw.split("|") : [raw, ""];
       tip.innerHTML = `<div class="tip-title">${title}</div>${body ? `<div class="tip-body">${body}</div>` : ""}`;
       tip.hidden = false;
-      position(ev);
+      positionNearEl(el);
     }
-    function position(ev) {
-      if (tip.hidden) return;
-      const pad = 14;
+    /** 타깃 요소 바로 옆에 붙임 — 위쪽 우선, 공간 없으면 아래. 좌우 클램프. */
+    function positionNearEl(el) {
+      if (tip.hidden || !el) return;
+      const r = el.getBoundingClientRect();
       const vw = window.innerWidth, vh = window.innerHeight;
       const tw = tip.offsetWidth, th = tip.offsetHeight;
-      let x = ev.clientX + pad;
-      let y = ev.clientY + pad;
-      if (x + tw > vw - 8) x = ev.clientX - tw - pad;
-      if (y + th > vh - 8) y = ev.clientY - th - pad;
+      const gap = 6;
+      // x: 요소 가운데 기준 가운데 정렬
+      let x = r.left + r.width / 2 - tw / 2;
+      // y: 요소 위쪽에 붙임 (공간 부족 시 아래)
+      let y = r.top - th - gap;
+      if (y < 4) y = r.bottom + gap;
+      // 좌우 클램프
+      if (x + tw > vw - 4) x = vw - tw - 4;
       if (x < 4) x = 4;
-      if (y < 4) y = 4;
+      if (y + th > vh - 4) y = vh - th - 4;
       tip.style.left = `${x}px`;
       tip.style.top = `${y}px`;
     }
@@ -217,11 +222,8 @@ async function boot() {
       const el = e.target.closest("[data-tip]");
       if (el && el !== currentTarget) {
         currentTarget = el;
-        show(el, e);
+        show(el);
       }
-    });
-    document.addEventListener("mousemove", (e) => {
-      if (currentTarget) position(e);
     });
     document.addEventListener("mouseout", (e) => {
       if (currentTarget && !currentTarget.contains(e.relatedTarget)) hide();
@@ -572,13 +574,21 @@ async function boot() {
       else if (pStruct?.StructureType === "Bunker") locRateText = `+${1.5 * minPerTurn}/턴`;
       else locRateText = `+${(0.1 * minPerTurn).toFixed(1)}/턴`;
 
+      // 등록된 홈 표시 (가문 도시 외)
+      let homeLabel = "도시";
+      if (party.homeHex) {
+        const homeHex = tables.worldHex.get(party.homeHex.q * 100 + party.homeHex.r);
+        const homeStruct = homeHex?.StructureID ? tables.structures.get(homeHex.StructureID) : null;
+        homeLabel = homeStruct?.Name || `Fort ${homeHex?.HexID || ""}`;
+      }
       card.innerHTML = `
         <div class="pc-header">
           <div class="pc-icon" style="background:${color}" title="리더 병종: ${leaderJobName}">${leader?.jobClass || "?"}</div>
           <div class="pc-name">${party.name}</div>
           <div class="pc-leader-job" style="color:${color}">${leaderJobName}</div>
+          <span class="pc-home" title="귀환 시 갈 곳: ${homeLabel}">🏠 ${homeLabel}</span>
           <button class="pc-autoreturn-btn ${autoReturnOn ? 'on' : ''}" data-autoreturn="${party.id}" type="button"
-                  title="전투 후 자동 귀환 ${autoReturnOn ? 'ON' : 'OFF'} (클릭으로 토글)">🏠</button>
+                  title="전투 후 자동 귀환 ${autoReturnOn ? 'ON' : 'OFF'} (클릭으로 토글)">↩</button>
           <button class="pc-edit-btn" data-edit-party="${party.id}" type="button" title="분대 편성">⚙</button>
         </div>
         <div class="pc-summary">
@@ -839,10 +849,10 @@ async function boot() {
       });
     }
 
-    // 귀환
+    // 귀환 (파티별 홈으로 — 등록 안 했으면 가문 홈)
     if (party) {
-      const home = getState().family.homeHex;
-      if (party.location.q !== home.q || party.location.r !== home.r) {
+      const home = getPartyHome(party);
+      if (home && (party.location.q !== home.q || party.location.r !== home.r)) {
         addAction(actions, "귀환", "#555", () => doReturn());
       }
     }
@@ -854,6 +864,33 @@ async function boot() {
         const ps = camera.worldToScreen(hexWorld(row.HexQ, row.HexR).x, hexWorld(row.HexQ, row.HexR).y);
         showTilePanel(row, null, tables, ps.x, ps.y + 40);
       });
+    }
+
+    // 홈 등록 — 점령된 City/Fort 헥스에서 (파티 선택 시)
+    if (party && structure && isCaptured
+        && (structure.StructureType === "Fort" || structure.StructureType === "City")) {
+      const partyHomeAtHere = party.homeHex && party.homeHex.q === row.HexQ && party.homeHex.r === row.HexR;
+      const cityHomeAtHere = !party.homeHex && getState().family.homeHex.q === row.HexQ && getState().family.homeHex.r === row.HexR;
+      if (partyHomeAtHere || cityHomeAtHere) {
+        // 이미 이 파티의 홈 — 해제 옵션 (가문 도시 외)
+        if (!cityHomeAtHere) {
+          addAction(actions, `🏠 ${party.name} 홈 해제`, "#7a5a3a", () => {
+            pushUndo(`${party.name} 홈 해제`);
+            setPartyHome(party.id, null, null);
+            showToast(`🏠 ${party.name} 홈 해제 (가문 도시로 복귀)`, "exp");
+          });
+        }
+      } else {
+        addAction(actions, `🏠 ${party.name} 홈 등록`, "#3a7a5a", () => {
+          pushUndo(`${party.name} 홈 등록`);
+          const r = setPartyHome(party.id, row.HexQ, row.HexR);
+          if (r.ok) {
+            showToast(`🏠 ${party.name} 홈 = ${structure.Name || structure.StructureType}`, "exp");
+          } else {
+            showToast(`홈 등록 실패: ${r.reason}`, "warn");
+          }
+        });
+      }
     }
 
     // 포기 — 점령된 헥스 또는 점령된 구조물 (홈 도시만 보호)
@@ -1125,7 +1162,7 @@ async function boot() {
           else reportProgress(getState(), tables, "occupy", 1);
           // 자동 귀환 옵션
           if (party.autoReturn) {
-            const home = getState().family.homeHex;
+            const home = getPartyHome(party);
             moveParty(party.id, home.q, home.r, 0);
             showToast(`🏠 ${party.name} 자동 귀환`, "exp");
           }
@@ -1154,7 +1191,7 @@ async function boot() {
       reportProgress(getState(), tables, "occupy", 1);
       // 파티는 점령 헥스에 유지 (자동 귀환 옵션 시 홈으로 이동)
       if (party.autoReturn) {
-        const home = getState().family.homeHex;
+        const home = getPartyHome(party);
         moveParty(party.id, home.q, home.r, 0);
         showToast(`🏠 ${party.name} 자동 귀환`, "exp");
       }
@@ -1162,13 +1199,13 @@ async function boot() {
       // 토벌 승리 (점령 X) — 자동 귀환 옵션 시 홈으로
       reportProgress(getState(), tables, "subjugate", 1);
       if (party.autoReturn) {
-        const home = getState().family.homeHex;
+        const home = getPartyHome(party);
         moveParty(party.id, home.q, home.r, 0);
         showToast(`🏠 ${party.name} 자동 귀환`, "exp");
       }
     } else if (!allWon || leaderDead) {
-      // 패배/리더사망 → 자동 귀환. HP만 풀회복 (Phase 2 부상 시스템 전 임시), 피로는 자연회복 대기.
-      const home = getState().family.homeHex;
+      // 패배/리더사망 → 등록된 파티 홈으로 자동 귀환. HP만 풀회복 (부상 시스템 Phase 2에서 분리).
+      const home = getPartyHome(party);
       moveParty(party.id, home.q, home.r, 0);
       const partyObj = getState().parties.find(p => p.id === party.id);
       for (const cid of partyObj?.slots || []) {
@@ -1553,7 +1590,8 @@ async function boot() {
   function doReturn() {
     const party = getSelectedParty();
     if (!party) return;
-    const home = getState().family.homeHex;
+    const home = getPartyHome(party);
+    if (!home) return;
     const path = findPath(party.location.q, party.location.r, home.q, home.r, tables);
     if (!path) {
       const hexRow = tables.worldHex.get(hexId(party.location.q, party.location.r));
