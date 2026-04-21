@@ -99,6 +99,28 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 @keyframes modal-pop { from { opacity: 0; transform: scale(0.85); }
                        to   { opacity: 1; transform: scale(1); } }
 
+/* 커스텀 툴팁 (data-tip 속성 기반) — 게임 비주얼 */
+#custom-tooltip { position: fixed; z-index: 1000; pointer-events: none;
+  max-width: 300px; padding: 8px 11px;
+  background:
+    linear-gradient(180deg, rgba(44,30,18,0.97) 0%, rgba(20,14,10,0.97) 100%);
+  border: 1px solid rgba(200,168,72,0.6); border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,0,0,0.5) inset;
+  font-size: 12px; color: #ddd; line-height: 1.45;
+  animation: tip-in 0.12s ease-out; }
+#custom-tooltip[hidden] { display: none; }
+#custom-tooltip::before { content: ""; position: absolute;
+  top: 0; left: 0; right: 0; height: 40%;
+  background: linear-gradient(180deg, rgba(255,220,130,0.10), transparent);
+  pointer-events: none; border-radius: 6px 6px 0 0; }
+#custom-tooltip .tip-title { color: #ffd452; font-weight: bold; font-size: 13px;
+  margin-bottom: 3px; letter-spacing: 0.3px; }
+#custom-tooltip .tip-body { color: #d8d0b8; }
+@keyframes tip-in {
+  from { opacity: 0; transform: translateY(3px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* 토스트 알림 */
 #toast-area { position: absolute; top: 56px; left: 50%; transform: translateX(-50%);
   z-index: 30; display: flex; flex-direction: column; gap: 6px; align-items: center;

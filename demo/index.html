@@ -13,23 +13,26 @@
     <!-- 상단 HUD -->
     <header id="hud-top">
       <div class="hud-group hud-resources">
-        <span class="res" title="곡물"><span class="res-emoji">🌾</span><span id="res-grain">0</span></span>
-        <span class="res" title="철"><span class="res-emoji">⛏️</span><span id="res-iron">0</span></span>
-        <span class="res" title="목재"><span class="res-emoji">🌲</span><span id="res-wood">0</span></span>
-        <span class="res" title="석재"><span class="res-emoji">🪨</span><span id="res-stone">0</span></span>
-        <span class="res" title="약초"><span class="res-emoji">🌿</span><span id="res-herbs">0</span></span>
-        <span class="res" title="금화"><span class="res-emoji">💰</span><span id="res-gold">0</span></span>
-        <span class="res" title="비스"><span class="res-emoji">✨</span><span id="res-vis">0</span></span>
-        <span class="res" title="보석"><span class="res-emoji">💎</span><span id="res-gem">0</span></span>
-        <span class="res" title="주문서"><span class="res-emoji">📜</span><span id="res-scroll">0</span></span>
-        <span class="res" title="연구"><span class="res-emoji">📘</span><span id="res-rp">0</span></span>
+        <span class="res" data-tip="🌾 곡물|식량 자원. 캐릭터 유지비·체력 단련·수비대 징병에 쓰임. 헥스(밭/농지)에서 생산."><span class="res-emoji">🌾</span><span id="res-grain">0</span></span>
+        <span class="res" data-tip="⛏️ 철|전투 강화 소재. Fighter/Musketeer 훈련·무기 연구·장비 제작에 쓰임. 철광 헥스에서 생산."><span class="res-emoji">⛏️</span><span id="res-iron">0</span></span>
+        <span class="res" data-tip="🌲 목재|건설 기본 자재. 배럭 확장·시설 건축·Scout 훈련에 쓰임. 숲 헥스에서 생산."><span class="res-emoji">🌲</span><span id="res-wood">0</span></span>
+        <span class="res" data-tip="🪨 석재|방어/구조물 자재. 성벽·관문·내구도 강화에 쓰임. 채석장·산지 헥스에서 생산."><span class="res-emoji">🪨</span><span id="res-stone">0</span></span>
+        <span class="res" data-tip="🌿 약초|성장·회복 자원. 회복력 강화·Wizard/Warlock 훈련·부상 치료에 쓰임. 약초 헥스에서 생산."><span class="res-emoji">🌿</span><span id="res-herbs">0</span></span>
+        <span class="res" data-tip="💰 금화|프리미엄 화폐. 장비 제작·용병 고용·레벨업 등 고급 거래에 쓰임. 특수 헥스(금광) 또는 전투 보상에서 획득."><span class="res-emoji">💰</span><span id="res-gold">0</span></span>
+        <span class="res" data-tip="✨ 비스|배럭 상인 전용 소프트 화폐. 소모품·NPC 교역에 쓰임. 배럭 활동에서 주로 획득."><span class="res-emoji">✨</span><span id="res-vis">0</span></span>
+        <span class="res" data-tip="💎 보석|고급 장비·각인·세련 강화에 쓰임. ★4~5 보석광 헥스에서 획득 (고난이도)."><span class="res-emoji">💎</span><span id="res-gem">0</span></span>
+        <span class="res" data-tip="📜 모집권|가챠 전용 화폐. 단차 1장 / 10연차 10장. 이벤트·임무 보상으로 획득."><span class="res-emoji">📜</span><span id="res-scroll">0</span></span>
+        <span class="res" data-tip="📘 연구(RP)|무기·장비 연구에 쓰이는 포인트. 배럭 공방에서 시간당 생산."><span class="res-emoji">📘</span><span id="res-rp">0</span></span>
       </div>
       <div class="hud-group hud-turn">
-        <span id="hud-territory" class="hud-badge">🏰 영지 <b>0</b><span class="hud-badge-sep">/</span><span class="hud-badge-max">15</span></span>
-        <span>턴 <span id="turn-num">1</span></span>
-        <button id="btn-end-turn" type="button" disabled>턴 종료</button>
+        <span id="hud-territory" class="hud-badge" data-tip="🏰 영지|보유 헥스 수 / 최대 슬롯. HexLevel≥1 (자원 생산) 헥스만 카운트. HL0 빈 필드·구조물 헥스는 제외. 배럭 확장으로 최대 늘리기 가능.">🏰 영지 <b>0</b><span class="hud-badge-sep">/</span><span class="hud-badge-max">15</span></span>
+        <span data-tip="⏰ 턴|현재 턴 수. 1턴 = 10분 (자원 생산·피로 회복 단위).">턴 <span id="turn-num">1</span></span>
+        <button id="btn-end-turn" type="button" disabled data-tip="⏭ 턴 종료|다음 턴으로 넘어감. 자원 수급·파티 피로 회복·적 AI 행동이 정산됨.">턴 종료</button>
       </div>
     </header>
+
+    <!-- 커스텀 툴팁 컨테이너 -->
+    <div id="custom-tooltip" hidden></div>
 
     <!-- 토스트 알림 영역 -->
     <div id="toast-area"></div>
@@ -113,20 +116,20 @@
 
     <!-- 하단 탭 도크 (5탭) -->
     <nav id="tab-dock">
-      <button data-tab="barracks" type="button" disabled>
+      <button data-tab="barracks" type="button" disabled data-tip="🏠 배럭|내 마을 뷰 (추후 구현). 주방·공방·훈련장 3시설에서 음식·장비·훈련 포인트 생산.">
         <span class="tab-icon">🏠</span><span class="tab-label">배럭</span>
       </button>
-      <button data-tab="family" type="button">
+      <button data-tab="family" type="button" data-tip="👥 가문|가문 성장 투자 패널. 병종 훈련(F/S/M/W/L)·연구·축성·가문 레벨업.">
         <span class="tab-icon">👥</span><span class="tab-label">가문</span>
       </button>
-      <button data-tab="worldmap" type="button" class="active">
+      <button data-tab="worldmap" type="button" class="active" data-tip="🗺️ 월드맵|메인 전략 뷰. 헥스 점령·토벌·공성·파티 이동.">
         <span class="tab-icon">🗺️</span><span class="tab-label">월드맵</span>
       </button>
-      <button data-tab="quest" type="button">
+      <button data-tab="quest" type="button" data-tip="📋 임무|체인(메인)·일일·주간·업적 퀘스트. 보상으로 자원·조각·경험치.">
         <span class="tab-icon">📋</span><span class="tab-label">임무</span>
         <span class="tab-badge" id="quest-badge" hidden>0</span>
       </button>
-      <button data-tab="gacha" type="button">
+      <button data-tab="gacha" type="button" data-tip="🎲 모집|가챠로 신규 캐릭터 영입. 젬 또는 모집권 사용. 중복 시 조각으로 변환.">
         <span class="tab-icon">🎲</span><span class="tab-label">모집</span>
       </button>
     </nav>

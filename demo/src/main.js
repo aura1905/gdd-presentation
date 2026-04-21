@@ -183,6 +183,53 @@ async function boot() {
   renderPartyList();
   updateHud();
 
+  // ─────── 커스텀 툴팁 시스템 (data-tip="제목|본문") ───────
+  (function initTooltip() {
+    const tip = document.getElementById("custom-tooltip");
+    if (!tip) return;
+    let currentTarget = null;
+
+    function show(el, ev) {
+      const raw = el.getAttribute("data-tip");
+      if (!raw) return;
+      const [title, body] = raw.includes("|") ? raw.split("|") : [raw, ""];
+      tip.innerHTML = `<div class="tip-title">${title}</div>${body ? `<div class="tip-body">${body}</div>` : ""}`;
+      tip.hidden = false;
+      position(ev);
+    }
+    function position(ev) {
+      if (tip.hidden) return;
+      const pad = 14;
+      const vw = window.innerWidth, vh = window.innerHeight;
+      const tw = tip.offsetWidth, th = tip.offsetHeight;
+      let x = ev.clientX + pad;
+      let y = ev.clientY + pad;
+      if (x + tw > vw - 8) x = ev.clientX - tw - pad;
+      if (y + th > vh - 8) y = ev.clientY - th - pad;
+      if (x < 4) x = 4;
+      if (y < 4) y = 4;
+      tip.style.left = `${x}px`;
+      tip.style.top = `${y}px`;
+    }
+    function hide() { tip.hidden = true; currentTarget = null; }
+
+    document.addEventListener("mouseover", (e) => {
+      const el = e.target.closest("[data-tip]");
+      if (el && el !== currentTarget) {
+        currentTarget = el;
+        show(el, e);
+      }
+    });
+    document.addEventListener("mousemove", (e) => {
+      if (currentTarget) position(e);
+    });
+    document.addEventListener("mouseout", (e) => {
+      if (currentTarget && !currentTarget.contains(e.relatedTarget)) hide();
+    });
+    document.addEventListener("click", () => hide());
+    document.addEventListener("scroll", () => hide(), true);
+  })();
+
   // GDD §4-2: 공성 타이머 만료 체크 (1초 주기)
   // 복원 시점에 토스트 알림 + UI 갱신하여 유저가 "왜 실패했는지" 인지 가능.
   setInterval(() => {
@@ -535,9 +582,9 @@ async function boot() {
           <button class="pc-edit-btn" data-edit-party="${party.id}" type="button" title="분대 편성">⚙</button>
         </div>
         <div class="pc-summary">
-          <span class="pc-summary-fat ${fatSummaryClass}" title="파티 피로 (최하: ${minFatMember?.name ?? '-'})">⚡ ${minFatPct}/100</span>
-          <span class="pc-summary-hp ${hpSummaryClass}" title="파티 평균 HP">❤️ ${avgHpPct}%</span>
-          <span class="pc-summary-loc" title="${locLabel}">${locIcon} ${locRateText}</span>
+          <span class="pc-summary-fat ${fatSummaryClass}" data-tip="⚡ 파티 피로|파티 최하 피로원 기준 (약한 고리). 현재 최저: ${minFatMember?.name ?? '-'}. 전투/이동 시 감소, 주둔지에서 턴당 자연 회복. 0이면 탈진(전투 불가).">⚡ ${minFatPct}/100</span>
+          <span class="pc-summary-hp ${hpSummaryClass}" data-tip="❤️ 파티 평균 HP|3인 평균. 전투 데미지로 감소, HP 0 = KO → 부상. 부상 치료는 약재+골드 or 시간.">❤️ ${avgHpPct}%</span>
+          <span class="pc-summary-loc" data-tip="${locIcon} ${locLabel}|주둔지별 피로 회복 속도. 🏛️도시(가장 빠름) > 🏰거점 > ⛺벙커 > 🏞️필드(거의 정지). 10분/턴 기준.">${locIcon} ${locRateText}</span>
         </div>
         <div class="pc-members">${memberHtml}</div>`;
 
