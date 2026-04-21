@@ -122,6 +122,7 @@ export function initState(tables) {
         acc: p.BaseACC || 95,
         evd: p.BaseEVD || 5,
         pen: p.BasePEN || 0,
+        res: (p.BaseRES || 0) + (p.GrowthRES || 0) * lvUp,  // M5-B Wizard/Warlock 마법 저항
       },
       status: "normal",
     };
@@ -166,9 +167,10 @@ export function initState(tables) {
     maxParties: 2,
     // 공성 진행 상태: { [structureId]: { hp, defeatedDefenseIds: [DefenseID] } }
     siegeState: {},
-    // 가문 성장 투자 레벨 (M5-A): { [trainingType]: currentLv }
-    // training.json의 TrainingType 키별 0=미투자, N=다음 레벨 N+1을 살 수 있음
+    // 가문 성장 투자 레벨 (M5-A/B): 카테고리별 { [type]: currentLv }
     training: {},
+    research: {},      // weapon_SWD/.../exploration
+    fortification: {}, // wall/gate/durability/barracks/territory
     // 가챠 중복 조각 누적: { [charId]: count }
     shards: {},
   };
@@ -259,6 +261,8 @@ export function restoreState(saved, tables) {
   if ((state.resources.gem || 0) < 2800) state.resources.gem = 3000;
   if ((state.resources.scroll || 0) < 5) state.resources.scroll = 5;
   if (!state.training) state.training = {};
+  if (!state.research) state.research = {};
+  if (!state.fortification) state.fortification = {};
 
   // Migration: 옛 세이브에 누적된 family.xp 즉시 레벨 반영 (M5-A 이전 세이브 호환)
   levelUpFamilyIfReady(tables);
@@ -349,6 +353,7 @@ export function recomputeStatsFromLevel(charId, fieldObjectsTable, tables) {
   ch.stats.spd = (tmpl.BaseSPD ?? 0) + (tmpl.GrowthSPD ?? 0) * lvUp;
   ch.stats.cri = (tmpl.BaseCRI ?? 5) + (tmpl.GrowthCRI ?? 0) * lvUp;
   ch.stats.crd = (tmpl.BaseCRD ?? 130) + (tmpl.GrowthCRD ?? 0) * lvUp;
+  ch.stats.res = (tmpl.BaseRES ?? 0) + (tmpl.GrowthRES ?? 0) * lvUp;
 
   // M5-B: 훈련 보정 적용 (tables가 주어진 경우만)
   if (tables) applyTrainingToCharacter(ch, tables);
@@ -824,6 +829,90 @@ export function getTrainingLevel(trainingType) {
   return state?.training?.[trainingType] || 0;
 }
 
+// ─────── 성장 카테고리 일반화 (training / research / fortification 공유 룰) ───────
+//
+// 모든 카테고리가 동일 컬럼 (Type / Level / UnlockFamilyLv / CostRes1~3 / CostAmt1~3 / EffectType[/2] / EffectValue[/2])
+// state 키는 각각: state.training, state.research, state.fortification
+// 테이블 키는 각각: tables.training, tables.research, tables.fortification
+// Type 컬럼 이름은 각각: TrainingType, ResearchType, FortType
+const GROWTH_CONFIG = {
+  training:      { stateKey: "training",      tableKey: "training",      typeCol: "TrainingType" },
+  research:      { stateKey: "research",      tableKey: "research",      typeCol: "ResearchType" },
+  fortification: { stateKey: "fortification", tableKey: "fortification", typeCol: "FortType" },
+};
+
+/** 일반화 — 카테고리/타입의 현재 투자 Lv. */
+export function getGrowthLevel(category, type) {
+  const cfg = GROWTH_CONFIG[category];
+  if (!cfg) return 0;
+  return state?.[cfg.stateKey]?.[type] || 0;
+}
+
+/** 일반화 — 다음 Lv 행. 최대 도달 시 null. */
+export function getNextGrowthRow(category, type, tables) {
+  const cfg = GROWTH_CONFIG[category];
+  if (!cfg) return null;
+  const cur = getGrowthLevel(category, type);
+  return tables[cfg.tableKey].all().find(
+    r => r[cfg.typeCol] === type && r.Level === (cur + 1)
+  ) || null;
+}
+
+/** 일반화 — 자원/가문Lv 게이팅 체크. */
+export function canAffordGrowth(row) {
+  if (!row) return { ok: false, reason: "max" };
+  const familyLv = state?.family?.level || 1;
+  if ((row.UnlockFamilyLv || 1) > familyLv) {
+    return { ok: false, reason: "locked", unlockLv: row.UnlockFamilyLv };
+  }
+  const missing = {};
+  const check = (res, amt) => {
+    if (!res || !amt) return;
+    const have = state.resources[res] || 0;
+    if (have < amt) missing[res] = amt - have;
+  };
+  check(row.CostRes1, row.CostAmt1);
+  check(row.CostRes2, row.CostAmt2);
+  check(row.CostRes3, row.CostAmt3);
+  if (Object.keys(missing).length > 0) return { ok: false, reason: "cost", missing };
+  return { ok: true };
+}
+
+/** 일반화 — 투자 실행. 자원 차감 + Lv +1. */
+export function investGrowth(category, type, tables) {
+  const cfg = GROWTH_CONFIG[category];
+  if (!cfg) return { ok: false, reason: "unknown_category" };
+  const row = getNextGrowthRow(category, type, tables);
+  const check = canAffordGrowth(row);
+  if (!check.ok) return { ok: false, reason: check.reason };
+
+  if (row.CostRes1 && row.CostAmt1) state.resources[row.CostRes1] = (state.resources[row.CostRes1] || 0) - row.CostAmt1;
+  if (row.CostRes2 && row.CostAmt2) state.resources[row.CostRes2] = (state.resources[row.CostRes2] || 0) - row.CostAmt2;
+  if (row.CostRes3 && row.CostAmt3) state.resources[row.CostRes3] = (state.resources[row.CostRes3] || 0) - row.CostAmt3;
+
+  if (!state[cfg.stateKey]) state[cfg.stateKey] = {};
+  state[cfg.stateKey][type] = (state[cfg.stateKey][type] || 0) + 1;
+  emit("state:changed", { path: cfg.stateKey, type, action: "invest" });
+  return { ok: true, row };
+}
+
+/** 일반화 — 누적 효과 합. */
+export function getGrowthEffectSum(category, type, effectType, tables) {
+  const cfg = GROWTH_CONFIG[category];
+  if (!cfg || !tables?.[cfg.tableKey]) return 0;
+  const cur = getGrowthLevel(category, type);
+  if (cur === 0) return 0;
+  let sum = 0;
+  const rows = tables[cfg.tableKey].all().filter(
+    r => r[cfg.typeCol] === type && r.Level <= cur
+  );
+  for (const r of rows) {
+    if (r.EffectType === effectType) sum += (r.EffectValue || 0);
+    if (r.EffectType2 === effectType) sum += (r.EffectValue2 || 0);
+  }
+  return sum;
+}
+
 /**
  * 누적 효과 값 — Lv 1부터 currentLv까지 EffectValue/EffectValue2 합산.
  * 각 Lv 행의 값을 "이 레벨이 추가하는 증가분"으로 해석 (delta).
@@ -869,8 +958,9 @@ function applyTrainingToCharacter(ch, tables) {
   if (!classKey) return;
   const PCT_FIELDS = {
     ATK_PCT: "atk", DEF_PCT: "def", SPD_PCT: "spd", CRI_PCT: "cri",
-    PEN_PCT: "pen",
-    // INT_PCT/RES_PCT는 현재 stats에 미존재 — Wizard/Warlock UI 시 추가
+    PEN_PCT: "pen", RES_PCT: "res",
+    // INT_PCT는 ATK alias (Wizard/Warlock의 마법 공격력 = ATK 보정)
+    INT_PCT: "atk",
   };
   for (const [effectType, statKey] of Object.entries(PCT_FIELDS)) {
     const pct = getTrainingEffectSum(classKey, effectType, tables);

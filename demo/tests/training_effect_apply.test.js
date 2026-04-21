@@ -74,8 +74,9 @@ describe("훈련 효과 적용 검증 (M5-B 미구현 시 실패 예상)", () =>
     state.parties[0].slots = [ch.id];
 
     const recMap = computeFatigueRecovery(state, tables);
-    const baseRec = 1 * 10;  // 필드 RecoveryPerMin=1 × 10분
-    // 기대: recovery Lv5 → +0.02 × 5 = +0.1/min × 10분 = +1 → 총 11
+    // energy.json field RecoveryPerMin=0.1, minutesPerTurn=10 → baseRec=1
+    // recovery Lv5 → +0.02×5=+0.1/min → 총 (0.1 + 0.1) × 10 = 2
+    const baseRec = 0.1 * 10;
     expect(recMap.get(ch.id)).toBeGreaterThan(baseRec);
   });
 

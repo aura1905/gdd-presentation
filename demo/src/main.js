@@ -534,13 +534,10 @@ async function boot() {
                   title="전투 후 자동 귀환 ${autoReturnOn ? 'ON' : 'OFF'} (클릭으로 토글)">🏠</button>
           <button class="pc-edit-btn" data-edit-party="${party.id}" type="button" title="분대 편성">⚙</button>
         </div>
-        <div class="pc-fatigue-bar" title="파티 피로 (최하: ${minFatMember?.name ?? '-'}) · ${minFatPct}/100">
-          <div class="pc-fat-fill" style="width:${minFatPct}%;background:${partyFatColor}"></div>
-          <span class="pc-fat-label">⚡ 피로 ${minFatPct}</span>
-        </div>
         <div class="pc-summary">
+          <span class="pc-summary-fat ${fatSummaryClass}" title="파티 피로 (최하: ${minFatMember?.name ?? '-'})">⚡ ${minFatPct}/100</span>
           <span class="pc-summary-hp ${hpSummaryClass}" title="파티 평균 HP">❤️ ${avgHpPct}%</span>
-          <span class="pc-summary-loc ${fatSummaryClass}" title="${locLabel}">${locIcon} ${locRateText}</span>
+          <span class="pc-summary-loc" title="${locLabel}">${locIcon} ${locRateText}</span>
         </div>
         <div class="pc-members">${memberHtml}</div>`;
 

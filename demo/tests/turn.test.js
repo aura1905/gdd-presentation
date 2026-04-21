@@ -60,18 +60,20 @@ describe("computeHexIncome (자원 수급)", () => {
 describe("computeFatigueRecovery (피로 회복)", () => {
   const tables = loadTables();
 
-  it("필드 위치 파티 = field RecoveryPerMin × minutes", () => {
+  it("필드 위치 파티 = field RecoveryPerMin × minutes (현재 데이터: 0.1/min × 10 = 1)", () => {
     const ch = { id: 1, name: "T", fatigue: 50, maxFatigue: 100 };
     const party = { id: "p1", slots: [1], location: { q: 60, r: 45 } };
     const rec = computeFatigueRecovery(makeState([], [party], [ch]), tables);
-    expect(rec.get(1)).toBe(10);  // field 1/min × 10
+    // energy.json field RecoveryPerMin=0.1, minutesPerTurn=10 → 1
+    expect(rec.get(1)).toBe(1);
   });
 
-  it("도시(홈) 위치 파티 = 부족분 전부 회복 (InstantRecovery=-1)", () => {
+  it("도시(홈) 위치 파티 = city RecoveryPerMin × minutes (현재 5/min × 10 = 50)", () => {
     const ch = { id: 1, name: "T", fatigue: 30, maxFatigue: 100 };
     const party = { id: "p1", slots: [1], location: { q: 65, r: 45 } };
     const rec = computeFatigueRecovery(makeState([], [party], [ch]), tables);
-    expect(rec.get(1)).toBe(70);  // 30 → 100 = +70
+    // energy.json city: InstantRecovery=0, RecoveryPerMin=5 → 50/턴
+    expect(rec.get(1)).toBe(50);
   });
 });
 
@@ -95,22 +97,23 @@ describe("endTurn (턴 +1 + 정산)", () => {
     expect(state.resources.iron).toBe(60);
   });
 
-  it("피로 회복 적용 + 상태 재계산", () => {
+  it("피로 회복 적용 + 상태 재계산 (필드 0.1×10=1)", () => {
     const ch = { id: 1, name: "T", fatigue: 5, maxFatigue: 100, status: "exhausted" };
     const party = { id: "p1", slots: [1], location: { q: 60, r: 45 } };  // 필드
     const state = makeState([], [party], [ch]);
     endTurn(state, tables);
-    expect(ch.fatigue).toBe(15);  // 5 + 10
-    expect(ch.status).toBe("tired");  // 15 ≤ 30
+    expect(ch.fatigue).toBe(6);  // 5 + 1 (field 0.1/min × 10)
+    expect(ch.status).toBe("tired");  // 6 ≤ 30
   });
 
-  it("리볼도외 7헥스만 보유 + 도시 파티 → 자원 0, 피로 풀회복", () => {
+  it("리볼도외 7헥스 보유 + 도시 파티 → 자원 0, 피로 50씩 회복 (현재 city 5/min)", () => {
     const reboldoeux = [6545, 6645, 6445, 6646, 6546, 6644, 6544];
     const ch = { id: 1, name: "T", fatigue: 20, maxFatigue: 100 };
     const party = { id: "p1", slots: [1], location: { q: 65, r: 45 } };
     const state = makeState(reboldoeux, [party], [ch]);
     const summary = endTurn(state, tables);
     expect(Object.keys(summary.gainedResources).length).toBe(0);  // HL0 + 구조물 → 0
-    expect(ch.fatigue).toBe(100);
+    // 도시 5/min × 10 = 50, fatigue 20 + 50 = 70 (cap 100 미만)
+    expect(ch.fatigue).toBe(70);
   });
 });

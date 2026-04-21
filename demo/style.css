@@ -337,31 +337,20 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   text-shadow: 0 0 2px #000, 0 0 2px #000, 0 1px 0 #000;
   pointer-events: none; letter-spacing: 0.3px; line-height: 1; }
 
-/* 파티 통합 피로 바 — 메인 요소 (삼전식, 최하 피로원 기준) */
-.party-card .pc-fatigue-bar { position: relative; height: 16px;
-  background: linear-gradient(180deg, #1a1a20, #0a0a10);
-  border: 1px solid #334; border-radius: 4px; overflow: hidden;
-  margin: 4px 0 4px; }
-.party-card .pc-fat-fill { height: 100%; transition: width 0.4s, background 0.3s;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.15); }
-.party-card .pc-fat-label { position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 11px; color: #fff; font-weight: bold;
-  text-shadow: 0 0 3px #000, 0 0 3px #000, 0 1px 0 #000;
-  pointer-events: none; letter-spacing: 0.3px; }
-
-/* 파티 카드 상태 요약 — 보조 (HP 평균 + 주둔지) */
+/* 파티 카드 상태 요약 — 텍스트만 (바 제거) */
 .party-card .pc-summary { display: flex; gap: 6px; align-items: center;
-  margin: 0 0 6px; font-size: 10px; font-weight: bold; color: #ddd; }
-.party-card .pc-summary > span { padding: 2px 6px; border-radius: 6px;
+  margin: 4px 0 6px; font-size: 11px; font-weight: bold; color: #ddd; }
+.party-card .pc-summary > span { padding: 2px 7px; border-radius: 6px;
   background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.08); }
+.party-card .pc-summary-fat { color: #cfd4e0; }
+.party-card .pc-summary-fat.warn { color: #fa4; background: rgba(120,90,20,0.4); }
+.party-card .pc-summary-fat.critical { color: #fcc; background: rgba(140,30,30,0.5);
+  border-color: #f44; animation: pc-pulse 1.2s ease-in-out infinite; }
 .party-card .pc-summary-hp { color: #f88; }
 .party-card .pc-summary-hp.warn { color: #fa4; background: rgba(120,60,20,0.4); }
 .party-card .pc-summary-hp.critical { color: #fcc; background: rgba(140,30,30,0.5);
   border-color: #f44; animation: pc-pulse 1.2s ease-in-out infinite; }
 .party-card .pc-summary-loc { margin-left: auto; color: #bfb; font-size: 10px; }
-.party-card .pc-summary-loc.warn { color: #fa4; }
-.party-card .pc-summary-loc.critical { color: #fcc; border-color: #f44; }
 @keyframes pc-pulse {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.55; }
