@@ -468,11 +468,7 @@ async function boot() {
             <div class="pcm-bars">
               <div class="pcm-bar pcm-bar-hp" title="HP ${m.hp}/${m.maxHp} (${hpPct}%)">
                 <div class="pcm-bar-fill" style="width:${hpPct}%;background:${hpColor}"></div>
-                <span class="pcm-bar-label">HP ${hpPct}</span>
-              </div>
-              <div class="pcm-bar pcm-bar-fat" title="피로 ${m.fatigue}/${m.maxFatigue} (${fatPct}%)">
-                <div class="pcm-bar-fill" style="width:${fatPct}%;background:${fatColor}"></div>
-                <span class="pcm-bar-label">피로 ${fatPct}</span>
+                <span class="pcm-bar-label">${hpPct}</span>
               </div>
               <div class="pcm-bar pcm-bar-xp" title="EXP ${xpPct}%"><div class="pcm-bar-fill" style="width:${xpPct}%;background:#fa3"></div></div>
             </div>
@@ -497,15 +493,19 @@ async function boot() {
 
       const autoReturnOn = !!party.autoReturn;
 
-      // 파티 평균 HP/피로 — 요약 배지
+      // 파티 HP/피로 — 삼전식: HP는 평균, 피로는 "최하 피로원" 기준 (약한 고리)
       const avgHpPct = members.length
         ? Math.round(members.reduce((s, m) => s + (m.hp / m.maxHp * 100), 0) / members.length)
         : 0;
-      const avgFatPct = members.length
-        ? Math.round(members.reduce((s, m) => s + (m.fatigue / m.maxFatigue * 100), 0) / members.length)
+      const minFatPct = members.length
+        ? Math.min(...members.map(m => Math.round(m.fatigue / m.maxFatigue * 100)))
         : 0;
+      const minFatMember = members.length
+        ? members.reduce((w, m) => (m.fatigue / m.maxFatigue < w.fatigue / w.maxFatigue ? m : w), members[0])
+        : null;
+      const partyFatColor = minFatPct <= 20 ? "#f55" : minFatPct <= 40 ? "#fa4" : minFatPct <= 70 ? "#6ab" : "#4a9edd";
       const hpSummaryClass = avgHpPct <= 30 ? "critical" : avgHpPct <= 60 ? "warn" : "";
-      const fatSummaryClass = avgFatPct <= 30 ? "critical" : avgFatPct <= 60 ? "warn" : "";
+      const fatSummaryClass = minFatPct <= 30 ? "critical" : minFatPct <= 60 ? "warn" : "";
 
       // 주둔지 회복 속도 텍스트 (아이콘 옆에 표시)
       let locRateText = "";
@@ -523,10 +523,13 @@ async function boot() {
                   title="전투 후 자동 귀환 ${autoReturnOn ? 'ON' : 'OFF'} (클릭으로 토글)">🏠</button>
           <button class="pc-edit-btn" data-edit-party="${party.id}" type="button" title="분대 편성">⚙</button>
         </div>
+        <div class="pc-fatigue-bar" title="파티 피로 (최하: ${minFatMember?.name ?? '-'}) · ${minFatPct}/100">
+          <div class="pc-fat-fill" style="width:${minFatPct}%;background:${partyFatColor}"></div>
+          <span class="pc-fat-label">⚡ 피로 ${minFatPct}</span>
+        </div>
         <div class="pc-summary">
           <span class="pc-summary-hp ${hpSummaryClass}" title="파티 평균 HP">❤️ ${avgHpPct}%</span>
-          <span class="pc-summary-fat ${fatSummaryClass}" title="파티 평균 피로">⚡ ${avgFatPct}%</span>
-          <span class="pc-summary-loc" title="${locLabel}">${locIcon} ${locRateText}</span>
+          <span class="pc-summary-loc ${fatSummaryClass}" title="${locLabel}">${locIcon} ${locRateText}</span>
         </div>
         <div class="pc-members">${memberHtml}</div>`;
 
