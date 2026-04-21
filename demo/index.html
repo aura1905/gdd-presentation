@@ -31,8 +31,6 @@
       </div>
     </header>
 
-    <!-- 커스텀 툴팁 컨테이너 -->
-    <div id="custom-tooltip" hidden></div>
 
     <!-- 토스트 알림 영역 -->
     <div id="toast-area"></div>
@@ -142,6 +140,8 @@
       </div>
     </div>
   </div>
+  <!-- 커스텀 툴팁 — #app(transform) 밖으로 빼서 position:fixed 좌표계 viewport 기준 유지 -->
+  <div id="custom-tooltip" hidden></div>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>
