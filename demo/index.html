@@ -88,6 +88,7 @@
           <button data-qsub="daily"       type="button">일일</button>
           <button data-qsub="weekly"      type="button">주간</button>
           <button data-qsub="achievement" type="button">업적</button>
+          <button data-qsub="mail"        type="button">📬 우편</button>
         </nav>
         <div class="fp-content" id="quest-content"></div>
       </div>
@@ -129,6 +130,19 @@
         <span class="tab-icon">🎲</span><span class="tab-label">모집</span>
       </button>
     </nav>
+
+    <!-- 온보딩 툴팁 (M6) -->
+    <div id="onboarding" hidden>
+      <div class="ob-card">
+        <div class="ob-step" id="ob-step">1 / 5</div>
+        <h3 class="ob-title" id="ob-title">환영합니다!</h3>
+        <p class="ob-body" id="ob-body">…</p>
+        <div class="ob-actions">
+          <button class="ob-skip" id="ob-skip" type="button">건너뛰기</button>
+          <button class="ob-next" id="ob-next" type="button">다음 →</button>
+        </div>
+      </div>
+    </div>
 
     <div id="splash">
       <div class="splash-inner">

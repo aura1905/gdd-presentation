@@ -173,6 +173,11 @@ export function initState(tables) {
     fortification: {}, // wall/gate/durability/barracks/territory
     // 가챠 중복 조각 누적: { [charId]: count }
     shards: {},
+    // 우편함 (M6): 전투/이벤트 결과 아카이브
+    // { id, type: "battle"|"levelup"|"system", turn, title, body, claimed, expiresTurn }
+    mailbox: [],
+    // 온보딩 진행 (M6): 신규 시작 시 자동 노출
+    onboarding: { step: 0, completed: false, skipped: false },
   };
 
   emit("state:init", state);
@@ -263,6 +268,8 @@ export function restoreState(saved, tables) {
   if (!state.training) state.training = {};
   if (!state.research) state.research = {};
   if (!state.fortification) state.fortification = {};
+  if (!Array.isArray(state.mailbox)) state.mailbox = [];
+  if (!state.onboarding) state.onboarding = { step: 0, completed: false, skipped: false };
 
   // Migration: 옛 세이브에 누적된 family.xp 즉시 레벨 반영 (M5-A 이전 세이브 호환)
   levelUpFamilyIfReady(tables);
@@ -392,6 +399,101 @@ export function recoverHP(charId, amount) {
 /** 현재 최대 파티 수 (M5-A 훈련/배럭 확장 후 늘어남). 기본 2, 최대 6. */
 export function getMaxParties() {
   return state?.maxParties ?? 2;
+}
+
+// ─────── 우편함 (M6) ───────
+const MAIL_EXPIRE_TURNS = 30;  // 자동 삭제까지 턴 수
+let _mailIdCounter = 1;
+
+/** 신규 우편 추가. */
+export function addMail({ type = "battle", title, body, turn }) {
+  if (!state) return null;
+  if (!Array.isArray(state.mailbox)) state.mailbox = [];
+  const t = turn ?? state.meta?.turn ?? 1;
+  const mail = {
+    id: `m_${Date.now()}_${_mailIdCounter++}`,
+    type, title, body, turn: t,
+    expiresTurn: t + MAIL_EXPIRE_TURNS,
+    read: false,
+  };
+  state.mailbox.unshift(mail);  // 최신 위에
+  emit("state:changed", { path: "mailbox", action: "add" });
+  return mail;
+}
+
+/** 미읽음 우편 수. */
+export function getUnreadMailCount() {
+  if (!Array.isArray(state?.mailbox)) return 0;
+  return state.mailbox.filter(m => !m.read).length;
+}
+
+/** 우편 읽음 처리. */
+export function markMailRead(mailId) {
+  const mail = state?.mailbox?.find(m => m.id === mailId);
+  if (!mail) return false;
+  mail.read = true;
+  emit("state:changed", { path: "mailbox", action: "read" });
+  return true;
+}
+
+/** 우편 삭제. */
+export function deleteMail(mailId) {
+  if (!Array.isArray(state?.mailbox)) return false;
+  const before = state.mailbox.length;
+  state.mailbox = state.mailbox.filter(m => m.id !== mailId);
+  if (state.mailbox.length === before) return false;
+  emit("state:changed", { path: "mailbox", action: "delete" });
+  return true;
+}
+
+/** 우편 전체 읽음 처리. */
+export function markAllMailRead() {
+  if (!Array.isArray(state?.mailbox)) return 0;
+  let n = 0;
+  for (const m of state.mailbox) {
+    if (!m.read) { m.read = true; n++; }
+  }
+  if (n > 0) emit("state:changed", { path: "mailbox", action: "read-all" });
+  return n;
+}
+
+// ─────── 온보딩 (M6) ───────
+
+/** 다음 단계로 이동. */
+export function advanceOnboarding() {
+  if (!state) return null;
+  if (!state.onboarding) state.onboarding = { step: 0, completed: false, skipped: false };
+  state.onboarding.step += 1;
+  emit("state:changed", { path: "onboarding", action: "advance" });
+  return state.onboarding.step;
+}
+
+/** 온보딩 건너뛰기 (영구). */
+export function skipOnboarding() {
+  if (!state) return;
+  if (!state.onboarding) state.onboarding = {};
+  state.onboarding.skipped = true;
+  state.onboarding.completed = true;
+  emit("state:changed", { path: "onboarding", action: "skip" });
+}
+
+/** 온보딩 완료 마킹. */
+export function completeOnboarding() {
+  if (!state) return;
+  if (!state.onboarding) state.onboarding = {};
+  state.onboarding.completed = true;
+  emit("state:changed", { path: "onboarding", action: "complete" });
+}
+
+/** 만료된 우편 자동 삭제 (턴 종료 시 호출 권장). */
+export function purgeExpiredMail() {
+  if (!Array.isArray(state?.mailbox)) return 0;
+  const curTurn = state.meta?.turn || 1;
+  const before = state.mailbox.length;
+  state.mailbox = state.mailbox.filter(m => (m.expiresTurn || Infinity) > curTurn);
+  const purged = before - state.mailbox.length;
+  if (purged > 0) emit("state:changed", { path: "mailbox", action: "purge" });
+  return purged;
 }
 
 /**

@@ -172,7 +172,8 @@ export function createOverlays() {
 
     // 파티 라벨 — 게임스러운 스타일 (둥근 모서리 + 그라디언트 + 골드 테두리)
     if (hexSize > 12) {
-      const labelY = baseY - portraitH;
+      // 캐릭터 머리 바로 위에 붙도록 조금 내림
+      const labelY = baseY - portraitH * 0.85;
       const nameFontSize = Math.max(9, hexSize * 0.28);
       const statusFontSize = Math.max(8, hexSize * 0.22);
 

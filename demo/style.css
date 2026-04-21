@@ -705,6 +705,60 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .quest-btn.done { background: #2a3a2a; border-color: #485; color: #8a8; cursor: default; }
 .quest-btn:disabled:not(.done) { background: #333; border-color: #555; color: #888; cursor: not-allowed; }
 
+/* 온보딩 (M6) — 우상단 카드 */
+#onboarding[hidden] { display: none !important; }
+#onboarding { position: absolute; inset: 0; z-index: 60;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding-top: 80px; pointer-events: auto;
+  background: rgba(0,0,0,0.4);
+  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  animation: fp-back-in 0.2s ease; }
+.ob-card { width: min(440px, 92%); padding: 18px 22px;
+  background: linear-gradient(180deg, #2a1f15, #1a1410);
+  border: 2px solid #c8a848; border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.7);
+  animation: fp-pop 0.22s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.ob-step { font-size: 11px; color: #888; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 1px; }
+.ob-title { font-size: 17px; color: #ffd452; font-weight: 700;
+  margin-top: 4px; margin-bottom: 8px; }
+.ob-body { font-size: 13px; color: #ddd; line-height: 1.6;
+  margin-bottom: 16px; }
+.ob-actions { display: flex; gap: 8px; justify-content: flex-end; }
+.ob-skip { padding: 7px 14px; border-radius: 5px;
+  background: transparent; border: 1px solid #555; color: #aaa;
+  font-size: 12px; cursor: pointer; }
+.ob-skip:hover { background: rgba(60,60,60,0.5); color: #ddd; }
+.ob-next { padding: 7px 16px; border-radius: 5px;
+  background: linear-gradient(180deg, #2c5aa6, #1a3a76);
+  border: 1px solid #4d7dc7; color: #fff;
+  font-size: 12px; font-weight: 700; cursor: pointer; }
+.ob-next:hover { filter: brightness(1.2); }
+
+/* 우편함 (M6) */
+.mail-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+.mail-mark-all { padding: 6px 14px; border-radius: 5px; cursor: pointer;
+  font-size: 12px; font-weight: 700; border: 1px solid #555;
+  background: rgba(40,60,40,0.6); color: #cfc; transition: filter 0.15s; }
+.mail-mark-all:hover { filter: brightness(1.2); }
+.mail-list { display: flex; flex-direction: column; gap: 6px; max-width: 600px; margin: 0 auto; }
+.mail-card { display: flex; gap: 10px; align-items: stretch;
+  background: rgba(25,25,25,0.85); border: 1px solid #3a3a3a; border-radius: 6px;
+  padding: 10px 12px; cursor: pointer; transition: all 0.15s; }
+.mail-card:hover { background: rgba(40,40,40,0.95); border-color: #555; }
+.mail-card.unread { border-color: #c8a848; background: rgba(40,30,15,0.7); }
+.mail-card.unread .mail-title::before { content: '🔵 '; }
+.mail-icon { font-size: 22px; align-self: center; }
+.mail-body { flex: 1; min-width: 0; }
+.mail-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.mail-title { font-size: 13px; color: #ddd; font-weight: 600; }
+.mail-turn { font-size: 11px; color: #888; }
+.mail-desc { font-size: 12px; color: #aaa; margin-top: 2px; }
+.mail-foot { font-size: 10px; color: #666; margin-top: 4px; font-style: italic; }
+.mail-del { background: transparent; border: none; color: #888; font-size: 14px;
+  cursor: pointer; padding: 0 4px; align-self: flex-start; transition: color 0.15s; }
+.mail-del:hover { color: #f66; }
+
 /* 탭 도크 배지 */
 #tab-dock button { position: relative; }
 .tab-badge { position: absolute; top: 4px; right: calc(50% - 22px);
