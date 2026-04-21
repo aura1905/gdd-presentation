@@ -243,6 +243,59 @@ async function boot() {
         const p = gs.parties.find(x => x.id === pid);
         if (p) return `📊 현재 상태: <b>${p.autoReturn ? "ON" : "OFF"}</b>`;
       }
+      // 파티 카드 내부 요소 (.pc-summary-fat/hp/loc)
+      const card = el.closest?.(".party-card");
+      if (card) {
+        const pid = card.dataset.partyid;
+        const p = gs.parties.find(x => x.id === pid);
+        if (p) {
+          const members = p.slots.map(id => id != null ? getCharacter(id) : null).filter(Boolean);
+          // 피로
+          if (el.classList.contains("pc-summary-fat")) {
+            const lines = members.map(m => {
+              const pct = Math.round(m.fatigue / m.maxFatigue * 100);
+              const tag = pct <= 20 ? " 🔴" : pct <= 40 ? " 🟡" : "";
+              return `${m.name}: <b>${m.fatigue}/${m.maxFatigue}</b>${tag}`;
+            }).join("<br>");
+            return lines || "파티원 없음";
+          }
+          // HP
+          if (el.classList.contains("pc-summary-hp")) {
+            const lines = members.map(m => {
+              const pct = Math.round(m.hp / m.maxHp * 100);
+              const tag = m.hp <= 0 ? " 💀 KO" : pct <= 25 ? " 🔴" : pct <= 50 ? " 🟡" : "";
+              return `${m.name}: <b>${m.hp}/${m.maxHp}</b>${tag}`;
+            }).join("<br>");
+            return lines || "파티원 없음";
+          }
+          // 주둔지 — 풀회복까지 턴 수 계산
+          if (el.classList.contains("pc-summary-loc") || el.classList.contains("pc-location")) {
+            if (!members.length) return "파티원 없음";
+            const minFat = Math.min(...members.map(m => m.fatigue));
+            const maxFat = members[0].maxFatigue || 100;
+            const minPerTurn = 10; // CONFIG.turn.minutesPerTurn
+            const home = gs.family?.homeHex;
+            const isHome = home && p.location.q === home.q && p.location.r === home.r;
+            const hex = tables.worldHex.get(hexId(p.location.q, p.location.r));
+            const struct = hex?.StructureID ? tables.structures.get(hex.StructureID) : null;
+            let rate = 0.1 * minPerTurn; // 필드
+            if (isHome || struct?.StructureType === "City") rate = 5 * minPerTurn;
+            else if (struct?.StructureType === "Fort") rate = 3 * minPerTurn;
+            else if (struct?.StructureType === "Bunker") rate = 1.5 * minPerTurn;
+            const need = maxFat - minFat;
+            const turns = rate > 0 ? Math.ceil(need / rate) : Infinity;
+            return `현재 최하: <b>${minFat}</b>/100<br>풀회복까지: <b>${turns === Infinity ? "∞" : turns + "턴"}</b>`;
+          }
+          // 리더 병종
+          if (el.classList.contains("pc-leader-job") || el.classList.contains("pc-icon")) {
+            const leaderId = p.slots[0];
+            const leader = leaderId != null ? getCharacter(leaderId) : null;
+            if (leader) return `리더: <b>${leader.name}</b> Lv${leader.level} ${leader.jobClass}`;
+            return "리더 없음";
+          }
+        }
+      }
+
       // 탭 도크 — 배지 등
       if (el.dataset?.tab === "quest") {
         try {
@@ -535,6 +588,7 @@ async function boot() {
 
       const card = document.createElement("div");
       card.className = "party-card" + (gs.selectedPartyId === party.id ? " selected" : "");
+      card.dataset.partyid = party.id;
       const jobColor = { F: "#c86464", S: "#5aaa5a", M: "#c8a03c", W: "#5a82c8", L: "#a050b4" };
       const color = jobColor[leader?.jobClass] || "#888";
       // GDD: 100=최상, 감소형. 30 이하 위험.
@@ -646,9 +700,9 @@ async function boot() {
       }
       card.innerHTML = `
         <div class="pc-header">
-          <div class="pc-icon" style="background:${color}" title="리더 병종: ${leaderJobName}">${leader?.jobClass || "?"}</div>
-          <div class="pc-name">${party.name}</div>
-          <div class="pc-leader-job" style="color:${color}">${leaderJobName}</div>
+          <div class="pc-icon" style="background:${color}" data-tip="🎖 리더 병종 (${leaderJobName})|파티 리더의 병종이 파티 전체 병종 상성을 결정. 리더 사망 시 파티 즉시 패배.">${leader?.jobClass || "?"}</div>
+          <div class="pc-name" data-tip="파티 이름|편성 모달(⚙)에서 멤버 변경 가능. 슬롯 0번 = 리더 (👑).">${party.name}</div>
+          <div class="pc-leader-job" style="color:${color}" data-tip="🎖 리더 병종|현재 리더의 병종. 파티 전투 시 상성 판정에 사용됨.">${leaderJobName}</div>
           <span class="pc-home" title="귀환 시 갈 곳: ${homeLabel}">🏠 ${homeLabel}</span>
           <button class="pc-autoreturn-btn ${autoReturnOn ? 'on' : ''}" data-autoreturn="${party.id}" type="button"
                   title="전투 후 자동 귀환 ${autoReturnOn ? 'ON' : 'OFF'} (클릭으로 토글)">↩</button>
