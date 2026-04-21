@@ -214,13 +214,30 @@ export function moveParty(partyId, targetQ, targetR, fatigueCost) {
       else ch.status = "normal";
     }
   }
-  // GDD: 홈 자동 풀회복 제거. 대신 탈진(피로≤0) 파티에 대해 "최소 10 보장"만 적용
-  // → 집에서 이동은 가능한 상태로. HP/피로 풀회복은 유료("휴식" 버튼) 또는 턴 자연 회복.
-  const home = state.family?.homeHex;
-  if (home && targetQ === home.q && targetR === home.r) {
+  // GDD: 자동 풀회복 제거. 대신 탈진(피로≤0) 파티에 대해 "최소 10 보장"만 적용
+  // → 쉼터에서 이동은 가능한 상태로. HP/피로 풀회복은 턴 자연 회복으로 누적.
+  // 쉼터 = 홈(마을) + 점령된 Fort 모두 동일 룰 (사용자 요청: 마을과 Fort 동일).
+  if (_isShelterHex(targetQ, targetR)) {
     ensureMinFatigue(partyId, 10);
   }
   emit("state:changed", { path: "parties", partyId, action: "move" });
+}
+
+/**
+ * 쉼터 헥스 판정 — 홈(마을) 또는 점령된 Fort.
+ * 쉼터에서는 도착 시 ensureMinFatigue + 머무는 동안 정기 회복이 빠름.
+ */
+function _isShelterHex(q, r) {
+  if (!state) return false;
+  const home = state.family?.homeHex;
+  if (home && q === home.q && r === home.r) return true;
+  // 점령된 Fort 헥스
+  if (!_tablesRef?.worldHex || !_tablesRef?.structures) return false;
+  const hex = _tablesRef.worldHex.get(q * 100 + r);
+  if (!hex?.StructureID) return false;
+  const struct = _tablesRef.structures.get(hex.StructureID);
+  if (struct?.StructureType !== "Fort") return false;
+  return state.capturedStructures?.has(hex.StructureID);
 }
 
 /**

@@ -85,11 +85,13 @@ export function computeFatigueRecovery(state, tables) {
     const hex = tables.worldHex.get(hexId);
     const struct = hex?.StructureID ? tables.structures.get(hex.StructureID) : null;
 
-    if (isHome || struct?.StructureType === "City") {
+    // 쉼터 회복은 "점령된" 구조물만 적용. 적 Fort에 머물면 필드 취급.
+    const captured = struct && state.capturedStructures?.has(struct.StructureID);
+    if (isHome || (captured && struct?.StructureType === "City")) {
       const cityRow = locRecovery["city"];
       perMin = cityRow?.RecoveryPerMin ?? 0;
       instant = cityRow?.InstantRecovery ?? 0;  // -1 = full
-    } else if (struct?.StructureType === "Fort") {
+    } else if (captured && struct?.StructureType === "Fort") {
       const fortRow = locRecovery["fort"];
       perMin = fortRow?.RecoveryPerMin ?? baseRecPerMin;
       instant = fortRow?.InstantRecovery ?? 0;
