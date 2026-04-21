@@ -234,11 +234,33 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   display: flex; flex-direction: column; gap: 4px; pointer-events: auto;
   max-height: calc(100svh - 120px); overflow-y: auto; width: 230px;
   scroll-behavior: smooth; }
-.party-card { background: rgba(20,20,20,0.88); border: 1px solid #444;
-  border-radius: 6px; padding: 6px 8px; cursor: pointer; width: 230px;
-  transition: border-color 0.15s, background 0.15s; }
-.party-card:hover { background: rgba(40,40,40,0.95); }
-.party-card.selected { border-color: #ffd452; background: rgba(50,42,20,0.95); }
+.party-card { position: relative; cursor: pointer; width: 230px;
+  padding: 7px 9px;
+  background:
+    linear-gradient(180deg, rgba(44,30,18,0.95) 0%, rgba(20,14,10,0.95) 100%);
+  border: 1px solid rgba(200,168,72,0.45); border-radius: 8px;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.6) inset,
+    0 1px 0 rgba(255,220,130,0.12) inset,
+    0 4px 10px rgba(0,0,0,0.5);
+  transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s; }
+.party-card::before { content: ""; position: absolute;
+  top: 0; left: 0; right: 0; height: 30%;
+  background: linear-gradient(180deg, rgba(255,220,130,0.10), transparent);
+  pointer-events: none; border-radius: 8px 8px 0 0; }
+.party-card:hover { border-color: rgba(255,220,130,0.7);
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.6) inset,
+    0 1px 0 rgba(255,220,130,0.18) inset,
+    0 6px 14px rgba(0,0,0,0.55),
+    0 0 12px rgba(212,168,67,0.25); }
+.party-card.selected { border-color: #ffd452;
+  box-shadow:
+    0 0 0 1px rgba(0,0,0,0.6) inset,
+    0 1px 0 rgba(255,220,130,0.25) inset,
+    0 6px 16px rgba(0,0,0,0.6),
+    0 0 18px rgba(255,212,82,0.4); }
 
 /* Header: party name + level + avg fatigue */
 .party-card .pc-header { display: flex; align-items: center; gap: 6px;
@@ -246,7 +268,8 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .party-card .pc-icon { width: 24px; height: 24px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-weight: bold; font-size: 12px; color: #fff; flex-shrink: 0; }
-.party-card .pc-name { font-size: 12px; font-weight: bold; color: #eee; }
+.party-card .pc-name { font-size: 12px; font-weight: bold; color: #ffebb0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.8); letter-spacing: 0.3px; }
 .party-card .pc-location { font-size: 14px; margin-left: 4px;
   padding: 0 2px; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6)); }
 .party-card .pc-leader-job { font-size: 10px; font-weight: 600;
