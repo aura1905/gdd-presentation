@@ -656,6 +656,13 @@ export function setPartyHome(partyId, q, r) {
     }
   }
   if (!validShelter) return { ok: false, reason: "not_shelter" };
+  // 1파티/거점 제약 (Fort만 — 가문 도시는 모든 파티 공유 가능)
+  if (!isHomeCity) {
+    const occupant = state.parties.find(p =>
+      p.id !== partyId && p.homeHex && p.homeHex.q === q && p.homeHex.r === r
+    );
+    if (occupant) return { ok: false, reason: "occupied", occupantId: occupant.id, occupantName: occupant.name };
+  }
   party.homeHex = { q, r };
   emit("state:changed", { path: "parties", partyId, action: "set-home" });
   return { ok: true };

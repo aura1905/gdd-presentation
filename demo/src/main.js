@@ -929,28 +929,55 @@ async function boot() {
       });
     }
 
-    // 홈 등록 — 점령된 City/Fort 헥스에서 (파티 선택 시)
-    if (party && structure && isCaptured
-        && (structure.StructureType === "Fort" || structure.StructureType === "City")) {
+    // 거점 배치 — 점령된 Fort 헥스에 분대 배치 (이동 + 홈 등록).
+    // 룰: 거점당 최대 1분대 (다른 파티가 이미 등록했으면 막힘)
+    if (party && structure && isCaptured && structure.StructureType === "Fort") {
+      const occupant = getState().parties.find(p =>
+        p.id !== party.id && p.homeHex && p.homeHex.q === row.HexQ && p.homeHex.r === row.HexR
+      );
       const partyHomeAtHere = party.homeHex && party.homeHex.q === row.HexQ && party.homeHex.r === row.HexR;
-      const cityHomeAtHere = !party.homeHex && getState().family.homeHex.q === row.HexQ && getState().family.homeHex.r === row.HexR;
-      if (partyHomeAtHere || cityHomeAtHere) {
-        // 이미 이 파티의 홈 — 해제 옵션 (가문 도시 외)
-        if (!cityHomeAtHere) {
-          addAction(actions, `🏠 ${party.name} 홈 해제`, "#7a5a3a", () => {
-            pushUndo(`${party.name} 홈 해제`);
-            setPartyHome(party.id, null, null);
-            showToast(`🏠 ${party.name} 홈 해제 (가문 도시로 복귀)`, "exp");
-          });
-        }
+
+      if (partyHomeAtHere) {
+        // 이미 이 거점에 배치된 파티 — 해제 옵션
+        addAction(actions, `🏠 ${party.name} 배치 해제`, "#7a5a3a", () => {
+          pushUndo(`${party.name} 배치 해제`);
+          setPartyHome(party.id, null, null);
+          showToast(`🏠 ${party.name} 배치 해제 (귀환지: 가문 도시)`, "exp");
+        });
+      } else if (occupant) {
+        // 다른 파티가 이미 점유 — 비활성 버튼
+        const btn = addAction(actions, `🏠 ${occupant.name} 배치됨`, "#444", () => {});
+        btn.disabled = true;
+        btn.title = `이 거점은 ${occupant.name}이 점유 중. 거점당 1분대만 가능.`;
       } else {
-        addAction(actions, `🏠 ${party.name} 홈 등록`, "#3a7a5a", () => {
-          pushUndo(`${party.name} 홈 등록`);
-          const r = setPartyHome(party.id, row.HexQ, row.HexR);
-          if (r.ok) {
-            showToast(`🏠 ${party.name} 홈 = ${structure.Name || structure.StructureType}`, "exp");
+        // 배치 가능 — 이미 거점에 있으면 즉시 등록, 아니면 이동 + 도착 시 등록
+        const alreadyHere = party.location.q === row.HexQ && party.location.r === row.HexR;
+        const label = alreadyHere ? `🏠 ${party.name} 배치` : `🏠 ${party.name} 배치 (이동 후)`;
+        addAction(actions, label, "#3a7a5a", () => {
+          pushUndo(`${party.name} 배치 → ${structure.Name || "Fort"}`);
+          const finishDeploy = () => {
+            const r = setPartyHome(party.id, row.HexQ, row.HexR);
+            if (r.ok) {
+              showToast(`🏠 ${party.name} 배치 → ${structure.Name || structure.StructureType}`, "exp");
+            } else {
+              showToast(`배치 실패: ${r.reason}`, "warn");
+            }
+          };
+          if (alreadyHere) {
+            finishDeploy();
           } else {
-            showToast(`홈 등록 실패: ${r.reason}`, "warn");
+            // 이동 (path 없으면 즉시 워프 등록)
+            if (path && path.length > 1) {
+              animatedMove(party.id, path, () => {
+                moveParty(party.id, row.HexQ, row.HexR, pathCost(path));
+                finishDeploy();
+                cancelInteraction();
+                saveState(getState());
+              });
+            } else {
+              moveParty(party.id, row.HexQ, row.HexR, 0);
+              finishDeploy();
+            }
           }
         });
       }
