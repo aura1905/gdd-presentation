@@ -166,57 +166,137 @@ export function createOverlays() {
       }
     }
 
-    // 파티 라벨 (위쪽) — 삼전식: 이름 + 상태 + 피로 바
+    // 파티 라벨 — 게임스러운 스타일 (둥근 모서리 + 그라디언트 + 골드 테두리)
     if (hexSize > 12) {
       const labelY = baseY - portraitH;
-      const nameFontSize = Math.max(8, hexSize * 0.26);
-      const statusFontSize = Math.max(7, hexSize * 0.20);
+      const nameFontSize = Math.max(9, hexSize * 0.28);
+      const statusFontSize = Math.max(8, hexSize * 0.22);
 
-      // 1) 파티 이름 + 상태 배경 패널 (반투명 검정)
-      const nameW = ctx.measureText(party.name).width + 6;
-      const statusW = party.statusLabel ? hexSize * 0.45 : 0;
-      const panelW = Math.max(40, hexSize * 1.1);
-      const panelH = statusFontSize + nameFontSize + 8;
-      ctx.fillStyle = "rgba(0,0,0,0.6)";
-      ctx.fillRect(cx - panelW / 2, labelY - panelH - 3, panelW, panelH);
-      ctx.strokeStyle = isSelected ? "rgba(255,212,82,0.8)" : "rgba(255,255,255,0.25)";
-      ctx.lineWidth = 1;
-      ctx.strokeRect(cx - panelW / 2, labelY - panelH - 3, panelW, panelH);
+      // 상태 색상 팔레트
+      const statusColor = {
+        "대기": "#8fdb7c", "주둔": "#9cd070", "행군": "#7ab8ff",
+        "전투": "#ff6b6b", "귀환": "#ffc96b",
+      }[party.statusLabel] || "#ccc";
+      const accentColor = isSelected ? "#ffd452" : "#c8a848";
 
-      // 2) 이름
+      // 패널 크기 (이름 + 상태)
+      ctx.font = `bold ${nameFontSize}px 'Segoe UI'`;
+      const nameW = ctx.measureText(party.name).width;
+      const panelW = Math.max(nameW + 18, hexSize * 1.15);
+      const panelH = nameFontSize + statusFontSize + 10;
+      const panelX = cx - panelW / 2;
+      const panelY = labelY - panelH - 6;
+      const radius = Math.min(6, panelH * 0.3);
+
+      // 1) 그림자 (depth)
+      ctx.save();
+      ctx.shadowColor = "rgba(0,0,0,0.6)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetY = 2;
+
+      // 2) 배경 그라디언트 (어두운 앰버-브라운)
+      const bgGrad = ctx.createLinearGradient(panelX, panelY, panelX, panelY + panelH);
+      bgGrad.addColorStop(0, "rgba(44,30,18,0.95)");
+      bgGrad.addColorStop(1, "rgba(20,14,10,0.95)");
+      ctx.fillStyle = bgGrad;
+      roundRectFill(ctx, panelX, panelY, panelW, panelH, radius);
+
+      ctx.restore();
+
+      // 3) 골드 테두리 + 내부 하이라이트
+      ctx.strokeStyle = accentColor;
+      ctx.lineWidth = isSelected ? 2 : 1.2;
+      roundRectStroke(ctx, panelX, panelY, panelW, panelH, radius);
+
+      // 내부 상단 하이라이트 (광택)
+      const highlight = ctx.createLinearGradient(panelX, panelY, panelX, panelY + panelH * 0.4);
+      highlight.addColorStop(0, "rgba(255,220,130,0.15)");
+      highlight.addColorStop(1, "rgba(255,220,130,0)");
+      ctx.fillStyle = highlight;
+      roundRectFill(ctx, panelX + 1, panelY + 1, panelW - 2, panelH * 0.5, radius - 1);
+
+      // 4) 이름 (골드 섀도우)
       ctx.font = `bold ${nameFontSize}px 'Segoe UI'`;
       ctx.textAlign = "center"; ctx.textBaseline = "top";
-      ctx.fillStyle = isSelected ? "#ffd452" : "#fff";
-      ctx.fillText(party.name, cx, labelY - panelH + 1);
+      ctx.shadowColor = "rgba(0,0,0,0.9)";
+      ctx.shadowBlur = 3;
+      ctx.fillStyle = isSelected ? "#ffe890" : "#ffebb0";
+      ctx.fillText(party.name, cx, panelY + 3);
+      ctx.shadowBlur = 0;
 
-      // 3) 상태 라벨
+      // 5) 상태 라벨 (색상 + 작은 dot)
       if (party.statusLabel) {
-        ctx.font = `${statusFontSize}px 'Segoe UI'`;
-        const statusColor = {
-          "대기": "#8c8", "주둔": "#ac8", "행군": "#8ac", "전투": "#f66", "귀환": "#ca6",
-        }[party.statusLabel] || "#ccc";
+        const statusY = panelY + nameFontSize + 4;
+        // dot
+        ctx.beginPath();
+        ctx.arc(cx - ctx.measureText(party.statusLabel).width / 2 - 5, statusY + statusFontSize * 0.5, statusFontSize * 0.22, 0, Math.PI * 2);
         ctx.fillStyle = statusColor;
-        ctx.fillText(party.statusLabel, cx, labelY - panelH + nameFontSize + 2);
+        ctx.fill();
+        // 텍스트
+        ctx.font = `bold ${statusFontSize}px 'Segoe UI'`;
+        ctx.shadowColor = "rgba(0,0,0,0.8)";
+        ctx.shadowBlur = 2;
+        ctx.fillStyle = statusColor;
+        ctx.fillText(party.statusLabel, cx, statusY);
+        ctx.shadowBlur = 0;
       }
 
-      // 4) 피로 바 (라벨 패널 아래, 얇게)
+      // 6) 피로 바 — 패널 하단 가장자리에 끼워넣기
       if (party.fatiguePct != null) {
-        const barW = panelW * 0.9;
-        const barH = Math.max(3, hexSize * 0.10);
+        const barW = panelW - 8;
+        const barH = Math.max(4, hexSize * 0.13);
         const barX = cx - barW / 2;
-        const barY = labelY - 2;
-        ctx.fillStyle = "rgba(0,0,0,0.7)";
-        ctx.fillRect(barX, barY, barW, barH);
+        const barY = labelY - 2 - barH;
         const pct = party.fatiguePct;
-        const fill = (pct / 100) * barW;
-        const fatColor = pct <= 20 ? "#f55" : pct <= 40 ? "#fa4" : pct <= 70 ? "#6ab" : "#4a9edd";
-        ctx.fillStyle = fatColor;
-        ctx.fillRect(barX, barY, fill, barH);
-        ctx.strokeStyle = "rgba(0,0,0,0.8)";
-        ctx.lineWidth = 0.5;
-        ctx.strokeRect(barX, barY, barW, barH);
+        const fatColor = pct <= 20 ? "#ff5555" : pct <= 40 ? "#ffaa44" : pct <= 70 ? "#66bbcc" : "#4aa0d8";
+
+        // 배경 홈
+        ctx.fillStyle = "rgba(0,0,0,0.85)";
+        roundRectFill(ctx, barX, barY, barW, barH, barH * 0.4);
+        // 진행
+        const fillW = (pct / 100) * (barW - 2);
+        if (fillW > 0) {
+          const barGrad = ctx.createLinearGradient(barX, barY, barX, barY + barH);
+          barGrad.addColorStop(0, lightenColor(fatColor, 0.3));
+          barGrad.addColorStop(1, fatColor);
+          ctx.fillStyle = barGrad;
+          roundRectFill(ctx, barX + 1, barY + 1, fillW, barH - 2, (barH - 2) * 0.4);
+        }
+        // 테두리
+        ctx.strokeStyle = "rgba(0,0,0,0.9)";
+        ctx.lineWidth = 0.8;
+        roundRectStroke(ctx, barX, barY, barW, barH, barH * 0.4);
       }
     }
+  }
+
+  // 둥근 모서리 rect 헬퍼
+  function roundRectFill(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    ctx.fill();
+  }
+  function roundRectStroke(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+    ctx.stroke();
+  }
+  function lightenColor(hex, amount) {
+    const n = parseInt(hex.slice(1), 16);
+    const r = Math.min(255, ((n >> 16) & 0xff) + Math.round(255 * amount));
+    const g = Math.min(255, ((n >> 8) & 0xff) + Math.round(255 * amount));
+    const b = Math.min(255, (n & 0xff) + Math.round(255 * amount));
+    return `rgb(${r},${g},${b})`;
   }
 
   function setSelected(q, r) { state.selectedHex = { q, r }; }
