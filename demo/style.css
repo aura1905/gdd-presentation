@@ -297,6 +297,12 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .party-card .pc-leader-job { font-size: 10px; font-weight: 600;
   margin-left: auto; padding: 1px 6px; border-radius: 8px;
   background: rgba(0,0,0,0.35); letter-spacing: 0.5px; }
+/* 등록된 홈 (귀환 위치) 표시 */
+.party-card .pc-home { font-size: 10px; color: #c8a848; font-weight: 600;
+  margin-left: 4px; padding: 1px 6px; border-radius: 8px;
+  background: rgba(40,30,15,0.6); border: 1px solid rgba(200,168,72,0.4);
+  letter-spacing: 0.3px; max-width: 80px; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap; }
 .party-card .pc-edit-btn { margin-left: 4px; padding: 2px 6px;
   background: rgba(60,60,60,0.8); color: #ffd452; border: 1px solid #555;
   border-radius: 4px; cursor: pointer; font-size: 12px; line-height: 1;

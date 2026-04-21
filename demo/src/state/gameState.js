@@ -619,6 +619,48 @@ export function autoAssignParty(partyId) {
   return { ok: true, assigned };
 }
 
+/**
+ * 파티의 홈 헥스 — 등록되어 있으면 해당 좌표, 아니면 가문 홈(도시).
+ * 귀환(자동/패배/리더사망) 시 이 위치로 이동.
+ */
+export function getPartyHome(party) {
+  if (!party) return state?.family?.homeHex;
+  return party.homeHex || state?.family?.homeHex;
+}
+
+/**
+ * 파티의 홈 헥스 등록. 점령된 도시/Fort 헥스만 가능.
+ * null/undefined로 호출 시 등록 해제 (기본 가문 홈으로 복귀).
+ * @returns {{ ok, reason? }}
+ */
+export function setPartyHome(partyId, q, r) {
+  const party = state?.parties.find(p => p.id === partyId);
+  if (!party) return { ok: false, reason: "party_not_found" };
+  // 해제
+  if (q == null || r == null) {
+    party.homeHex = null;
+    emit("state:changed", { path: "parties", partyId, action: "set-home-clear" });
+    return { ok: true };
+  }
+  // 검증: 점령된 City/Fort/도시(home) 헥스만 허용
+  const hex = _tablesRef?.worldHex?.get(q * 100 + r);
+  if (!hex) return { ok: false, reason: "no_hex" };
+  const home = state.family?.homeHex;
+  const isHomeCity = home && home.q === q && home.r === r;
+  let validShelter = isHomeCity;
+  if (!validShelter && hex.StructureID) {
+    const struct = _tablesRef?.structures?.get(hex.StructureID);
+    if ((struct?.StructureType === "Fort" || struct?.StructureType === "City")
+        && state.capturedStructures?.has(hex.StructureID)) {
+      validShelter = true;
+    }
+  }
+  if (!validShelter) return { ok: false, reason: "not_shelter" };
+  party.homeHex = { q, r };
+  emit("state:changed", { path: "parties", partyId, action: "set-home" });
+  return { ok: true };
+}
+
 /** 파티의 자동 귀환 옵션 토글 — 전투 후 자동으로 홈 헥스로 이동. */
 export function togglePartyAutoReturn(partyId) {
   const party = state?.parties.find(p => p.id === partyId);
