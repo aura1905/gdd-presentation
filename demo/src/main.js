@@ -193,9 +193,69 @@ async function boot() {
       const raw = el.getAttribute("data-tip");
       if (!raw) return;
       const [title, body] = raw.includes("|") ? raw.split("|") : [raw, ""];
-      tip.innerHTML = `<div class="tip-title">${title}</div>${body ? `<div class="tip-body">${body}</div>` : ""}`;
+      const live = computeLiveTip(el);
+      tip.innerHTML =
+        `<div class="tip-title">${title}</div>` +
+        (body ? `<div class="tip-body">${body}</div>` : "") +
+        (live ? `<div class="tip-live">${live}</div>` : "");
       tip.hidden = false;
       positionAtMouse(ev.clientX, ev.clientY);
+    }
+
+    /** 호버한 요소 종류에 따라 현재 수치/상태를 HTML로 반환. */
+    function computeLiveTip(el) {
+      const gs = getState();
+      if (!gs) return "";
+      // 자원 (HUD .res)
+      if (el.classList.contains("res")) {
+        const valEl = el.querySelector("[id^='res-']");
+        const code = valEl?.id?.replace("res-", "");
+        if (code && gs.resources) {
+          const cur = gs.resources[code] || 0;
+          let extra = "";
+          try {
+            const inc = computeHexIncome(gs, tables);
+            if (inc[code]) extra = ` · 턴당 +${inc[code]}`;
+          } catch {}
+          return `📊 현재: <b>${cur.toLocaleString()}</b>${extra}`;
+        }
+      }
+      // 영지 배지
+      if (el.id === "hud-territory") {
+        const used = getTerritoryUsedSlots();
+        const max = getTerritoryMaxSlots();
+        const ownedTotal = gs.ownedHexes?.size || 0;
+        return `📊 영지: <b>${used}/${max}</b> · 총 점령 헥스 ${ownedTotal} (HL0·구조물 포함)`;
+      }
+      // 턴
+      if (el.querySelector?.("#turn-num") || el.id === "turn-num") {
+        return `📊 현재 턴: <b>${gs.meta?.turn || 1}</b>`;
+      }
+      // 분대 편성 버튼 (⚙)
+      if (el.classList.contains("pc-edit-btn")) {
+        const pid = el.dataset.editParty;
+        const p = gs.parties.find(x => x.id === pid);
+        if (p) return `📊 현재 편성: ${p.slots.filter(x => x != null).length}/${p.slots.length}명`;
+      }
+      // 자동 귀환 버튼
+      if (el.classList.contains("pc-autoreturn-btn")) {
+        const pid = el.dataset.autoreturn;
+        const p = gs.parties.find(x => x.id === pid);
+        if (p) return `📊 현재 상태: <b>${p.autoReturn ? "ON" : "OFF"}</b>`;
+      }
+      // 탭 도크 — 배지 등
+      if (el.dataset?.tab === "quest") {
+        try {
+          const claim = getClaimableQuests(gs, tables);
+          if (claim?.length) return `📊 수령 가능 보상 <b>${claim.length}개</b>`;
+        } catch {}
+      }
+      if (el.dataset?.tab === "gacha") {
+        const gem = gs.resources?.gem || 0;
+        const scroll = gs.resources?.scroll || 0;
+        return `📊 💎 ${gem} · 📜 ${scroll}`;
+      }
+      return "";
     }
     /** 마우스 커서 바로 옆(오른쪽 아래)에 붙임. 화면 밖이면 반대편으로 플립. */
     function positionAtMouse(mx, my) {
