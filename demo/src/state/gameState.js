@@ -947,6 +947,58 @@ export function applyEncounterAI() {
 }
 
 /**
+ * 턴 종료 시 조우 재스폰 (Phase 4 lite).
+ * 리전별 상한 + 타입별 카운트 체크. 부족하면 일정 확률로 생성.
+ * @returns {Array<object>} 새로 스폰된 조우 인스턴스 배열 (이벤트 로깅용)
+ */
+export function respawnEncounters(regionTheme = "Ch1") {
+  if (!state || !_tablesRef?.encounters) return [];
+  const templates = _tablesRef.encounters.all().filter(t =>
+    t.RegionTheme === regionTheme || t.RegionTheme === "All"
+  );
+  if (!templates.length) return [];
+  const spawned = [];
+  for (const tpl of templates) {
+    // 타입별 리전 상한
+    const cap = tpl.SpawnCapPerRegion || 1;
+    const cur = state.encounters.filter(e => e.templateId === tpl.TemplateID).length;
+    if (cur >= cap) continue;
+    // 격파 후 대기 시간 체크 (RespawnHours == 0이면 항상 재스폰 시도, >0이면 확률 낮춤)
+    // 데모는 턴 기반이라 단순 확률로 처리. 유형별 차이:
+    //   static(야생/네임드/함정): 낮은 확률 0.15
+    //   aggressive(도적): 중간 0.25
+    const pct = tpl.EncounterType === "bandit" ? 0.25 : 0.15;
+    if (Math.random() > pct) continue;
+
+    // 스폰 위치 — 홈 반경 5칸 이내 유효 헥스 중 랜덤
+    const home = state.family?.homeHex;
+    if (!home) continue;
+    const radius = 6;
+    const candidates = [];
+    for (let dq = -radius; dq <= radius; dq++) {
+      for (let dr = -radius; dr <= radius; dr++) {
+        const q = home.q + dq, r = home.r + dr;
+        if (q === home.q && r === home.r) continue;
+        if (hexDistance(q, r, home.q, home.r) > radius) continue;
+        if (!_canEncounterMoveTo(q, r)) continue;
+        // 기존 조우 겹침 방지
+        if (state.encounters.some(e => e.q === q && e.r === r)) continue;
+        // 파티 위치 겹침 방지
+        if (state.parties.some(p => p.location.q === q && p.location.r === r)) continue;
+        // 아군 점령 헥스도 제외 (도시에 야수 나오면 이상)
+        if (state.ownedHexes?.has(q * 100 + r)) continue;
+        candidates.push({ q, r });
+      }
+    }
+    if (!candidates.length) continue;
+    const pick = candidates[Math.floor(Math.random() * candidates.length)];
+    const enc = spawnEncounter(tpl.TemplateID, pick.q, pick.r);
+    if (enc) spawned.push(enc);
+  }
+  return spawned;
+}
+
+/**
  * 신규 세이브에 초기 시드 배치 (리볼도외 주변).
  * 템플릿 ID 1001=야생, 1002=도적, 1004=네임드.
  */

@@ -2065,6 +2065,14 @@ async function boot() {
         showTurnSummary(summary);
         // 조우 AI 이벤트 처리 (GDD §5-2 공격형 AI)
         handleEncounterEvents(summary.encounterEvents || []);
+        // 신규 스폰 알림
+        if (summary.newlySpawned?.length) {
+          const types = summary.newlySpawned.map(e => {
+            const tpl = tables.encounters.get(e.templateId);
+            return tpl?.Icon || "⚔";
+          }).join(" ");
+          showToast(`🆕 신규 조우 ${summary.newlySpawned.length}체: ${types}`, "exp");
+        }
       },
     });
   });
