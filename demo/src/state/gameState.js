@@ -887,6 +887,33 @@ export function seedInitialEncounters() {
   }
 }
 
+/**
+ * 곡물 비용 휴식 — 슬롯당 곡물 N 차감 + 피로 풀회복.
+ * GDD `fatigue_balance_table.md §5-3` 정식판: 음식 시스템(배럭). 데모는 곡물 prox.
+ * @returns {{ ok, cost, missing? }}
+ */
+export const REST_GRAIN_PER_SLOT = 5;
+export function restPartyWithGrain(partyId) {
+  if (!state) return { ok: false, reason: "no_state" };
+  const party = state.parties.find(p => p.id === partyId);
+  if (!party) return { ok: false, reason: "no_party" };
+  const slotsFilled = party.slots.filter(c => c != null).length;
+  const cost = slotsFilled * REST_GRAIN_PER_SLOT;
+  const have = state.resources?.grain || 0;
+  if (have < cost) return { ok: false, reason: "insufficient", cost, have, missing: cost - have };
+  state.resources.grain = have - cost;
+  for (const cid of party.slots) {
+    if (cid == null) continue;
+    const ch = getCharacter(cid);
+    if (ch) {
+      ch.fatigue = ch.maxFatigue;
+      ch.status = "normal";
+    }
+  }
+  emit("state:changed", { path: "parties", partyId, action: "rest" });
+  return { ok: true, cost };
+}
+
 export function fullRestParty(partyId) {
   const party = state.parties.find(p => p.id === partyId);
   if (!party) return;

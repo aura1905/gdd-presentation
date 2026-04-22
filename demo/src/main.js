@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail, getPartyHome, setPartyHome, getFortMaxParties, getFortDeployedParties } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, restPartyWithGrain, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail, getPartyHome, setPartyHome, getFortMaxParties, getFortDeployedParties } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -1068,13 +1068,30 @@ async function boot() {
       }
     }
 
-    // 휴식 (아군 점령 헥스 + 파티 현재 위치 = 그 헥스)
-    if (party && hexOwned && party.location.q === row.HexQ && party.location.r === row.HexR) {
-      addAction(actions, "휴식", "#3a5a7a", () => {
-        fullRestParty(party.id);
-        const ps = camera.worldToScreen(hexWorld(row.HexQ, row.HexR).x, hexWorld(row.HexQ, row.HexR).y);
-        showTilePanel(row, null, tables, ps.x, ps.y + 40);
+    // 휴식 — 점령된 City/Fort + 파티 현재 위치 (GDD: 월드맵은 구조물에서만 회복)
+    // 곡물 비용 슬롯당 5 (정식판 음식 시스템 prox)
+    const isRestableShelter = structure && isCaptured
+      && (structure.StructureType === "City" || structure.StructureType === "Fort");
+    if (party && isRestableShelter && party.location.q === row.HexQ && party.location.r === row.HexR) {
+      const slotsFilled = party.slots.filter(c => c != null).length;
+      const cost = slotsFilled * 5;
+      const haveGrain = getState().resources?.grain || 0;
+      const canRest = haveGrain >= cost;
+      const label = `🛌 휴식 (🌾 ${cost})`;
+      const btn = addAction(actions, label, canRest ? "#3a5a7a" : "#444", () => {
+        const r = restPartyWithGrain(party.id);
+        if (r.ok) {
+          showToast(`🛌 ${party.name} 휴식 — 피로 풀회복 (🌾 ${r.cost} 차감)`, "exp");
+          const ps = camera.worldToScreen(hexWorld(row.HexQ, row.HexR).x, hexWorld(row.HexQ, row.HexR).y);
+          showTilePanel(row, null, tables, ps.x, ps.y + 40);
+        } else if (r.reason === "insufficient") {
+          showToast(`곡물 ${r.missing} 부족`, "warn");
+        }
       });
+      if (!canRest) {
+        btn.disabled = true;
+        btn.title = `곡물 ${cost - haveGrain} 부족 (보유 ${haveGrain}/필요 ${cost})`;
+      }
     }
 
     // 거점 배치 — 점령된 Fort 헥스에 분대 배치 (이동 + 홈 등록).
