@@ -847,12 +847,17 @@ export function spawnEncounter(templateId, q, r) {
   return enc;
 }
 
-/** 조우 제거 (격파/만료 등). */
+/** 조우 제거 (격파/만료 등). 격파 위치는 최근 기록에 추가 — 재스폰 회피용. */
 export function removeEncounter(encounterId) {
   if (!state) return;
   const idx = state.encounters.findIndex(e => e.id === encounterId);
   if (idx < 0) return;
+  const enc = state.encounters[idx];
   state.encounters.splice(idx, 1);
+  // 최근 격파 위치 추적 (최대 8개 rolling)
+  state._recentDefeatHexes = state._recentDefeatHexes || [];
+  state._recentDefeatHexes.push(enc.q * 100 + enc.r);
+  while (state._recentDefeatHexes.length > 8) state._recentDefeatHexes.shift();
   emit("state:changed", { path: "encounters", action: "remove", id: encounterId });
 }
 
@@ -970,23 +975,24 @@ export function respawnEncounters(regionTheme = "Ch1") {
     const pct = tpl.EncounterType === "bandit" ? 0.25 : 0.15;
     if (Math.random() > pct) continue;
 
-    // 스폰 위치 — 홈 반경 5칸 이내 유효 헥스 중 랜덤
+    // 스폰 위치 — 홈 반경 확장 + 최근 격파 위치 회피
     const home = state.family?.homeHex;
     if (!home) continue;
-    const radius = 6;
+    const radius = 8;  // 6 → 8 (더 넓게)
+    const recentDefeats = state._recentDefeatHexes || [];  // 최근 격파 hex 리스트 (q*100+r)
     const candidates = [];
     for (let dq = -radius; dq <= radius; dq++) {
       for (let dr = -radius; dr <= radius; dr++) {
         const q = home.q + dq, r = home.r + dr;
         if (q === home.q && r === home.r) continue;
-        if (hexDistance(q, r, home.q, home.r) > radius) continue;
+        const dist = hexDistance(q, r, home.q, home.r);
+        if (dist > radius) continue;
+        if (dist < 2) continue;  // 홈 인접은 제외 (너무 가까움)
         if (!_canEncounterMoveTo(q, r)) continue;
-        // 기존 조우 겹침 방지
         if (state.encounters.some(e => e.q === q && e.r === r)) continue;
-        // 파티 위치 겹침 방지
         if (state.parties.some(p => p.location.q === q && p.location.r === r)) continue;
-        // 아군 점령 헥스도 제외 (도시에 야수 나오면 이상)
         if (state.ownedHexes?.has(q * 100 + r)) continue;
+        if (recentDefeats.includes(q * 100 + r)) continue;  // 최근 격파 위치 회피
         candidates.push({ q, r });
       }
     }
@@ -1006,22 +1012,35 @@ export function seedInitialEncounters() {
   if (!state || state.encounters.length > 0) return;
   const home = state.family.homeHex;
   if (!home) return;
-  // 홈(65,45) 주변 헥스에 배치 — 이동 범위 내
-  const seeds = [
-    { tpl: 1001, q: home.q - 3, r: home.r + 2 },   // 야생
-    { tpl: 1001, q: home.q + 2, r: home.r - 3 },   // 야생
-    { tpl: 1001, q: home.q - 4, r: home.r - 1 },   // 야생
-    { tpl: 1002, q: home.q + 3, r: home.r + 4 },   // 도적
-    { tpl: 1002, q: home.q - 5, r: home.r + 5 },   // 도적
-    { tpl: 1004, q: home.q + 5, r: home.r - 4 },   // 네임드 (약간 멀리)
+  // 템플릿별 마리수: 야생 3 + 도적 2 + 네임드 1 (랜덤 위치)
+  const counts = [
+    { tpl: 1001, count: 3 }, // 야생
+    { tpl: 1002, count: 2 }, // 도적
+    { tpl: 1004, count: 1 }, // 네임드
   ];
-  for (const s of seeds) {
-    // 헥스 유효성 검사 + passable 지형만
-    const hex = _tablesRef?.worldHex?.get(s.q * 100 + s.r);
-    if (!hex) continue;
-    const terrain = _tablesRef?.terrains?.get(hex.TerrainID);
-    if (!terrain?.Movable) continue;
-    spawnEncounter(s.tpl, s.q, s.r);
+  const radius = 8;
+  const used = new Set();
+  for (const c of counts) {
+    for (let i = 0; i < c.count; i++) {
+      // 홈 반경 2~radius 내 유효 헥스 랜덤
+      const candidates = [];
+      for (let dq = -radius; dq <= radius; dq++) {
+        for (let dr = -radius; dr <= radius; dr++) {
+          const q = home.q + dq, r = home.r + dr;
+          const dist = hexDistance(q, r, home.q, home.r);
+          if (dist < 2 || dist > radius) continue;
+          const id = q * 100 + r;
+          if (used.has(id)) continue;
+          if (!_canEncounterMoveTo(q, r)) continue;
+          if (state.ownedHexes?.has(id)) continue;
+          candidates.push({ q, r });
+        }
+      }
+      if (!candidates.length) break;
+      const pick = candidates[Math.floor(Math.random() * candidates.length)];
+      used.add(pick.q * 100 + pick.r);
+      spawnEncounter(c.tpl, pick.q, pick.r);
+    }
   }
 }
 
