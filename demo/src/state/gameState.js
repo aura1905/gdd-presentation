@@ -878,6 +878,18 @@ function _canEncounterMoveTo(q, r) {
   return true;
 }
 
+/** 특정 리전 내 모든 이동 가능 헥스 수집 (네임드 보스 등 리전 고정 스폰용). */
+function _hexesInRegion(regionId) {
+  if (!_tablesRef?.worldHex) return [];
+  const result = [];
+  for (const hex of _tablesRef.worldHex.all()) {
+    if (hex.RegionID !== regionId) continue;
+    if (!_canEncounterMoveTo(hex.HexQ, hex.HexR)) continue;
+    result.push({ q: hex.HexQ, r: hex.HexR });
+  }
+  return result;
+}
+
 /** 특정 위치 인접 파티 찾기. */
 function _findAdjacentParty(q, r) {
   if (!state?.parties) return null;
@@ -975,25 +987,35 @@ export function respawnEncounters(regionTheme = "Ch1") {
     const pct = tpl.EncounterType === "bandit" ? 0.25 : 0.15;
     if (Math.random() > pct) continue;
 
-    // 스폰 위치 — 홈 반경 확장 + 최근 격파 위치 회피
-    const home = state.family?.homeHex;
-    if (!home) continue;
-    const radius = 8;  // 6 → 8 (더 넓게)
-    const recentDefeats = state._recentDefeatHexes || [];  // 최근 격파 hex 리스트 (q*100+r)
-    const candidates = [];
-    for (let dq = -radius; dq <= radius; dq++) {
-      for (let dr = -radius; dr <= radius; dr++) {
-        const q = home.q + dq, r = home.r + dr;
-        if (q === home.q && r === home.r) continue;
-        const dist = hexDistance(q, r, home.q, home.r);
-        if (dist > radius) continue;
-        if (dist < 2) continue;  // 홈 인접은 제외 (너무 가까움)
-        if (!_canEncounterMoveTo(q, r)) continue;
-        if (state.encounters.some(e => e.q === q && e.r === r)) continue;
-        if (state.parties.some(p => p.location.q === q && p.location.r === r)) continue;
-        if (state.ownedHexes?.has(q * 100 + r)) continue;
-        if (recentDefeats.includes(q * 100 + r)) continue;  // 최근 격파 위치 회피
-        candidates.push({ q, r });
+    const recentDefeats = state._recentDefeatHexes || [];
+    let candidates = [];
+    // BoundRegionID 지정 시: 해당 리전 내 헥스만 (네임드 보스 리전 수호)
+    if (tpl.BoundRegionID) {
+      candidates = _hexesInRegion(tpl.BoundRegionID).filter(h => {
+        if (state.encounters.some(e => e.q === h.q && e.r === h.r)) return false;
+        if (state.parties.some(p => p.location.q === h.q && p.location.r === h.r)) return false;
+        if (state.ownedHexes?.has(h.q * 100 + h.r)) return false;
+        if (recentDefeats.includes(h.q * 100 + h.r)) return false;
+        return true;
+      });
+    } else {
+      // 일반: 홈 반경 2~8 내
+      const home = state.family?.homeHex;
+      if (!home) continue;
+      const radius = 8;
+      for (let dq = -radius; dq <= radius; dq++) {
+        for (let dr = -radius; dr <= radius; dr++) {
+          const q = home.q + dq, r = home.r + dr;
+          if (q === home.q && r === home.r) continue;
+          const dist = hexDistance(q, r, home.q, home.r);
+          if (dist < 2 || dist > radius) continue;
+          if (!_canEncounterMoveTo(q, r)) continue;
+          if (state.encounters.some(e => e.q === q && e.r === r)) continue;
+          if (state.parties.some(p => p.location.q === q && p.location.r === r)) continue;
+          if (state.ownedHexes?.has(q * 100 + r)) continue;
+          if (recentDefeats.includes(q * 100 + r)) continue;
+          candidates.push({ q, r });
+        }
       }
     }
     if (!candidates.length) continue;
@@ -1016,24 +1038,32 @@ export function seedInitialEncounters() {
   const counts = [
     { tpl: 1001, count: 3 }, // 야생
     { tpl: 1002, count: 2 }, // 도적
-    { tpl: 1004, count: 1 }, // 네임드
+    { tpl: 1004, count: 1 }, // 네임드 (리전 바운드)
   ];
   const radius = 8;
   const used = new Set();
   for (const c of counts) {
+    const tpl = _tablesRef?.encounters?.get(c.tpl);
     for (let i = 0; i < c.count; i++) {
-      // 홈 반경 2~radius 내 유효 헥스 랜덤
-      const candidates = [];
-      for (let dq = -radius; dq <= radius; dq++) {
-        for (let dr = -radius; dr <= radius; dr++) {
-          const q = home.q + dq, r = home.r + dr;
-          const dist = hexDistance(q, r, home.q, home.r);
-          if (dist < 2 || dist > radius) continue;
-          const id = q * 100 + r;
-          if (used.has(id)) continue;
-          if (!_canEncounterMoveTo(q, r)) continue;
-          if (state.ownedHexes?.has(id)) continue;
-          candidates.push({ q, r });
+      let candidates = [];
+      if (tpl?.BoundRegionID) {
+        // 리전 고정 (네임드 보스)
+        candidates = _hexesInRegion(tpl.BoundRegionID).filter(h =>
+          !used.has(h.q * 100 + h.r) && !state.ownedHexes?.has(h.q * 100 + h.r)
+        );
+      } else {
+        // 홈 반경
+        for (let dq = -radius; dq <= radius; dq++) {
+          for (let dr = -radius; dr <= radius; dr++) {
+            const q = home.q + dq, r = home.r + dr;
+            const dist = hexDistance(q, r, home.q, home.r);
+            if (dist < 2 || dist > radius) continue;
+            const id = q * 100 + r;
+            if (used.has(id)) continue;
+            if (!_canEncounterMoveTo(q, r)) continue;
+            if (state.ownedHexes?.has(id)) continue;
+            candidates.push({ q, r });
+          }
         }
       }
       if (!candidates.length) break;

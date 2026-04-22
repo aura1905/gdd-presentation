@@ -8975,9 +8975,9 @@
     "Phases": 0,
     "RoundLimit": 0,
     "SkillList": "16501,16302,16503",
-    "PrefabPath": "FieldObject/mon_gargoyle/Prefab/mon_gargoyle",
-    "PivotX": 0,
-    "PivotY": 0
+    "PrefabPath": "FieldObject/mon_tempest/Prefab/mon_tempest",
+    "PivotX": -0.57,
+    "PivotY": -0.35
   },
   {
     "IsActivate": true,
@@ -9021,9 +9021,9 @@
     "Phases": 0,
     "RoundLimit": 0,
     "SkillList": "18701,11102,18703",
-    "PrefabPath": "FieldObject/mon_hill_giant/Prefab/mon_hill_giant",
-    "PivotX": 0,
-    "PivotY": 0
+    "PrefabPath": "FieldObject/mon_velir/Prefab/mon_velir",
+    "PivotX": -0.27,
+    "PivotY": -0.39
   },
   {
     "IsActivate": true,
@@ -9067,9 +9067,9 @@
     "Phases": 0,
     "RoundLimit": 0,
     "SkillList": "18701,11102,10703",
-    "PrefabPath": "FieldObject/mon_gargoyle/Prefab/mon_gargoyle",
-    "PivotX": 0,
-    "PivotY": 0
+    "PrefabPath": "FieldObject/mon_novia/Prefab/mon_novia",
+    "PivotX": -0.46,
+    "PivotY": -0.4
   },
   {
     "IsActivate": true,

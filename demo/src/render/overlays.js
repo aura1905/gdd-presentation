@@ -135,18 +135,30 @@ export function createOverlays() {
       if (s.x < -margin || s.x > ctx.canvas.clientWidth + margin ||
           s.y < -margin || s.y > ctx.canvas.clientHeight + margin) continue;
 
-      const r = hexSize * 0.45;
-      // 배경 원 (유형별 색)
+      // 네임드는 크기 20% 확대 + 테두리 두껍게
+      const isNamed = enc.type === "named";
+      const r = hexSize * (isNamed ? 0.55 : 0.45);
       const typeColor = {
         wild: "#6a9a3a", bandit: "#a04040", patrol: "#4080c0",
-        convoy: "#c0a040", named: "#b850c0", trap: "#505050",
+        convoy: "#c0a040", named: "#ff9a3a", trap: "#505050",
       }[enc.type] || "#888";
+
+      // 네임드 전용: 외곽 glow 링 + 펄스
+      if (isNamed) {
+        const pulse = 0.5 + 0.3 * Math.sin(performance.now() / 500);
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, r * 1.35, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255,180,60,${pulse})`;
+        ctx.lineWidth = Math.max(2, hexSize * 0.1);
+        ctx.stroke();
+      }
+
       ctx.beginPath();
       ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
       ctx.fillStyle = "rgba(0,0,0,0.75)";
       ctx.fill();
       ctx.strokeStyle = typeColor;
-      ctx.lineWidth = Math.max(1.5, hexSize * 0.06);
+      ctx.lineWidth = Math.max(isNamed ? 2 : 1.5, hexSize * (isNamed ? 0.09 : 0.06));
       ctx.stroke();
 
       // 이모지 아이콘

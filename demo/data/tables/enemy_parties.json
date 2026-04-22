@@ -4393,5 +4393,28 @@
     "Slot3VS1": 110201,
     "Slot3VS2": 110501,
     "Name": "🔮 베히모스 + 하데온 고대 + 재버워크 (W3)"
+  },
+  {
+    "PartyID": 9001,
+    "Name": "🐺 늑대왕의 무리 (네임드)",
+    "RegionID": 3,
+    "HexLevel": 3,
+    "PartyIndex": 1,
+    "PartyCount": 1,
+    "FormationType": "Offensive",
+    "EnemyLevel": 8,
+    "EnemyStar": 4,
+    "Slot1": 114,
+    "Slot1Role": "Leader",
+    "Slot1VS1": null,
+    "Slot1VS2": null,
+    "Slot2": 102,
+    "Slot2Role": "Dealer",
+    "Slot2VS1": null,
+    "Slot2VS2": null,
+    "Slot3": 102,
+    "Slot3Role": "Dealer",
+    "Slot3VS1": null,
+    "Slot3VS2": null
   }
 ]
