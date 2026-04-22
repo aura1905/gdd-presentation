@@ -15,7 +15,7 @@
 //
 // 예외/누락 케이스는 throw 대신 0 반환 (데이터 없음).
 import { CONFIG } from "../config.js";
-import { getTrainingEffectSum } from "../state/gameState.js";
+import { getTrainingEffectSum, applyEncounterAI } from "../state/gameState.js";
 
 const RESOURCE_KEYS = ["grain", "iron", "wood", "stone", "herbs", "gold", "vis", "gem", "scroll", "rp", "mana"];
 
@@ -148,7 +148,10 @@ export function endTurn(state, tables) {
     fatigueLog.push({ id: ch.id, name: ch.name, before, after: ch.fatigue });
   }
 
-  // 3) 턴 +1
+  // 3) 조우형 적 AI (GDD §5-2) — 공격형/배회형 1스텝 이동
+  const encounterEvents = applyEncounterAI();
+
+  // 4) 턴 +1
   state.meta.turn = fromTurn + 1;
 
   return {
@@ -156,6 +159,7 @@ export function endTurn(state, tables) {
     toTurn: state.meta.turn,
     gainedResources: income,
     fatigueLog,
+    encounterEvents,
     minutesPerTurn: CONFIG.turn?.minutesPerTurn || 10,
   };
 }

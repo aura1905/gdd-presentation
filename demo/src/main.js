@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, restPartyWithGrain, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail, getPartyHome, setPartyHome, getFortMaxParties, getFortDeployedParties } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, restPartyWithGrain, getRestCost, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail, getPartyHome, setPartyHome, getFortMaxParties, getFortDeployedParties } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -1073,11 +1073,11 @@ async function boot() {
     const isRestableShelter = structure && isCaptured
       && (structure.StructureType === "City" || structure.StructureType === "Fort");
     if (party && isRestableShelter && party.location.q === row.HexQ && party.location.r === row.HexR) {
-      const slotsFilled = party.slots.filter(c => c != null).length;
-      const cost = slotsFilled * 5;
+      const cost = getRestCost(party);
       const haveGrain = getState().resources?.grain || 0;
-      const canRest = haveGrain >= cost;
-      const label = `🛌 휴식 (🌾 ${cost})`;
+      const noNeed = cost === 0;
+      const canRest = !noNeed && haveGrain >= cost;
+      const label = noNeed ? "🛌 풀피로" : `🛌 휴식 (🌾 ${cost})`;
       const btn = addAction(actions, label, canRest ? "#3a5a7a" : "#444", () => {
         const r = restPartyWithGrain(party.id);
         if (r.ok) {
@@ -1090,7 +1090,9 @@ async function boot() {
       });
       if (!canRest) {
         btn.disabled = true;
-        btn.title = `곡물 ${cost - haveGrain} 부족 (보유 ${haveGrain}/필요 ${cost})`;
+        btn.title = noNeed
+          ? "이미 모든 슬롯이 풀피로 — 휴식 불필요"
+          : `곡물 ${cost - haveGrain} 부족 (보유 ${haveGrain}/필요 ${cost})`;
       }
     }
 
@@ -1831,6 +1833,32 @@ async function boot() {
     }
   }
 
+  /** 턴 종료 AI 이벤트 처리 — attack 이벤트는 자동 전투 모달 트리거. */
+  function handleEncounterEvents(events) {
+    if (!events || !events.length) return;
+    const gs = getState();
+    // 우선순위: attack > approach > wander. attack만 모달 띄움.
+    const attacks = events.filter(e => e.type === "attack");
+    const approaches = events.filter(e => e.type === "approach");
+    if (approaches.length) {
+      showToast(`👀 적 ${approaches.length}마리 접근 중`, "warn");
+    }
+    for (const ev of attacks) {
+      const enc = gs.encounters.find(e => e.id === ev.encId);
+      const party = gs.parties.find(p => p.id === ev.partyId);
+      if (!enc || !party) continue;
+      const hexRow = tables.worldHex.get(hexId(enc.q, enc.r));
+      if (!hexRow) continue;
+      // 기습: 도주 불가 즉시 전투 (GDD ambush 룰 참조)
+      showToast(`⚔️ 적이 공격해옵니다!`, "warn");
+      // 여러 건이면 순차 처리를 위해 setTimeout stagger
+      setTimeout(() => {
+        const tpl = tables.encounters.get(enc.templateId);
+        if (tpl) executeEncounterBattle(party, hexRow, enc, tpl);
+      }, 400);
+    }
+  }
+
   function executeEncounterBattle(party, hexRow, enc, tpl) {
     const enemyParty = tables.enemyParties.all().find(ep => ep.PartyID === tpl.EnemyPartyRef);
     if (!enemyParty) {
@@ -2035,6 +2063,8 @@ async function boot() {
         emit("state:changed", { path: "*", action: "endTurn" });
         pulseHudResources(summary.gainedResources);
         showTurnSummary(summary);
+        // 조우 AI 이벤트 처리 (GDD §5-2 공격형 AI)
+        handleEncounterEvents(summary.encounterEvents || []);
       },
     });
   });

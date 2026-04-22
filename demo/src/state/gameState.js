@@ -1,7 +1,7 @@
 // Mutable game state — single source of truth.
 // Changes only through exported action functions.
 import { emit } from "../util/events.js";
-import { neighbors as hexNeighbors } from "../util/hex.js";
+import { neighbors as hexNeighbors, distance as hexDistance } from "../util/hex.js";
 
 // 도시 지형 ID (terrains.json: TerrainID=13, Code="city").
 const CITY_TERRAIN_ID = 13;
@@ -836,6 +836,7 @@ export function spawnEncounter(templateId, q, r) {
     id: `enc_${Date.now()}_${_encounterSerial++}`,
     templateId,
     q, r,
+    spawnQ: q, spawnR: r,   // wander 반경 기준
     spawnedAt: state.meta?.turn || 1,
     nextMoveTurn: (state.meta?.turn || 1) + 1,
     discovered: tpl.MovementAI !== "hidden",
@@ -858,6 +859,91 @@ export function removeEncounter(encounterId) {
 /** 특정 헥스의 조우 (있으면 반환). */
 export function getEncounterAt(q, r) {
   return state?.encounters?.find(e => e.q === q && e.r === r) || null;
+}
+
+/** 헥스 좌표가 이동 가능한지 (지형·구조물 체크). */
+function _canEncounterMoveTo(q, r) {
+  if (!_tablesRef) return false;
+  const hex = _tablesRef.worldHex?.get(q * 100 + r);
+  if (!hex) return false;
+  const terrain = _tablesRef.terrains?.get(hex.TerrainID);
+  if (!terrain?.Movable) return false;
+  // 구조물 헥스 회피 (조우가 도시/관문에 올라가지 않게)
+  if (hex.StructureID) return false;
+  return true;
+}
+
+/** 특정 위치 인접 파티 찾기. */
+function _findAdjacentParty(q, r) {
+  if (!state?.parties) return null;
+  for (const n of hexNeighbors(q, r)) {
+    const p = state.parties.find(pp => pp.location.q === n.q && pp.location.r === n.r);
+    if (p) return p;
+  }
+  return null;
+}
+
+/** from→to 방향의 1칸 이동 delta (이웃 중 가장 가까운). */
+function _stepTowards(fromQ, fromR, toQ, toR) {
+  let best = null, bestDist = Infinity;
+  for (const n of hexNeighbors(fromQ, fromR)) {
+    const d = hexDistance(n.q, n.r, toQ, toR);
+    if (d < bestDist && _canEncounterMoveTo(n.q, n.r)) {
+      bestDist = d;
+      best = n;
+    }
+  }
+  return best;
+}
+
+/**
+ * 턴 종료 시 모든 조우 AI 1 스텝 실행.
+ * @returns {Array<{type, encId, partyId?}>} 이벤트 로그 (attack/approach/wander)
+ */
+export function applyEncounterAI() {
+  if (!state?.encounters || !_tablesRef) return [];
+  const events = [];
+  for (const enc of state.encounters) {
+    const tpl = _tablesRef.encounters?.get(enc.templateId);
+    if (!tpl) continue;
+    const ai = tpl.MovementAI;
+
+    if (ai === "static" || ai === "hidden" || ai === "fixed_route" || ai === "patrol_route") continue;
+
+    // 공격형(random_walk + bandit 타입 or 명시적) — 인접 파티 추적
+    const isAggressive = tpl.EncounterType === "bandit" || tpl.EncounterType === "patrol";
+    if (isAggressive) {
+      const adjParty = _findAdjacentParty(enc.q, enc.r);
+      if (adjParty) {
+        const step = _stepTowards(enc.q, enc.r, adjParty.location.q, adjParty.location.r);
+        if (step) {
+          enc.q = step.q; enc.r = step.r;
+          if (step.q === adjParty.location.q && step.r === adjParty.location.r) {
+            events.push({ type: "attack", encId: enc.id, partyId: adjParty.id });
+          } else {
+            events.push({ type: "approach", encId: enc.id, partyId: adjParty.id });
+          }
+          continue;
+        }
+      }
+    }
+
+    // 배회 (wander/random_walk) — 스폰 지점 반경 제한
+    if (ai === "wander" || ai === "random_walk") {
+      const radius = tpl.EncounterType === "named" ? 3 : 6;
+      const candidates = hexNeighbors(enc.q, enc.r).filter(n =>
+        _canEncounterMoveTo(n.q, n.r) &&
+        hexDistance(n.q, n.r, enc.spawnQ ?? enc.q, enc.spawnR ?? enc.r) <= radius
+      );
+      if (candidates.length) {
+        const pick = candidates[Math.floor(Math.random() * candidates.length)];
+        enc.q = pick.q; enc.r = pick.r;
+        events.push({ type: "wander", encId: enc.id });
+      }
+    }
+  }
+  if (events.length) emit("state:changed", { path: "encounters", action: "ai" });
+  return events;
 }
 
 /**
@@ -888,17 +974,30 @@ export function seedInitialEncounters() {
 }
 
 /**
- * 곡물 비용 휴식 — 슬롯당 곡물 N 차감 + 피로 풀회복.
+ * 곡물 비용 휴식 — 회복 필요분에 비례 (1 곡물 = 10 피로 회복, 슬롯별 합산).
+ * 만피로 슬롯은 비용 0 (의미 없음). 풀피로 풀파티는 비용 0 → 비활성 권장.
  * GDD `fatigue_balance_table.md §5-3` 정식판: 음식 시스템(배럭). 데모는 곡물 prox.
  * @returns {{ ok, cost, missing? }}
  */
-export const REST_GRAIN_PER_SLOT = 5;
+export const REST_FATIGUE_PER_GRAIN = 10;  // 1 곡물 = 10 피로
+export function getRestCost(party) {
+  if (!party) return 0;
+  let total = 0;
+  for (const cid of party.slots) {
+    if (cid == null) continue;
+    const ch = state?.characters.find(c => c.id === cid);
+    if (!ch) continue;
+    const missing = (ch.maxFatigue || 100) - (ch.fatigue || 0);
+    if (missing > 0) total += Math.ceil(missing / REST_FATIGUE_PER_GRAIN);
+  }
+  return total;
+}
 export function restPartyWithGrain(partyId) {
   if (!state) return { ok: false, reason: "no_state" };
   const party = state.parties.find(p => p.id === partyId);
   if (!party) return { ok: false, reason: "no_party" };
-  const slotsFilled = party.slots.filter(c => c != null).length;
-  const cost = slotsFilled * REST_GRAIN_PER_SLOT;
+  const cost = getRestCost(party);
+  if (cost === 0) return { ok: false, reason: "no_need" };  // 이미 풀피로
   const have = state.resources?.grain || 0;
   if (have < cost) return { ok: false, reason: "insufficient", cost, have, missing: cost - have };
   state.resources.grain = have - cost;
