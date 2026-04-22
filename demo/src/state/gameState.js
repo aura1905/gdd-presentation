@@ -179,6 +179,9 @@ export function initState(tables) {
     // 필드 조우형 적 (GDD §5-2): 맵 위 조우 인스턴스
     // { id, templateId, q, r, spawnedAt, nextMoveTurn, discovered, defeatCount }
     encounters: [],
+    // 구조물 4축 업그레이드 (점령 후 플레이어 투자, 거점별 독립).
+    // { [structureId]: { PatrolLv, GarrisonLv, StationedLv, DurabilityLv } } — 미투자면 키 없음 (베이스 사용)
+    structureUpgrades: {},
   };
 
   emit("state:init", state);
@@ -625,7 +628,8 @@ export function autoAssignParty(partyId) {
 
 /**
  * 거점(Fort)에 배치 가능한 최대 파티 수.
- * 현재: 1 고정. 미래: GarrisonLv/시설 업그레이드로 확장 (Lv5에서 2, Lv10에서 3 등).
+ * 룰: 도시(City)=∞, Fort=StationedLv 기반 (1~3=1, 4~6=2, 7~10=3).
+ * GDD `gdd_outpost_operation.md §3-3` + `project_structure_battle.md` 4축 강화.
  * @param {object} structure - StructureTable row
  * @returns {number}
  */
@@ -633,12 +637,116 @@ export function getFortMaxParties(structure) {
   if (!structure) return 0;
   if (structure.StructureType === "City") return Infinity;  // 도시는 모든 파티 공유
   if (structure.StructureType !== "Fort") return 0;
-  // TODO(거점 운영 확장): structure.GarrisonLv 또는 별도 fortification 시설 레벨로 확장
-  // 예시 룰 후보:
-  //   - GarrisonLv 1~3: 1분대
-  //   - GarrisonLv 4~6: 2분대
-  //   - GarrisonLv 7~10: 3분대
+  const lv = getStructureLv(structure.StructureID, "StationedLv");
+  return stationedLvToCap(lv);
+}
+
+/** StationedLv → 주둔 캡 mapping (GDD §3-3). */
+export function stationedLvToCap(lv) {
+  if (lv >= 7) return 3;
+  if (lv >= 4) return 2;
   return 1;
+}
+
+// ─── 구조물 4축 업그레이드 (PatrolLv/GarrisonLv/StationedLv/DurabilityLv) ───
+// 원안: project_structure_battle.md (각 Lv 1~10), structures.json 4축 컬럼.
+// 효과:
+//   - StationedLv → 주둔 파티 캡 (Fort 전용)
+//   - PatrolLv/GarrisonLv → 재침략 시 수비 강도 (적 재침략 Phase 적용 예정, 현재 데이터만)
+//   - DurabilityLv → 구조물 HP (도시/관문 전용)
+
+export const STRUCTURE_UPGRADE_MAX_LV = 10;
+
+/** 4축 업그레이드 비용 베이스 — 실제 비용 = base × targetLv. */
+export const STRUCTURE_UPGRADE_BASE_COST = {
+  PatrolLv:     { stone: 50,  iron: 30,  gold: 100 },
+  GarrisonLv:   { wood: 80,  iron: 50,  gold: 200 },
+  StationedLv:  { stone: 150, iron: 100, gold: 500 },
+  DurabilityLv: { stone: 200, iron: 150, gold: 400 },
+};
+
+const VALID_AXES = ["PatrolLv", "GarrisonLv", "StationedLv", "DurabilityLv"];
+
+/** 구조물 타입별 적용 가능한 트랙 (1등급/2등급/3등급/내구도). */
+export function getStructureUpgradeAxes(structure) {
+  if (!structure) return [];
+  switch (structure.StructureType) {
+    case "City":
+    case "Gate":   return ["PatrolLv", "GarrisonLv", "StationedLv", "DurabilityLv"];
+    case "Fort":   return ["PatrolLv", "GarrisonLv", "StationedLv"];
+    case "Bunker": return ["PatrolLv"];
+    default:       return [];
+  }
+}
+
+/** 구조물의 현재 Lv — 투자한 게 있으면 그 값, 없으면 structures.json 베이스. */
+export function getStructureLv(structureId, axis) {
+  if (!VALID_AXES.includes(axis)) return 0;
+  const upgrade = state?.structureUpgrades?.[structureId];
+  if (upgrade && upgrade[axis] != null) return upgrade[axis];
+  const base = _tablesRef?.structures?.get(structureId);
+  return base?.[axis] || 0;
+}
+
+/** 다음 Lv 업그레이드 비용 — 최대치면 null. */
+export function getStructureUpgradeCost(structureId, axis) {
+  const cur = getStructureLv(structureId, axis);
+  if (cur >= STRUCTURE_UPGRADE_MAX_LV) return null;
+  const base = STRUCTURE_UPGRADE_BASE_COST[axis];
+  if (!base) return null;
+  const targetLv = cur + 1;
+  const cost = {};
+  for (const res of Object.keys(base)) cost[res] = base[res] * targetLv;
+  return cost;
+}
+
+/**
+ * 업그레이드 가능 여부 + 부족 자원.
+ * @returns {{ ok, reason?, missing?, cost?, currentLv?, nextLv? }}
+ */
+export function canUpgradeStructure(structureId, axis) {
+  const struct = _tablesRef?.structures?.get(structureId);
+  if (!struct) return { ok: false, reason: "no_structure" };
+  if (!getStructureUpgradeAxes(struct).includes(axis)) {
+    return { ok: false, reason: "axis_not_applicable" };
+  }
+  if (!state?.capturedStructures?.has(structureId)) {
+    return { ok: false, reason: "not_captured" };
+  }
+  const cur = getStructureLv(structureId, axis);
+  if (cur >= STRUCTURE_UPGRADE_MAX_LV) return { ok: false, reason: "max", currentLv: cur };
+  const cost = getStructureUpgradeCost(structureId, axis);
+  const missing = {};
+  for (const res of Object.keys(cost)) {
+    const have = state.resources?.[res] || 0;
+    if (have < cost[res]) missing[res] = cost[res] - have;
+  }
+  if (Object.keys(missing).length > 0) {
+    return { ok: false, reason: "cost", missing, cost, currentLv: cur, nextLv: cur + 1 };
+  }
+  return { ok: true, cost, currentLv: cur, nextLv: cur + 1 };
+}
+
+/** 구조물 업그레이드 — 자원 차감 + Lv +1. */
+export function upgradeStructure(structureId, axis) {
+  const check = canUpgradeStructure(structureId, axis);
+  if (!check.ok) return check;
+  for (const res of Object.keys(check.cost)) {
+    state.resources[res] = (state.resources[res] || 0) - check.cost[res];
+  }
+  if (!state.structureUpgrades) state.structureUpgrades = {};
+  if (!state.structureUpgrades[structureId]) {
+    const base = _tablesRef?.structures?.get(structureId) || {};
+    state.structureUpgrades[structureId] = {
+      PatrolLv: base.PatrolLv || 0,
+      GarrisonLv: base.GarrisonLv || 0,
+      StationedLv: base.StationedLv || 0,
+      DurabilityLv: base.DurabilityLv || 0,
+    };
+  }
+  state.structureUpgrades[structureId][axis] = check.nextLv;
+  emit("state:changed", { path: "structureUpgrades", structureId, axis, action: "upgrade" });
+  return { ok: true, newLv: check.nextLv, axis, structureId };
 }
 
 /** 해당 헥스에 배치된 파티들 (homeHex 매칭). */

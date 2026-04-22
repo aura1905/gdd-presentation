@@ -101,6 +101,38 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 @keyframes modal-pop { from { opacity: 0; transform: scale(0.85); }
                        to   { opacity: 1; transform: scale(1); } }
 
+/* 거점 4축 업그레이드 모달 */
+.modal-card.upgrade-modal { max-width: 460px; min-width: 380px; }
+.modal-body.up-body { white-space: normal; max-height: 70svh; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 10px; padding-right: 4px; }
+.up-track { background: rgba(0,0,0,0.3); border: 1px solid #4a3a2a;
+  border-radius: 6px; padding: 9px 11px; }
+.up-track-header { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.up-icon { font-size: 18px; }
+.up-name { flex: 1; font-weight: bold; color: #ffd452; font-size: 13px; }
+.up-name small { color: #888; font-weight: normal; font-size: 10px; }
+.up-lv { color: #ddd; font-size: 12px; font-variant-numeric: tabular-nums; }
+.up-desc { color: #aaa; font-size: 11px; margin-bottom: 6px; }
+.up-progress { background: #1a1410; border-radius: 3px; height: 5px;
+  overflow: hidden; margin-bottom: 8px; }
+.up-progress > div { background: linear-gradient(90deg, #ffd452, #c89030);
+  height: 100%; transition: width 0.3s; }
+.up-action { display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; }
+.up-cost { display: flex; gap: 6px; flex-wrap: wrap; font-size: 11px;
+  color: #ccc; font-variant-numeric: tabular-nums; }
+.up-res { background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 3px; }
+.up-res.lack { color: #f55; background: rgba(180,40,40,0.25); }
+.up-btn { padding: 5px 11px; border-radius: 4px; border: 1px solid #555;
+  background: #333; color: #ccc; font-size: 11px; font-weight: bold;
+  cursor: pointer; transition: filter 0.1s; white-space: nowrap; }
+.up-btn:hover:not([disabled]) { filter: brightness(1.25); }
+.up-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+.up-btn.primary { background: linear-gradient(180deg, #5a4a7a, #3a2a5a);
+  border-color: #7d6dc7; color: #fff; }
+.up-effect { display: block; margin-top: 6px; font-size: 11px; color: #6dc77d;
+  background: rgba(0,80,30,0.25); padding: 3px 7px; border-radius: 3px; }
+
 /* 커스텀 툴팁 (data-tip 속성 기반) — 게임 비주얼 */
 #custom-tooltip { position: fixed; z-index: 1000; pointer-events: none;
   max-width: 300px; padding: 8px 11px;

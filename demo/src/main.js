@@ -14,7 +14,7 @@ const __scanCanvas = typeof document !== "undefined" ? document.createElement("c
 const __scanCtx = __scanCanvas?.getContext("2d", { willReadFrequently: true });
 import { worldToHex, hexId, hexWorld, neighbors } from "./util/hex.js";
 import { emit, on } from "./util/events.js";
-import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, restPartyWithGrain, getRestCost, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail, getPartyHome, setPartyHome, getFortMaxParties, getFortDeployedParties } from "./state/gameState.js";
+import { initState, restoreState, getState, selectParty, deselectParty, getSelectedParty, moveParty, getCharacter, isStructureCaptured, captureStructure, abandonStructure, ownHex, abandonHex, isHexOwned, grantExp, recomputeStatsFromLevel, recomputeAllCharacters, fullRestParty, restPartyWithGrain, getRestCost, getTerritoryMaxSlots, getTerritoryUsedSlots, canOccupyMore, pushUndo, performUndo, canUndo, lastUndoLabel, getTrainingLevel, getNextTrainingRow, canAffordTraining, investTraining, levelUpFamilyIfReady, assignPartySlot, getRosterWithStatus, createParty, deleteParty, getMaxParties, getBarracksExpandCost, canExpandBarracks, expandBarracks, autoAssignParty, togglePartyAutoReturn, getGrowthLevel, getNextGrowthRow, canAffordGrowth, investGrowth, addMail, getUnreadMailCount, markMailRead, deleteMail, markAllMailRead, purgeExpiredMail, getPartyHome, setPartyHome, getFortMaxParties, getFortDeployedParties, getStructureLv, getStructureUpgradeCost, getStructureUpgradeAxes, canUpgradeStructure, upgradeStructure, stationedLvToCap, STRUCTURE_UPGRADE_MAX_LV } from "./state/gameState.js";
 import { saveState, loadState, clearSave } from "./state/save.js";
 import { findPath, pathCost } from "./engine/movement.js";
 import { resolveCombat, findEnemyParties, findStructureDefenders, lookupDropReward, getStructureMaxHP, getPartySiegeDamage } from "./engine/combat.js";
@@ -1125,8 +1125,16 @@ async function boot() {
       }
     }
 
+    // 거점/도시 업그레이드 — 점령된 Fort/City/Gate/Bunker (4축 강화: PatrolLv/GarrisonLv/StationedLv/DurabilityLv).
+    // 원안: project_structure_battle.md, structures.json 4축 컬럼 활용
+    if (structure && isCaptured && getStructureUpgradeAxes(structure).length > 0) {
+      addAction(actions, "🔧 거점 업그레이드", "#5a4a7a", () => {
+        showStructureUpgradeModal(structure);
+      });
+    }
+
     // 거점 배치 — 점령된 Fort 헥스에 분대 배치 (이동 + 홈 등록).
-    // 룰: 거점 캡 = getFortMaxParties(structure) — 현재 1, 미래 GarrisonLv 확장
+    // 룰: 거점 캡 = getFortMaxParties(structure) — StationedLv 기반 (1~3=1, 4~6=2, 7~10=3)
     if (party && structure && isCaptured && structure.StructureType === "Fort") {
       const cap = getFortMaxParties(structure);
       const deployed = getFortDeployedParties(row.HexQ, row.HexR);
@@ -1145,7 +1153,7 @@ async function boot() {
         // 캡 초과 — 비활성 버튼 + 점유 파티 표시
         const btn = addAction(actions, `🏠 만석 ${deployed.length}/${cap}`, "#444", () => {});
         btn.disabled = true;
-        btn.title = `이 거점은 ${others.map(p => p.name).join(", ")} 점유 중. 거점 캡 ${cap} (미래 GarrisonLv 업그레이드로 증가).`;
+        btn.title = `이 거점은 ${others.map(p => p.name).join(", ")} 점유 중. 거점 캡 ${cap} (StationedLv 업그레이드로 증가 — 🔧 거점 업그레이드).`;
       } else {
         // 배치 가능 — 이미 거점에 있으면 즉시 등록, 아니면 이동 + 도착 시 등록
         const alreadyHere = party.location.q === row.HexQ && party.location.r === row.HexR;
@@ -1967,6 +1975,112 @@ async function boot() {
     backdrop.querySelector('[data-action="cancel"]').onclick = close;
     backdrop.querySelector('[data-action="confirm"]').onclick = () => { close(); onConfirm?.(); };
     backdrop.onclick = (e) => { if (e.target === backdrop) close(); };
+  }
+
+  // 거점 4축 업그레이드 모달 (PatrolLv/GarrisonLv/StationedLv/DurabilityLv).
+  // 원안: project_structure_battle.md (각 Lv 1~10, 거점별 독립 투자).
+  function showStructureUpgradeModal(structure) {
+    if (!structure) return;
+    const axes = getStructureUpgradeAxes(structure);
+    if (axes.length === 0) return;
+
+    const AXIS_META = {
+      PatrolLv:     { icon: "🛡", name: "경비대", desc: "기본 방어력 + 재침략 저항" },
+      GarrisonLv:   { icon: "🏰", name: "수비대", desc: "수비 파티 수 + 적 Tier 보정" },
+      StationedLv:  { icon: "🏕", name: "주둔",   desc: "내 분대 주둔 캡 (Lv 1~3=1, 4~6=2, 7~10=3)" },
+      DurabilityLv: { icon: "💪", name: "내구도", desc: "구조물 HP (도시/관문 전용)" },
+    };
+    const RES_ICON = { stone: "🪨", iron: "⚒️", gold: "💰", wood: "🪵", grain: "🌾" };
+
+    const backdrop = document.createElement("div");
+    backdrop.className = "modal-backdrop";
+    document.body.appendChild(backdrop);
+
+    function render() {
+      const tracks = axes.map(axis => {
+        const meta = AXIS_META[axis];
+        const curLv = getStructureLv(structure.StructureID, axis);
+        const isMax = curLv >= STRUCTURE_UPGRADE_MAX_LV;
+        const cost = getStructureUpgradeCost(structure.StructureID, axis);
+        const check = canUpgradeStructure(structure.StructureID, axis);
+        const pct = Math.round((curLv / STRUCTURE_UPGRADE_MAX_LV) * 100);
+
+        // 효과 미리보기 (StationedLv만 즉시 효과 표시)
+        let effectPreview = "";
+        if (axis === "StationedLv" && structure.StructureType === "Fort") {
+          const curCap = stationedLvToCap(curLv);
+          const nextCap = isMax ? curCap : stationedLvToCap(curLv + 1);
+          if (nextCap > curCap) {
+            effectPreview = `<span class="up-effect">📈 주둔 캡 ${curCap} → ${nextCap}</span>`;
+          }
+        }
+
+        let costHtml = "";
+        if (cost) {
+          costHtml = Object.entries(cost).map(([res, amt]) => {
+            const have = getState().resources?.[res] || 0;
+            const lack = have < amt;
+            return `<span class="up-res ${lack ? 'lack' : ''}">${RES_ICON[res] || res} ${amt}</span>`;
+          }).join(" ");
+        }
+
+        let btnHtml = "";
+        if (isMax) {
+          btnHtml = `<button class="up-btn" disabled>최대 Lv</button>`;
+        } else if (check.ok) {
+          btnHtml = `<button class="up-btn primary" data-axis="${axis}">Lv ${curLv + 1} 업그레이드</button>`;
+        } else if (check.reason === "cost") {
+          btnHtml = `<button class="up-btn" disabled title="자원 부족">자원 부족</button>`;
+        } else {
+          btnHtml = `<button class="up-btn" disabled>${check.reason}</button>`;
+        }
+
+        return `
+          <div class="up-track">
+            <div class="up-track-header">
+              <span class="up-icon">${meta.icon}</span>
+              <span class="up-name">${meta.name} <small>(${axis})</small></span>
+              <span class="up-lv">${curLv} / ${STRUCTURE_UPGRADE_MAX_LV}</span>
+            </div>
+            <div class="up-desc">${meta.desc}</div>
+            <div class="up-progress"><div style="width:${pct}%"></div></div>
+            <div class="up-action">
+              <span class="up-cost">${costHtml}</span>
+              ${btnHtml}
+            </div>
+            ${effectPreview}
+          </div>
+        `;
+      }).join("");
+
+      backdrop.innerHTML = `
+        <div class="modal-card upgrade-modal">
+          <div class="modal-title">🔧 ${structure.Name || structure.StructureType} 업그레이드</div>
+          <div class="modal-body up-body">${tracks}</div>
+          <div class="modal-actions">
+            <button class="modal-btn" data-action="cancel">닫기</button>
+          </div>
+        </div>`;
+
+      backdrop.querySelectorAll(".up-btn[data-axis]").forEach(btn => {
+        btn.onclick = () => {
+          const axis = btn.dataset.axis;
+          const r = upgradeStructure(structure.StructureID, axis);
+          if (r.ok) {
+            showToast(`🔧 ${structure.Name || "거점"} ${AXIS_META[axis].name} Lv ${r.newLv}`, "exp");
+            saveState(getState());
+            render();  // 모달 갱신 (새 Lv/비용 반영)
+          } else {
+            showToast(`업그레이드 실패: ${r.reason}`, "warn");
+          }
+        };
+      });
+      backdrop.querySelector('[data-action="cancel"]').onclick = close;
+    }
+
+    function close() { backdrop.remove(); }
+    backdrop.onclick = (e) => { if (e.target === backdrop) close(); };
+    render();
   }
 
   function showToast(text, kind = "") {
