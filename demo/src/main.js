@@ -993,32 +993,44 @@ async function boot() {
     const actions = document.getElementById("hex-actions");
     actions.innerHTML = "";
 
-    // 이동 (조우 헥스는 교전 버튼으로 대체)
-    if (party && path && path.length > 1 && !encAtHex) {
+    // 이동 (경로 중 조우 감지 → 그 지점에서 자동 전투)
+    if (party && path && path.length > 1) {
       const blocked = structure && !isCaptured;
-      const btn = addAction(actions, `이동 (피로+${pathCost(path)})`, "#2c5aa6", () => {
-        if (blocked) return;
+      // 경로상 첫 번째 조우 감지 (시작점 제외)
+      let interceptIdx = -1;
+      let interceptEnc = null;
+      for (let i = 1; i < path.length; i++) {
+        const n = path[i];
+        const encOnPath = getEncounterAt(n.q, n.r);
+        if (encOnPath) {
+          interceptIdx = i;
+          interceptEnc = encOnPath;
+          break;
+        }
+      }
+      const label = interceptEnc
+        ? `⚔️ 이동 중 교전 (피로+${path[interceptIdx].cost})`
+        : (encAtHex ? `⚔️ 교전 (피로+${pathCost(path)})` : `이동 (피로+${pathCost(path)})`);
+      const color = (interceptEnc || encAtHex) ? "#a03030" : "#2c5aa6";
+      const btn = addAction(actions, label, color, () => {
+        if (blocked && !interceptEnc) return;
         pushUndo(`이동 → #${row.HexID}`);
-        animatedMove(party.id, path, () => {
-          moveParty(party.id, row.HexQ, row.HexR, pathCost(path));
+        // 경로 중 조우 있으면 해당 지점까지만 이동 후 전투
+        const walkPath = interceptEnc ? path.slice(0, interceptIdx + 1) : path;
+        const finalHex = interceptEnc ? path[interceptIdx] : { q: row.HexQ, r: row.HexR };
+        const moveCost = interceptEnc ? path[interceptIdx].cost : pathCost(path);
+        animatedMove(party.id, walkPath, () => {
+          moveParty(party.id, finalHex.q, finalHex.r, moveCost);
           cancelInteraction();
           saveState(getState());
+          const enc = interceptEnc || encAtHex;
+          if (enc) {
+            const encHex = tables.worldHex.get(hexId(finalHex.q, finalHex.r));
+            if (encHex) handleEncounter(party, encHex, enc);
+          }
         });
       });
-      if (blocked) { btn.disabled = true; btn.title = "점령 필요"; }
-    }
-
-    // 교전 (조우 헥스 — 이동 + 자동 전투 모달)
-    if (party && path && path.length > 1 && encAtHex && encTpl) {
-      addAction(actions, `⚔️ 교전 (피로+${pathCost(path)})`, "#a03030", () => {
-        pushUndo(`교전 → #${row.HexID}`);
-        animatedMove(party.id, path, () => {
-          moveParty(party.id, row.HexQ, row.HexR, pathCost(path));
-          cancelInteraction();
-          saveState(getState());
-          handleEncounter(party, row, encAtHex);
-        });
-      });
+      if (blocked && !interceptEnc) { btn.disabled = true; btn.title = "점령 필요"; }
     }
     // 파티가 이미 조우 헥스에 있는 경우 (같은 헥스 클릭)
     if (party && encAtHex && party.location.q === row.HexQ && party.location.r === row.HexR) {
@@ -1876,27 +1888,42 @@ async function boot() {
     const fatCost = 5 + rounds;
     for (const ch of playerChars) ch.fatigue = Math.max(0, ch.fatigue - fatCost);
 
-    if (result.win) {
-      removeEncounter(enc.id);
-      const dropRow = tpl.RewardDropId ? tables.drops.get(tpl.RewardDropId) : null;
-      const rewards = dropRow
-        ? { gold: dropRow.Gold||0, vis: dropRow.Vis||0, charExp: dropRow.CharEXP||0 }
-        : { gold: 30, vis: 10, charExp: 50 };
-      const gs = getState();
-      gs.resources.gold = (gs.resources.gold || 0) + rewards.gold;
-      gs.resources.vis = (gs.resources.vis || 0) + rewards.vis;
-      if (rewards.charExp > 0) {
-        for (const ch of playerChars) grantExp(ch.id, rewards.charExp, tables.characterExp);
+    // 전투 장면 연출 — 기존 combat과 동일한 overlays.startBattleScene 재사용
+    const sceneChars = playerChars.map(c => ({ spriteName: c.spriteName, name: c.name }));
+    const enemySlots = [enemyParty.Slot1, enemyParty.Slot2, enemyParty.Slot3]
+      .filter(Boolean)
+      .map(id => {
+        const etmpl = tables.fieldObjects.all().find(fo => fo.ID === id && fo.ObjectType === "Enemy");
+        let sprite = etmpl?.PrefabPath ? etmpl.PrefabPath.split("/")[1] : null;
+        if (!sprite || !sprite.startsWith("mon_")) sprite = pickMonsterSprite(id);
+        return { spriteName: sprite, name: etmpl?.Name || `E${id}` };
+      });
+
+    overlays.startBattleScene(hexRow.HexQ, hexRow.HexR, sceneChars, enemySlots, result.win, () => {
+      // 장면 종료 후 결과 반영
+      if (result.win) {
+        removeEncounter(enc.id);
+        const dropRow = tpl.RewardDropId ? tables.drops.get(tpl.RewardDropId) : null;
+        const rewards = dropRow
+          ? { gold: dropRow.Gold||0, vis: dropRow.Vis||0, charExp: dropRow.CharEXP||0 }
+          : { gold: 30, vis: 10, charExp: 50 };
+        const gs = getState();
+        gs.resources.gold = (gs.resources.gold || 0) + rewards.gold;
+        gs.resources.vis = (gs.resources.vis || 0) + rewards.vis;
+        if (rewards.charExp > 0) {
+          for (const ch of playerChars) grantExp(ch.id, rewards.charExp, tables.characterExp);
+        }
+        try { reportProgress(gs, tables, "encounter_win", 1); } catch {}
+        showToast(`⚔️ ${tpl.Name} 격파! +💰${rewards.gold} ✨${rewards.vis} 📘${rewards.charExp}EXP`, "levelup");
+      } else {
+        const home = getState().family.homeHex;
+        moveParty(party.id, home.q, home.r, 0);
+        for (const ch of playerChars) ch.hp = ch.maxHp;
+        showToast(`❌ ${tpl.Name}에게 패배 — 자동 귀환`, "warn");
       }
-      try { reportProgress(gs, tables, "encounter_win", 1); } catch {}
-      showToast(`⚔️ ${tpl.Name} 격파! +💰${rewards.gold} ✨${rewards.vis}`, "levelup");
-    } else {
-      const home = getState().family.homeHex;
-      moveParty(party.id, home.q, home.r, 0);
-      for (const ch of playerChars) ch.hp = ch.maxHp;
-      showToast(`❌ ${tpl.Name}에게 패배 — 자동 귀환`, "warn");
-    }
-    saveState(getState());
+      saveState(getState());
+      worldmap.requestDraw();
+    });
   }
 
   // 커스텀 confirm 모달 (browser confirm 대체)
