@@ -1697,6 +1697,114 @@ async function boot() {
     return MONSTER_SPRITES[hash % MONSTER_SPRITES.length];
   }
 
+  // ─────── 조우형 적 처리 (GDD §5-2) ───────
+  function handleEncounter(party, hexRow, enc) {
+    const tpl = tables.encounters.get(enc.templateId);
+    if (!tpl) return;
+    if (tpl.MovementAI === "hidden" && !enc.discovered) {
+      enc.discovered = true;
+      showToast(`💀 매복! ${tpl.Name}`, "warn");
+    }
+    const isAmbush = tpl.Ambush === 1 || tpl.Ambush === true;
+    const isFleeable = tpl.Fleeable === 1 || tpl.Fleeable === true;
+    if (isAmbush) {
+      showToast(`⚔️ ${tpl.Name} 기습!`, "warn");
+      setTimeout(() => executeEncounterBattle(party, hexRow, enc, tpl), 300);
+      return;
+    }
+    const body = `
+      <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
+        <div style="font-size:38px">${tpl.Icon || "⚔"}</div>
+        <div>
+          <div style="color:#ffd452;font-weight:bold">${tpl.Name}</div>
+          <div style="font-size:12px;color:#aaa">Lv ${tpl.MinLevel}~${tpl.MaxLevel} · ${tpl.EncounterType}</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#bbb">
+        ⚔️ 전투 — 승리 시 보상 획득<br>
+        🏃 도주 — 피로 -${tpl.FleePenalty || 0} (성공률 80%)
+      </div>`;
+    const modal = document.createElement("div");
+    modal.className = "modal-backdrop";
+    modal.innerHTML = `
+      <div class="modal-card">
+        <div class="modal-title">⚔ 조우!</div>
+        <div class="modal-body">${body}</div>
+        <div class="modal-actions">
+          ${isFleeable ? `<button class="modal-btn" data-action="flee">🏃 도주</button>` : ""}
+          <button class="modal-btn danger" data-action="fight">⚔️ 전투</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    const close = () => modal.remove();
+    modal.querySelector('[data-action="fight"]').onclick = () => {
+      close();
+      executeEncounterBattle(party, hexRow, enc, tpl);
+    };
+    if (isFleeable) {
+      modal.querySelector('[data-action="flee"]').onclick = () => {
+        close();
+        attemptFlee(party, hexRow, enc, tpl);
+      };
+    }
+  }
+
+  function attemptFlee(party, hexRow, enc, tpl) {
+    const penalty = tpl.FleePenalty || 0;
+    const success = Math.random() < 0.8;
+    const members = party.slots.map(id => id != null ? getCharacter(id) : null).filter(Boolean);
+    for (const ch of members) ch.fatigue = Math.max(0, ch.fatigue - penalty);
+    if (success) {
+      showToast(`🏃 도주 성공! 피로 -${penalty}`, "exp");
+      const home = getState().family.homeHex;
+      moveParty(party.id, home.q, home.r, 0);
+      saveState(getState());
+    } else {
+      showToast(`❌ 도주 실패! 전투 돌입`, "warn");
+      setTimeout(() => executeEncounterBattle(party, hexRow, enc, tpl), 300);
+    }
+  }
+
+  function executeEncounterBattle(party, hexRow, enc, tpl) {
+    const enemyParty = tables.enemyParties.all().find(ep => ep.PartyID === tpl.EnemyPartyRef);
+    if (!enemyParty) {
+      showToast(`전투 실패: 적 편성 없음 (PartyID=${tpl.EnemyPartyRef})`, "warn");
+      return;
+    }
+    const playerChars = party.slots.filter(id => id != null).map(id => getCharacter(id)).filter(Boolean);
+    const terrain = tables.terrains.get(hexRow.TerrainID);
+    const result = resolveCombat(playerChars, enemyParty, terrain, tables);
+    for (const pa of result.playerAfter) {
+      const ch = getCharacter(pa.id);
+      if (ch) ch.hp = pa.hp;
+    }
+    const rounds = result?.record?.totalTurns || 1;
+    const fatCost = 5 + rounds;
+    for (const ch of playerChars) ch.fatigue = Math.max(0, ch.fatigue - fatCost);
+
+    if (result.win) {
+      removeEncounter(enc.id);
+      const dropRow = tpl.RewardDropId ? tables.drops.get(tpl.RewardDropId) : null;
+      const rewards = dropRow
+        ? { gold: dropRow.Gold||0, vis: dropRow.Vis||0, charExp: dropRow.CharEXP||0 }
+        : { gold: 30, vis: 10, charExp: 50 };
+      const gs = getState();
+      gs.resources.gold = (gs.resources.gold || 0) + rewards.gold;
+      gs.resources.vis = (gs.resources.vis || 0) + rewards.vis;
+      if (rewards.charExp > 0) {
+        for (const ch of playerChars) grantExp(ch.id, rewards.charExp, tables);
+      }
+      try { reportProgress(gs, tables, "encounter_win", 1); } catch {}
+      showToast(`⚔️ ${tpl.Name} 격파! +💰${rewards.gold} ✨${rewards.vis}`, "levelup");
+    } else {
+      const home = getState().family.homeHex;
+      moveParty(party.id, home.q, home.r, 0);
+      for (const ch of playerChars) ch.hp = ch.maxHp;
+      showToast(`❌ ${tpl.Name}에게 패배 — 자동 귀환`, "warn");
+    }
+    saveState(getState());
+  }
+
   // 커스텀 confirm 모달 (browser confirm 대체)
   function showConfirm({ title, body, confirmLabel = "확인", cancelLabel = "취소", danger = false, onConfirm }) {
     const backdrop = document.createElement("div");
