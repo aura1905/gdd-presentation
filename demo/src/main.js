@@ -2017,6 +2017,18 @@ async function boot() {
   document.getElementById("btn-zoom-tile").addEventListener("click", () =>
     camera.setScale(CONFIG.camera.tileScale));
 
+  // 🧪 조우 리셋 버튼 (테스트용)
+  document.getElementById("btn-reset-encounters")?.addEventListener("click", () => {
+    const gs = getState();
+    const before = gs.encounters.length;
+    gs.encounters.length = 0;
+    seedInitialEncounters();
+    const after = gs.encounters.length;
+    saveState(gs);
+    emit("state:changed", { path: "encounters", action: "reset" });
+    showToast(`🧪 조우 리셋: ${before} → ${after}마리`, "exp");
+  });
+
   // 실행 취소 버튼 + Ctrl+Z
   const btnUndo = document.getElementById("btn-undo");
   function refreshUndoBtn() {
