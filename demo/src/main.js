@@ -207,9 +207,12 @@ async function boot() {
       territoryEl.classList.toggle("full", used >= max);
       territoryEl.classList.toggle("warn", used >= max * 0.8 && used < max);
     }
-    // 점령 도시/거점 카운트
+    // 점령 도시/거점 카운트 (가문 본거지 제외 — "추가로 점령한 것"만)
+    const homeHexIdHud = gs.family.homeHex.q * 100 + gs.family.homeHex.r;
+    const homeStructId = tables.worldHex.get(homeHexIdHud)?.StructureID;
     let cityN = 0, fortN = 0;
     for (const sid of gs.capturedStructures || []) {
+      if (sid === homeStructId) continue;  // 가문 본거지 제외
       const s = tables.structures.get(sid);
       if (!s) continue;
       if (s.StructureType === "City") cityN++;
