@@ -1841,7 +1841,7 @@ async function boot() {
       gs.resources.gold = (gs.resources.gold || 0) + rewards.gold;
       gs.resources.vis = (gs.resources.vis || 0) + rewards.vis;
       if (rewards.charExp > 0) {
-        for (const ch of playerChars) grantExp(ch.id, rewards.charExp, tables);
+        for (const ch of playerChars) grantExp(ch.id, rewards.charExp, tables.characterExp);
       }
       try { reportProgress(gs, tables, "encounter_win", 1); } catch {}
       showToast(`⚔️ ${tpl.Name} 격파! +💰${rewards.gold} ✨${rewards.vis}`, "levelup");
