@@ -25,6 +25,12 @@
       "issues": 0
     },
     {
+      "xml": "EncounterTemplateTable.xml",
+      "out": "encounter_template_table.json",
+      "rows": 5,
+      "issues": 0
+    },
+    {
       "xml": "EnemyPartyTable.xml",
       "out": "enemy_parties.json",
       "rows": 187,
@@ -141,8 +147,8 @@
   ],
   "issues": [],
   "totals": {
-    "xml_files": 23,
-    "json_files": 24,
-    "rows": 15233
+    "xml_files": 24,
+    "json_files": 25,
+    "rows": 15238
   }
 }

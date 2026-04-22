@@ -38,6 +38,17 @@
     <!-- 좌측 파티 목록 (로스터는 편성 모달에만) -->
     <aside id="party-list"></aside>
 
+    <!-- 거점 목록 패널 (점령 City/Fort) -->
+    <section id="outpost-panel" hidden>
+      <div class="fp-card">
+        <header class="fp-header">
+          <h2>🏰 내 거점</h2>
+          <button class="fp-close" id="btn-close-outpost" type="button">✕</button>
+        </header>
+        <div class="fp-content" id="outpost-content"></div>
+      </div>
+    </section>
+
     <!-- 가챠 패널 (C - 모집) -->
     <section id="gacha-panel" hidden>
       <div class="fp-card">
@@ -65,6 +76,7 @@
       <button id="btn-undo" type="button" title="실행 취소 (Ctrl+Z)" disabled>↶</button>
       <button id="btn-zoom-strat" type="button" title="전략맵">▣</button>
       <button id="btn-zoom-tile" type="button" title="타일맵">◉</button>
+      <button id="btn-outpost-list" type="button" title="내 거점 목록">🏰</button>
     </aside>
 
     <!-- 하단 액션 바 (접힌 상태로 시작) -->

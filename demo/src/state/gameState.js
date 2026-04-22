@@ -176,6 +176,9 @@ export function initState(tables) {
     // 우편함 (M6): 전투/이벤트 결과 아카이브
     // { id, type: "battle"|"levelup"|"system", turn, title, body, claimed, expiresTurn }
     mailbox: [],
+    // 필드 조우형 적 (GDD §5-2): 맵 위 조우 인스턴스
+    // { id, templateId, q, r, spawnedAt, nextMoveTurn, discovered, defeatCount }
+    encounters: [],
   };
 
   emit("state:init", state);
@@ -276,6 +279,7 @@ export function restoreState(saved, tables) {
   if (state.maxParties == null) state.maxParties = Math.max(2, state.parties?.length || 2);
   if (!state.siegeState) state.siegeState = {};
   if (!state.shards) state.shards = {};
+  if (!state.encounters) state.encounters = [];  // 조우형 적 (GDD §5-2)
   // 구 세이브 호환: gem 부족 시 최소 2800(10연차) 보장
   if (!state.resources) state.resources = {};
   if ((state.resources.gem || 0) < 2800) state.resources.gem = 3000;
@@ -817,6 +821,70 @@ export function getRosterWithStatus() {
     }
     return { ...ch, assignedPartyId: assignedTo, assignedSlotIdx: slotIdx };
   });
+}
+
+// ─────── 조우형 적 (GDD §5-2) ───────
+
+let _encounterSerial = 1;
+
+/** 조우 인스턴스 생성 → state.encounters에 push. */
+export function spawnEncounter(templateId, q, r) {
+  if (!state) return null;
+  const tpl = _tablesRef?.encounters?.get(templateId);
+  if (!tpl) return null;
+  const enc = {
+    id: `enc_${Date.now()}_${_encounterSerial++}`,
+    templateId,
+    q, r,
+    spawnedAt: state.meta?.turn || 1,
+    nextMoveTurn: (state.meta?.turn || 1) + 1,
+    discovered: tpl.MovementAI !== "hidden",
+    defeatCount: 0,
+  };
+  state.encounters.push(enc);
+  emit("state:changed", { path: "encounters", action: "spawn", id: enc.id });
+  return enc;
+}
+
+/** 조우 제거 (격파/만료 등). */
+export function removeEncounter(encounterId) {
+  if (!state) return;
+  const idx = state.encounters.findIndex(e => e.id === encounterId);
+  if (idx < 0) return;
+  state.encounters.splice(idx, 1);
+  emit("state:changed", { path: "encounters", action: "remove", id: encounterId });
+}
+
+/** 특정 헥스의 조우 (있으면 반환). */
+export function getEncounterAt(q, r) {
+  return state?.encounters?.find(e => e.q === q && e.r === r) || null;
+}
+
+/**
+ * 신규 세이브에 초기 시드 배치 (리볼도외 주변).
+ * 템플릿 ID 1001=야생, 1002=도적, 1004=네임드.
+ */
+export function seedInitialEncounters() {
+  if (!state || state.encounters.length > 0) return;
+  const home = state.family.homeHex;
+  if (!home) return;
+  // 홈(65,45) 주변 헥스에 배치 — 이동 범위 내
+  const seeds = [
+    { tpl: 1001, q: home.q - 3, r: home.r + 2 },   // 야생
+    { tpl: 1001, q: home.q + 2, r: home.r - 3 },   // 야생
+    { tpl: 1001, q: home.q - 4, r: home.r - 1 },   // 야생
+    { tpl: 1002, q: home.q + 3, r: home.r + 4 },   // 도적
+    { tpl: 1002, q: home.q - 5, r: home.r + 5 },   // 도적
+    { tpl: 1004, q: home.q + 5, r: home.r - 4 },   // 네임드 (약간 멀리)
+  ];
+  for (const s of seeds) {
+    // 헥스 유효성 검사 + passable 지형만
+    const hex = _tablesRef?.worldHex?.get(s.q * 100 + s.r);
+    if (!hex) continue;
+    const terrain = _tablesRef?.terrains?.get(hex.TerrainID);
+    if (!terrain?.Movable) continue;
+    spawnEncounter(s.tpl, s.q, s.r);
+  }
 }
 
 export function fullRestParty(partyId) {

@@ -22,7 +22,7 @@ import { getSiegeProgress, getStructureCurrentHP, markDefenderDefeated, isDefend
 import { recomputeFog, applyScout, getFogState, bumpAction } from "./engine/fog.js";
 import { endTurn, computeHexIncome } from "./engine/turn.js";
 import { initQuests, ensureQuestsState, getActiveQuests, getClaimableQuests, reportProgress, claimQuestReward } from "./engine/quests.js";
-import { addCharacterToRoster, addCharacterShard, spendResource } from "./state/gameState.js";
+import { addCharacterToRoster, addCharacterShard, spendResource, seedInitialEncounters } from "./state/gameState.js";
 import { rollOnce, getDupeShardCount, getGachaCost, GRADE_COLOR, GRADE_KR } from "./engine/gacha.js";
 
 const status = (msg) => {
@@ -123,11 +123,25 @@ async function boot() {
   camera.centerOn(home.x, home.y);
   camera.setScale(CONFIG.camera.tileScale);
 
+  // 쉼터 헥스 판정 — 가문 홈 또는 점령된 City/Fort
+  function isShelterHexClient(q, r) {
+    const gs = getState();
+    const home = gs.family?.homeHex;
+    if (home && q === home.q && r === home.r) return true;
+    const hex = tables.worldHex.get(q * 100 + r);
+    if (!hex?.StructureID) return false;
+    const struct = tables.structures.get(hex.StructureID);
+    if (struct?.StructureType !== "Fort" && struct?.StructureType !== "City") return false;
+    return gs.capturedStructures?.has(hex.StructureID);
+  }
+
   // --- Sync overlays with game state ---
   function syncOverlays() {
     const gs = getState();
     const home = gs.family?.homeHex;
-    overlays.setParties(gs.parties.map(p => {
+    // 쉼터 위치 파티는 맵 아이콘 숨김 (거점 목록 패널에서 따로 표시)
+    const visibleParties = gs.parties.filter(p => !isShelterHexClient(p.location.q, p.location.r));
+    overlays.setParties(visibleParties.map(p => {
       const leader = p.slots[0] != null ? getCharacter(p.slots[0]) : null;
       // 파티 최하 피로원 기준 (삼전식)
       const members = p.slots.filter(id => id != null).map(id => getCharacter(id)).filter(Boolean);
@@ -2669,6 +2683,125 @@ async function boot() {
     if (active) renderQuestContent(active.dataset.qsub);
   });
   updateQuestBadge();
+
+  // ─── 거점 목록 패널 ───
+  const outpostPanel = document.getElementById("outpost-panel");
+  const outpostContent = document.getElementById("outpost-content");
+  function openOutpostPanel() {
+    outpostPanel.hidden = false;
+    renderOutpostList();
+  }
+  function closeOutpostPanel() { outpostPanel.hidden = true; }
+  document.getElementById("btn-outpost-list")?.addEventListener("click", openOutpostPanel);
+  document.getElementById("btn-close-outpost")?.addEventListener("click", closeOutpostPanel);
+  outpostPanel?.addEventListener("click", (e) => {
+    if (e.target === outpostPanel) closeOutpostPanel();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !outpostPanel.hidden) closeOutpostPanel();
+  });
+
+  function renderOutpostList() {
+    const gs = getState();
+    // 점령된 City/Fort 모두 + 주둔 파티 매핑
+    const homeHexId = gs.family.homeHex.q * 100 + gs.family.homeHex.r;
+    const items = [];
+    for (const sid of gs.capturedStructures || []) {
+      const struct = tables.structures.get(sid);
+      if (!struct) continue;
+      if (struct.StructureType !== "City" && struct.StructureType !== "Fort") continue;
+      // 구조물의 위치 (StructureTable에 HexQ/HexR 저장됨, 또는 worldHex 역검색)
+      const hex = tables.worldHex.all().find(h => h.StructureID === sid);
+      if (!hex) continue;
+      const isHome = hex.HexID === homeHexId;
+      // 주둔 파티 = 그 헥스에 location한 파티 + homeHex 등록 파티 (둘 다 표시)
+      const presentParties = gs.parties.filter(p => p.location.q === hex.HexQ && p.location.r === hex.HexR);
+      const homedParties = gs.parties.filter(p => p.homeHex && p.homeHex.q === hex.HexQ && p.homeHex.r === hex.HexR);
+      items.push({ sid, struct, hex, isHome, presentParties, homedParties });
+    }
+    items.sort((a, b) => (b.isHome ? 1 : 0) - (a.isHome ? 1 : 0));  // 홈 도시 우선
+
+    if (items.length === 0) {
+      outpostContent.innerHTML = `<div class="fp-empty">점령한 도시/거점이 없습니다.</div>`;
+      return;
+    }
+
+    const html = items.map(it => {
+      const typeIcon = it.struct.StructureType === "City" ? "🏛️" : "🏰";
+      const homeBadge = it.isHome ? '<span class="op-home-badge">가문 도시</span>' : "";
+      // 주둔 파티 (현재 위치) 카드
+      const presentHtml = it.presentParties.map(p => {
+        const leader = p.slots[0] != null ? getCharacter(p.slots[0]) : null;
+        const minFat = (() => {
+          const m = p.slots.filter(id => id != null).map(id => getCharacter(id)).filter(Boolean);
+          return m.length ? Math.round(Math.min(...m.map(x => x.fatigue / x.maxFatigue)) * 100) : 100;
+        })();
+        return `<div class="op-party" data-select-party="${p.id}">
+          <span class="op-party-icon" style="background:${({F:'#c86464',S:'#5aaa5a',M:'#c8a03c',W:'#5a82c8',L:'#a050b4'})[leader?.jobClass]||'#888'}">${leader?.jobClass||'?'}</span>
+          <span class="op-party-name">${p.name}</span>
+          <span class="op-party-fat">⚡${minFat}</span>
+        </div>`;
+      }).join("");
+      // 등록 파티 (다른 위치인 경우 — 이 거점이 홈)
+      const homedNotPresent = it.homedParties.filter(hp => !it.presentParties.includes(hp));
+      const homedHtml = homedNotPresent.map(p => {
+        const leader = p.slots[0] != null ? getCharacter(p.slots[0]) : null;
+        return `<div class="op-party op-party-away" data-select-party="${p.id}" title="배치(홈)는 여기지만 현재 출격 중">
+          <span class="op-party-icon" style="background:${({F:'#c86464',S:'#5aaa5a',M:'#c8a03c',W:'#5a82c8',L:'#a050b4'})[leader?.jobClass]||'#888'}">${leader?.jobClass||'?'}</span>
+          <span class="op-party-name">${p.name}</span>
+          <span class="op-party-status">출격 중</span>
+        </div>`;
+      }).join("");
+      const partiesBlock = (presentHtml || homedHtml)
+        ? `<div class="op-parties">${presentHtml}${homedHtml}</div>`
+        : `<div class="op-empty">주둔 파티 없음</div>`;
+      return `<div class="op-card" data-go="${it.hex.HexQ},${it.hex.HexR}">
+        <div class="op-head">
+          <span class="op-type">${typeIcon}</span>
+          <span class="op-name">${it.struct.Name || it.struct.StructureType} #${it.sid}</span>
+          ${homeBadge}
+          <button class="op-go-btn" data-go-cam="${it.hex.HexQ},${it.hex.HexR}" type="button" title="카메라 이동">📍</button>
+        </div>
+        ${partiesBlock}
+      </div>`;
+    }).join("");
+
+    outpostContent.innerHTML = `<div class="op-list">${html}</div>`;
+
+    // 카메라 이동
+    outpostContent.querySelectorAll('button[data-go-cam]').forEach(btn => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const [q, r] = btn.dataset.goCam.split(",").map(Number);
+        const w = hexWorld(q, r);
+        camera.centerOn(w.x, w.y);
+        worldmap.requestDraw();
+      });
+    });
+    // 카드 전체 클릭 = 카메라 이동
+    outpostContent.querySelectorAll('.op-card').forEach(card => {
+      card.addEventListener("click", (e) => {
+        if (e.target.closest('[data-select-party]') || e.target.closest('.op-go-btn')) return;
+        const [q, r] = card.dataset.go.split(",").map(Number);
+        const w = hexWorld(q, r);
+        camera.centerOn(w.x, w.y);
+        worldmap.requestDraw();
+      });
+    });
+    // 파티 카드 클릭 = 선택
+    outpostContent.querySelectorAll('[data-select-party]').forEach(el => {
+      el.addEventListener("click", (e) => {
+        e.stopPropagation();
+        selectParty(el.dataset.selectParty);
+        closeOutpostPanel();
+      });
+    });
+  }
+
+  // 거점 목록 자동 갱신 (열려있을 때만)
+  on("state:changed", () => {
+    if (outpostPanel && !outpostPanel.hidden) renderOutpostList();
+  });
 
   // Animation loop
   function tick() { worldmap.draw(); requestAnimationFrame(tick); }

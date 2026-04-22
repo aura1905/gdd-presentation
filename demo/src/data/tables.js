@@ -32,6 +32,7 @@ const TABLE_CONFIG = {
   stages:            { file: "stages.json",            pk: "StageID" },
   battleFields:      { file: "battle_fields.json",     pk: "ID" },
   worldHex:          { file: "world_hex.json",         pk: "HexID" },
+  encounters:        { file: "encounter_template_table.json", pk: "TemplateID" },
 };
 
 async function fetchJson(path) {
