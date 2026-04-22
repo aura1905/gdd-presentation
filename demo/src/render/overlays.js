@@ -14,6 +14,8 @@ export function createOverlays() {
     animations: [],      // [{partyId, path, progress, speed, onComplete}]
     battleScene: null,   // {q, r, players, enemies, won, startMs, onDone}
     labelHits: [],       // [{partyId, x, y, w, h}] — 매 draw마다 갱신, 클릭 hit-test용
+    encounters: [],      // [{id, q, r, icon, name, type, level, discovered}]
+    encounterHits: [],   // [{encounterId, x, y, w, h}] — 클릭 hit-test
   };
 
   function hexVertsIso(cx, cy, size) {
@@ -66,8 +68,9 @@ export function createOverlays() {
       strokeHex(ctx, s.x, s.y, size, "#ffd452", Math.max(1.5, 3 * camera.scale));
     }
 
-    // 매 draw마다 라벨 hit-test 영역 초기화
+    // 매 draw마다 hit-test 영역 초기화
     state.labelHits = [];
+    state.encounterHits = [];
 
     // Advance animations
     const now = performance.now();
@@ -94,6 +97,9 @@ export function createOverlays() {
     }
     if (state.animations.length > 0) requestDraw?.();
 
+    // 필드 조우형 적 아이콘 (GDD §5-2) — 파티보다 먼저 그려서 파티가 위에 오게
+    drawEncounters(ctx, camera, size);
+
     // Party icons — offset when multiple share same hex (skip animated parties)
     const animatingIds = new Set(state.animations.map(a => a.partyId));
     const hexGroups = new Map();
@@ -116,6 +122,62 @@ export function createOverlays() {
 
     // 전투 연출 (월드맵 위 직접 렌더)
     drawBattleScene(ctx, camera);
+  }
+
+  /** 필드 조우형 적 렌더 (GDD §5-2). */
+  function drawEncounters(ctx, camera, hexSize) {
+    if (!state.encounters.length) return;
+    for (const enc of state.encounters) {
+      if (!enc.discovered) continue; // 숨김(함정) 미발견 시 그리지 않음
+      const p = hexWorld(enc.q, enc.r);
+      const s = camera.worldToScreen(p.x, p.y);
+      const margin = hexSize * 2;
+      if (s.x < -margin || s.x > ctx.canvas.clientWidth + margin ||
+          s.y < -margin || s.y > ctx.canvas.clientHeight + margin) continue;
+
+      const r = hexSize * 0.45;
+      // 배경 원 (유형별 색)
+      const typeColor = {
+        wild: "#6a9a3a", bandit: "#a04040", patrol: "#4080c0",
+        convoy: "#c0a040", named: "#b850c0", trap: "#505050",
+      }[enc.type] || "#888";
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(0,0,0,0.75)";
+      ctx.fill();
+      ctx.strokeStyle = typeColor;
+      ctx.lineWidth = Math.max(1.5, hexSize * 0.06);
+      ctx.stroke();
+
+      // 이모지 아이콘
+      ctx.font = `${Math.max(10, hexSize * 0.55)}px 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif`;
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillStyle = "#fff";
+      ctx.fillText(enc.icon || "⚔", s.x, s.y + hexSize * 0.04);
+
+      // Lv 배지 (우상단)
+      if (enc.level != null && hexSize > 10) {
+        const lx = s.x + r * 0.7, ly = s.y - r * 0.7;
+        const lr = Math.max(6, hexSize * 0.22);
+        ctx.beginPath();
+        ctx.arc(lx, ly, lr, 0, Math.PI * 2);
+        ctx.fillStyle = "#d4a843";
+        ctx.fill();
+        ctx.strokeStyle = "#000";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.font = `bold ${Math.max(8, hexSize * 0.28)}px 'Segoe UI'`;
+        ctx.fillStyle = "#1a1000";
+        ctx.fillText(enc.level, lx, ly);
+      }
+
+      // 클릭 영역 등록
+      state.encounterHits.push({
+        encounterId: enc.id,
+        x: s.x - r - 2, y: s.y - r - 2,
+        w: (r + 2) * 2, h: (r + 2) * 2,
+      });
+    }
   }
 
   function drawPartyIcon(ctx, cx, cy, hexSize, party, tagName = "idle") {
@@ -319,6 +381,17 @@ export function createOverlays() {
       const h = state.labelHits[i];
       if (sx >= h.x && sx <= h.x + h.w && sy >= h.y && sy <= h.y + h.h) {
         return h.partyId;
+      }
+    }
+    return null;
+  }
+
+  function setEncounters(encounters) { state.encounters = encounters; }
+  function hitTestEncounter(sx, sy) {
+    for (let i = state.encounterHits.length - 1; i >= 0; i--) {
+      const h = state.encounterHits[i];
+      if (sx >= h.x && sx <= h.x + h.w && sy >= h.y && sy <= h.y + h.h) {
+        return h.encounterId;
       }
     }
     return null;
@@ -530,6 +603,6 @@ export function createOverlays() {
   return {
     draw, setSelected, clearSelected, setParties, setPathPreview, clearPathPreview,
     animateParty, isAnimating, setRequestDraw, startBattleScene, state,
-    hitTestLabel,
+    hitTestLabel, setEncounters, hitTestEncounter,
   };
 }

@@ -82,6 +82,8 @@ async function boot() {
   // M5-B: 부팅 시 모든 캐릭터에 훈련 보정 반영 (옛 세이브 호환)
   recomputeAllCharacters(tables);
   recomputeFog(gameState, tables);
+  // 필드 조우형 적 초기 시드 (신규 세이브만)
+  seedInitialEncounters();
 
   // GDD §9-3: 리더 사망한 파티는 전장 잔류 불가 — 복원 시 자동 퇴각(구 세이브 호환)
   {
@@ -163,6 +165,20 @@ async function boot() {
         statusLabel,
       };
     }));
+    // 필드 조우형 적 전달
+    const encList = (gs.encounters || []).map(e => {
+      const tpl = tables.encounters.get(e.templateId);
+      return {
+        id: e.id,
+        q: e.q, r: e.r,
+        icon: tpl?.Icon || "⚔",
+        name: tpl?.Name || "?",
+        type: tpl?.EncounterType || "wild",
+        level: tpl?.MinLevel || 1,
+        discovered: e.discovered,
+      };
+    });
+    overlays.setEncounters(encList);
     worldmap.requestDraw();
   }
   function syncAll() {
