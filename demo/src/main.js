@@ -203,10 +203,22 @@ async function boot() {
     if (territoryEl) {
       const used = getTerritoryUsedSlots();
       const max = getTerritoryMaxSlots();
-      territoryEl.innerHTML = `🏰 영지 <b>${used}</b><span class="hud-badge-sep">/</span><span class="hud-badge-max">${max}</span>`;
+      territoryEl.innerHTML = `🏞️ 영지 <b>${used}</b><span class="hud-badge-sep">/</span><span class="hud-badge-max">${max}</span>`;
       territoryEl.classList.toggle("full", used >= max);
       territoryEl.classList.toggle("warn", used >= max * 0.8 && used < max);
     }
+    // 점령 도시/거점 카운트
+    let cityN = 0, fortN = 0;
+    for (const sid of gs.capturedStructures || []) {
+      const s = tables.structures.get(sid);
+      if (!s) continue;
+      if (s.StructureType === "City") cityN++;
+      else if (s.StructureType === "Fort") fortN++;
+    }
+    const cityEl = document.getElementById("hud-city-count");
+    const fortEl = document.getElementById("hud-fort-count");
+    if (cityEl) cityEl.textContent = cityN;
+    if (fortEl) fortEl.textContent = fortN;
   }
   ensurePartySelected();
   syncOverlays();
@@ -2709,6 +2721,7 @@ async function boot() {
   }
   function closeOutpostPanel() { outpostPanel.hidden = true; }
   document.getElementById("btn-outpost-list")?.addEventListener("click", openOutpostPanel);
+  document.getElementById("hud-outposts")?.addEventListener("click", openOutpostPanel);
   document.getElementById("btn-close-outpost")?.addEventListener("click", closeOutpostPanel);
   outpostPanel?.addEventListener("click", (e) => {
     if (e.target === outpostPanel) closeOutpostPanel();

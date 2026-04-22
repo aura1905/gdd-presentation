@@ -66,6 +66,8 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .hud-badge.warn { border-color: #fc4; background: rgba(60,40,15,0.95); }
 .hud-badge.full { border-color: #f44; background: rgba(60,15,15,0.95); }
 .hud-badge.full b { color: #fcc; }
+.hud-badge.clickable { cursor: pointer; transition: filter 0.15s; }
+.hud-badge.clickable:hover { filter: brightness(1.25); }
 #btn-end-turn { background: #444; color: #eee; border: 1px solid #666;
   padding: 4px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; }
 #btn-end-turn:disabled { opacity: 0.4; cursor: not-allowed; }
