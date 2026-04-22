@@ -739,13 +739,25 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .quest-btn.done { background: #2a3a2a; border-color: #485; color: #8a8; cursor: default; }
 .quest-btn:disabled:not(.done) { background: #333; border-color: #555; color: #888; cursor: not-allowed; }
 
-/* 거점 목록 패널 */
+/* 거점 목록 드롭다운 — HUD 배지 아래 우상단 고정 */
 #outpost-panel[hidden] { display: none !important; }
-#outpost-panel { position: absolute; inset: 0; z-index: 40;
-  background: rgba(0,0,0,0.55);
-  -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
-  display: flex; align-items: center; justify-content: center;
-  pointer-events: auto; animation: fp-back-in 0.2s ease; }
+#outpost-panel { position: absolute; top: 50px; right: 8px;
+  width: min(340px, calc(100% - 16px));
+  max-height: 70svh; z-index: 40;
+  pointer-events: auto;
+  animation: dropdown-in 0.18s ease-out; }
+#outpost-panel .fp-card {
+  width: 100%; height: auto; max-height: 70svh;
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #1a1410, #0f0c08);
+  border: 2px solid #c8a848; border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.7);
+  overflow: hidden; }
+#outpost-panel .fp-content { flex: 1; overflow-y: auto; padding: 10px; }
+@keyframes dropdown-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 .op-list { display: flex; flex-direction: column; gap: 8px;
   max-width: 600px; margin: 0 auto; }
 .op-card { background: rgba(30,25,18,0.85); border: 1px solid #443;

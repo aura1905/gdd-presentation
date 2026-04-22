@@ -22,7 +22,7 @@ import { getSiegeProgress, getStructureCurrentHP, markDefenderDefeated, isDefend
 import { recomputeFog, applyScout, getFogState, bumpAction } from "./engine/fog.js";
 import { endTurn, computeHexIncome } from "./engine/turn.js";
 import { initQuests, ensureQuestsState, getActiveQuests, getClaimableQuests, reportProgress, claimQuestReward } from "./engine/quests.js";
-import { addCharacterToRoster, addCharacterShard, spendResource, seedInitialEncounters } from "./state/gameState.js";
+import { addCharacterToRoster, addCharacterShard, spendResource, seedInitialEncounters, getEncounterAt, removeEncounter } from "./state/gameState.js";
 import { rollOnce, getDupeShardCount, getGachaCost, GRADE_COLOR, GRADE_KR } from "./engine/gacha.js";
 
 const status = (msg) => {
@@ -970,6 +970,9 @@ async function boot() {
           moveParty(party.id, row.HexQ, row.HexR, pathCost(path));
           cancelInteraction();
           saveState(getState());
+          // 조우 체크 (GDD §5-2) — 이동 완료 후 목표 헥스에 조우 있으면 모달
+          const enc = getEncounterAt(row.HexQ, row.HexR);
+          if (enc) handleEncounter(party, row, enc);
         });
       });
       if (blocked) { btn.disabled = true; btn.title = "점령 필요"; }
@@ -2720,11 +2723,20 @@ async function boot() {
     renderOutpostList();
   }
   function closeOutpostPanel() { outpostPanel.hidden = true; }
-  document.getElementById("btn-outpost-list")?.addEventListener("click", openOutpostPanel);
-  document.getElementById("hud-outposts")?.addEventListener("click", openOutpostPanel);
+  // 트리거 — 토글 + 외부 클릭 차단 (drop down 위치 안 닫히게)
+  document.getElementById("btn-outpost-list")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (outpostPanel.hidden) openOutpostPanel(); else closeOutpostPanel();
+  });
+  document.getElementById("hud-outposts")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (outpostPanel.hidden) openOutpostPanel(); else closeOutpostPanel();
+  });
   document.getElementById("btn-close-outpost")?.addEventListener("click", closeOutpostPanel);
-  outpostPanel?.addEventListener("click", (e) => {
-    if (e.target === outpostPanel) closeOutpostPanel();
+  // 패널 내부 클릭은 닫히지 않게 — 외부 클릭만 닫기
+  outpostPanel?.addEventListener("click", (e) => e.stopPropagation());
+  document.addEventListener("click", () => {
+    if (!outpostPanel.hidden) closeOutpostPanel();
   });
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && !outpostPanel.hidden) closeOutpostPanel();
