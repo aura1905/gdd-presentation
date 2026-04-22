@@ -1024,9 +1024,26 @@ async function boot() {
           cancelInteraction();
           saveState(getState());
           const enc = interceptEnc || encAtHex;
-          if (enc) {
-            const encHex = tables.worldHex.get(hexId(finalHex.q, finalHex.r));
-            if (encHex) handleEncounter(party, encHex, enc);
+          if (!enc) return;
+          const encHex = tables.worldHex.get(hexId(finalHex.q, finalHex.r));
+          if (!encHex) return;
+          // 이동 중 충돌 = 즉시 교전(모달 없이) + 승리 시 잔여 경로 계속 이동
+          if (interceptEnc) {
+            const remainPath = path.slice(interceptIdx);  // [교전지점, ..., 목적지]
+            handleEncounter(party, encHex, enc, {
+              skipModal: true,
+              onWin: () => {
+                if (remainPath.length <= 1) return;
+                const remainCost = pathCost(remainPath);
+                animatedMove(party.id, remainPath, () => {
+                  moveParty(party.id, row.HexQ, row.HexR, remainCost);
+                  saveState(getState());
+                });
+              },
+            });
+          } else {
+            // 목적지가 조우 — 기존대로 모달
+            handleEncounter(party, encHex, enc);
           }
         });
       });
@@ -1778,7 +1795,8 @@ async function boot() {
   }
 
   // ─────── 조우형 적 처리 (GDD §5-2) ───────
-  function handleEncounter(party, hexRow, enc) {
+  /** @param opts {skipModal: bool, onWin: fn, onLose: fn} */
+  function handleEncounter(party, hexRow, enc, opts = {}) {
     const tpl = tables.encounters.get(enc.templateId);
     if (!tpl) return;
     if (tpl.MovementAI === "hidden" && !enc.discovered) {
@@ -1787,9 +1805,10 @@ async function boot() {
     }
     const isAmbush = tpl.Ambush === 1 || tpl.Ambush === true;
     const isFleeable = tpl.Fleeable === 1 || tpl.Fleeable === true;
-    if (isAmbush) {
-      showToast(`⚔️ ${tpl.Name} 기습!`, "warn");
-      setTimeout(() => executeEncounterBattle(party, hexRow, enc, tpl), 300);
+    // skipModal = 이동 중 충돌 or 기습 → 즉시 전투
+    if (isAmbush || opts.skipModal) {
+      if (isAmbush) showToast(`⚔️ ${tpl.Name} 기습!`, "warn");
+      setTimeout(() => executeEncounterBattle(party, hexRow, enc, tpl, opts), 300);
       return;
     }
     const body = `
@@ -1871,7 +1890,7 @@ async function boot() {
     }
   }
 
-  function executeEncounterBattle(party, hexRow, enc, tpl) {
+  function executeEncounterBattle(party, hexRow, enc, tpl, opts = {}) {
     const enemyParty = tables.enemyParties.all().find(ep => ep.PartyID === tpl.EnemyPartyRef);
     if (!enemyParty) {
       showToast(`전투 실패: 적 편성 없음 (PartyID=${tpl.EnemyPartyRef})`, "warn");
@@ -1915,14 +1934,18 @@ async function boot() {
         }
         try { reportProgress(gs, tables, "encounter_win", 1); } catch {}
         showToast(`⚔️ ${tpl.Name} 격파! +💰${rewards.gold} ✨${rewards.vis} 📘${rewards.charExp}EXP`, "levelup");
+        saveState(getState());
+        worldmap.requestDraw();
+        opts.onWin?.();   // 승리 후 후속 처리 (예: 원래 목적지까지 계속 이동)
       } else {
         const home = getState().family.homeHex;
         moveParty(party.id, home.q, home.r, 0);
         for (const ch of playerChars) ch.hp = ch.maxHp;
         showToast(`❌ ${tpl.Name}에게 패배 — 자동 귀환`, "warn");
+        saveState(getState());
+        worldmap.requestDraw();
+        opts.onLose?.();
       }
-      saveState(getState());
-      worldmap.requestDraw();
     });
   }
 
