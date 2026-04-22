@@ -1045,12 +1045,13 @@ export function seedInitialEncounters() {
 }
 
 /**
- * 곡물 비용 휴식 — 회복 필요분에 비례 (1 곡물 = 10 피로 회복, 슬롯별 합산).
- * 만피로 슬롯은 비용 0 (의미 없음). 풀피로 풀파티는 비용 0 → 비활성 권장.
+ * 곡물 비용 휴식 — HP 회복 필요분에 비례 (1 곡물 = 10 HP 회복, 슬롯별 합산).
+ * 만피 슬롯은 비용 0 (의미 없음). 풀HP 풀파티는 비용 0 → 비활성 권장.
+ * 피로는 자연 회복 (거점 머무르면 턴당 자동). 휴식은 HP 회복 전용.
  * GDD `fatigue_balance_table.md §5-3` 정식판: 음식 시스템(배럭). 데모는 곡물 prox.
  * @returns {{ ok, cost, missing? }}
  */
-export const REST_FATIGUE_PER_GRAIN = 10;  // 1 곡물 = 10 피로
+export const REST_HP_PER_GRAIN = 10;  // 1 곡물 = 10 HP
 export function getRestCost(party) {
   if (!party) return 0;
   let total = 0;
@@ -1058,8 +1059,8 @@ export function getRestCost(party) {
     if (cid == null) continue;
     const ch = state?.characters.find(c => c.id === cid);
     if (!ch) continue;
-    const missing = (ch.maxFatigue || 100) - (ch.fatigue || 0);
-    if (missing > 0) total += Math.ceil(missing / REST_FATIGUE_PER_GRAIN);
+    const missing = (ch.maxHp || 100) - (ch.hp || 0);
+    if (missing > 0) total += Math.ceil(missing / REST_HP_PER_GRAIN);
   }
   return total;
 }
@@ -1068,7 +1069,7 @@ export function restPartyWithGrain(partyId) {
   const party = state.parties.find(p => p.id === partyId);
   if (!party) return { ok: false, reason: "no_party" };
   const cost = getRestCost(party);
-  if (cost === 0) return { ok: false, reason: "no_need" };  // 이미 풀피로
+  if (cost === 0) return { ok: false, reason: "no_need" };  // 이미 풀HP
   const have = state.resources?.grain || 0;
   if (have < cost) return { ok: false, reason: "insufficient", cost, have, missing: cost - have };
   state.resources.grain = have - cost;
@@ -1076,8 +1077,7 @@ export function restPartyWithGrain(partyId) {
     if (cid == null) continue;
     const ch = getCharacter(cid);
     if (ch) {
-      ch.fatigue = ch.maxFatigue;
-      ch.status = "normal";
+      ch.hp = ch.maxHp;
     }
   }
   emit("state:changed", { path: "parties", partyId, action: "rest" });

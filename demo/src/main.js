@@ -1097,8 +1097,8 @@ async function boot() {
       }
     }
 
-    // 휴식 — 점령된 City/Fort + 파티 현재 위치 (GDD: 월드맵은 구조물에서만 회복)
-    // 곡물 비용 슬롯당 5 (정식판 음식 시스템 prox)
+    // 휴식 — 점령된 City/Fort + 파티 현재 위치. HP 회복 전용 (피로는 자연 회복).
+    // 1 곡물 = 10 HP, 슬롯별 부족분 합산 (정식판 음식 시스템 prox)
     const isRestableShelter = structure && isCaptured
       && (structure.StructureType === "City" || structure.StructureType === "Fort");
     if (party && isRestableShelter && party.location.q === row.HexQ && party.location.r === row.HexR) {
@@ -1106,11 +1106,11 @@ async function boot() {
       const haveGrain = getState().resources?.grain || 0;
       const noNeed = cost === 0;
       const canRest = !noNeed && haveGrain >= cost;
-      const label = noNeed ? "🛌 풀피로" : `🛌 휴식 (🌾 ${cost})`;
+      const label = noNeed ? "🛌 풀HP" : `🛌 휴식 (🌾 ${cost})`;
       const btn = addAction(actions, label, canRest ? "#3a5a7a" : "#444", () => {
         const r = restPartyWithGrain(party.id);
         if (r.ok) {
-          showToast(`🛌 ${party.name} 휴식 — 피로 풀회복 (🌾 ${r.cost} 차감)`, "exp");
+          showToast(`🛌 ${party.name} 휴식 — HP 풀회복 (🌾 ${r.cost} 차감)`, "exp");
           const ps = camera.worldToScreen(hexWorld(row.HexQ, row.HexR).x, hexWorld(row.HexQ, row.HexR).y);
           showTilePanel(row, null, tables, ps.x, ps.y + 40);
         } else if (r.reason === "insufficient") {
@@ -1120,7 +1120,7 @@ async function boot() {
       if (!canRest) {
         btn.disabled = true;
         btn.title = noNeed
-          ? "이미 모든 슬롯이 풀피로 — 휴식 불필요"
+          ? "이미 모든 슬롯이 풀HP — 휴식 불필요"
           : `곡물 ${cost - haveGrain} 부족 (보유 ${haveGrain}/필요 ${cost})`;
       }
     }
