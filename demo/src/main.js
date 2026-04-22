@@ -802,7 +802,31 @@ async function boot() {
   let selectedHexRow = null;
 
   camera.onClick((sx, sy) => {
-    // 1) 맵 위 파티 라벨 클릭 우선 체크 → 해당 파티 선택
+    // 1) 조우 아이콘 클릭 우선 체크 → 해당 헥스 선택 + 패널 표시
+    const encId = overlays.hitTestEncounter(sx, sy);
+    if (encId) {
+      const gs = getState();
+      const enc = gs.encounters.find(e => e.id === encId);
+      if (enc) {
+        const encHexRow = tables.worldHex.get(hexId(enc.q, enc.r));
+        if (encHexRow) {
+          selectedHexRow = encHexRow;
+          overlays.setSelected(enc.q, enc.r);
+          const sp = getSelectedParty();
+          let path = null;
+          if (sp && (sp.location.q !== enc.q || sp.location.r !== enc.r)) {
+            path = findPath(sp.location.q, sp.location.r, enc.q, enc.r, tables);
+            if (path && path.length > 1) overlays.setPathPreview(path);
+          }
+          const ps = camera.worldToScreen(hexWorld(enc.q, enc.r).x, hexWorld(enc.q, enc.r).y);
+          showTilePanel(encHexRow, path, tables, ps.x, ps.y + 40);
+          worldmap.requestDraw();
+        }
+      }
+      return;
+    }
+
+    // 2) 맵 위 파티 라벨 클릭 → 해당 파티 선택
     const labelPartyId = overlays.hitTestLabel(sx, sy);
     if (labelPartyId) {
       selectParty(labelPartyId);
@@ -902,6 +926,12 @@ async function boot() {
     } else {
       info.push(`<span style="color:#888">⚫ 안개 — 정보 미공개</span>`);
     }
+    // 조우형 적 정보 (GDD §5-2)
+    const encAtHex = getEncounterAt(row.HexQ, row.HexR);
+    const encTpl = encAtHex ? tables.encounters.get(encAtHex.templateId) : null;
+    if (encTpl && encAtHex.discovered) {
+      info.push(`<span style="color:#f86">${encTpl.Icon} ${encTpl.Name} (Lv ${encTpl.MinLevel})</span>`);
+    }
     if (path) info.push(`경로: ${path.length - 1}칸 · 피로+${pathCost(path)}`);
 
     // 공성 진행 — 미점령 구조물 HP 게이지
@@ -963,8 +993,8 @@ async function boot() {
     const actions = document.getElementById("hex-actions");
     actions.innerHTML = "";
 
-    // 이동
-    if (party && path && path.length > 1) {
+    // 이동 (조우 헥스는 교전 버튼으로 대체)
+    if (party && path && path.length > 1 && !encAtHex) {
       const blocked = structure && !isCaptured;
       const btn = addAction(actions, `이동 (피로+${pathCost(path)})`, "#2c5aa6", () => {
         if (blocked) return;
@@ -973,12 +1003,28 @@ async function boot() {
           moveParty(party.id, row.HexQ, row.HexR, pathCost(path));
           cancelInteraction();
           saveState(getState());
-          // 조우 체크 (GDD §5-2) — 이동 완료 후 목표 헥스에 조우 있으면 모달
-          const enc = getEncounterAt(row.HexQ, row.HexR);
-          if (enc) handleEncounter(party, row, enc);
         });
       });
       if (blocked) { btn.disabled = true; btn.title = "점령 필요"; }
+    }
+
+    // 교전 (조우 헥스 — 이동 + 자동 전투 모달)
+    if (party && path && path.length > 1 && encAtHex && encTpl) {
+      addAction(actions, `⚔️ 교전 (피로+${pathCost(path)})`, "#a03030", () => {
+        pushUndo(`교전 → #${row.HexID}`);
+        animatedMove(party.id, path, () => {
+          moveParty(party.id, row.HexQ, row.HexR, pathCost(path));
+          cancelInteraction();
+          saveState(getState());
+          handleEncounter(party, row, encAtHex);
+        });
+      });
+    }
+    // 파티가 이미 조우 헥스에 있는 경우 (같은 헥스 클릭)
+    if (party && encAtHex && party.location.q === row.HexQ && party.location.r === row.HexR) {
+      addAction(actions, `⚔️ 교전`, "#a03030", () => {
+        handleEncounter(party, row, encAtHex);
+      });
     }
 
     // 탐색 (적 있는 헥스)
