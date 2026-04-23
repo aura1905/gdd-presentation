@@ -27,13 +27,13 @@
     {
       "xml": "EncounterTemplateTable.xml",
       "out": "encounter_template_table.json",
-      "rows": 5,
+      "rows": 47,
       "issues": 0
     },
     {
       "xml": "EnemyPartyTable.xml",
       "out": "enemy_parties.json",
-      "rows": 187,
+      "rows": 230,
       "issues": 0
     },
     {
@@ -111,7 +111,7 @@
     {
       "xml": "StringTable_KR.xml",
       "out": "strings_kr.json",
-      "rows": 1590,
+      "rows": 1591,
       "issues": 0
     },
     {
@@ -149,6 +149,6 @@
   "totals": {
     "xml_files": 24,
     "json_files": 25,
-    "rows": 15238
+    "rows": 15324
   }
 }
