@@ -135,67 +135,83 @@ export function createOverlays() {
       if (s.x < -margin || s.x > ctx.canvas.clientWidth + margin ||
           s.y < -margin || s.y > ctx.canvas.clientHeight + margin) continue;
 
-      // 네임드는 크기 20% 확대 + 테두리 두껍게
       const isNamed = enc.type === "named";
-      const r = hexSize * (isNamed ? 0.55 : 0.45);
-      const typeColor = {
-        wild: "#6a9a3a", bandit: "#a04040", patrol: "#4080c0",
-        convoy: "#c0a040", named: "#ff9a3a", trap: "#505050",
-      }[enc.type] || "#888";
+      const portraitH = hexSize * (isNamed ? 1.55 : 1.3);   // 네임드는 살짝 크게
+      const baseY = s.y + hexSize * 0.05;                   // 발 위치 (PC와 동일 기준)
 
-      // 네임드 전용: 외곽 glow 링 + 펄스
-      if (isNamed) {
-        const pulse = 0.5 + 0.3 * Math.sin(performance.now() / 500);
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, r * 1.35, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(255,180,60,${pulse})`;
-        ctx.lineWidth = Math.max(2, hexSize * 0.1);
-        ctx.stroke();
-      }
-
-      ctx.beginPath();
-      ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0,0,0,0.75)";
-      ctx.fill();
-      ctx.strokeStyle = typeColor;
-      ctx.lineWidth = Math.max(isNamed ? 2 : 1.5, hexSize * (isNamed ? 0.09 : 0.06));
-      ctx.stroke();
-
-      // 스프라이트 우선, 없으면 이모지 fallback
-      let rendered = false;
+      // 스프라이트 데이터 준비
+      let spriteFrame = null, spriteData = null;
       if (enc.spriteKey) {
         const folder = resolveSpriteFolder(enc.spriteKey);
         if (folder) {
-          const data = getSpriteData(folder);
-          if (data && data.image && data.image.complete && data.image.naturalWidth > 0) {
-            const f = pickFrame(data, "idle", performance.now());
-            if (f) {
-              ctx.save();
-              ctx.beginPath();
-              ctx.arc(s.x, s.y, r - 1, 0, Math.PI * 2);
-              ctx.clip();
-              // 원 내부에 프레임을 contain-fit
-              const maxSide = r * 1.85;
-              const scale = Math.min(maxSide / f.w, maxSide / f.h);
-              const dw = f.w * scale, dh = f.h * scale;
-              ctx.drawImage(data.image, f.x, f.y, f.w, f.h,
-                            s.x - dw / 2, s.y - dh / 2, dw, dh);
-              ctx.restore();
-              rendered = true;
-            }
+          const d = getSpriteData(folder);
+          if (d?.image?.complete && d.image.naturalWidth > 0 && d.frames?.length > 0) {
+            spriteData = d;
+            spriteFrame = pickFrame(d, "idle", performance.now()) || d.frames[0];
           }
         }
       }
-      if (!rendered) {
+
+      // 발 아래 그림자 — 네임드는 진하게 + 펄싱
+      if (spriteFrame) {
+        if (isNamed) {
+          const pulse = 0.5 + 0.3 * Math.sin(performance.now() / 500);
+          ctx.beginPath();
+          ctx.ellipse(s.x, baseY, hexSize * 0.5, hexSize * 0.5 * ISO_Y, 0, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255,180,60,${0.2 + pulse * 0.15})`;
+          ctx.fill();
+          ctx.strokeStyle = `rgba(255,180,60,${pulse})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.ellipse(s.x, baseY, hexSize * 0.38, hexSize * 0.38 * ISO_Y, 0, 0, Math.PI * 2);
+          ctx.fillStyle = "rgba(0,0,0,0.4)";
+          ctx.fill();
+        }
+      }
+
+      let boundsR;   // hit-test용 반경
+      if (spriteFrame) {
+        const aspect = spriteFrame.w / spriteFrame.h;
+        const drawH = portraitH;
+        const drawW = drawH * aspect;
+        ctx.drawImage(spriteData.image, spriteFrame.x, spriteFrame.y, spriteFrame.w, spriteFrame.h,
+                      s.x - drawW / 2, baseY - drawH * 0.92, drawW, drawH);
+        boundsR = Math.max(drawW, drawH) * 0.5;
+      } else {
+        // 스프라이트 없음 — 원형 배경 + 이모지 fallback (유형 없는 조우용)
+        const r = hexSize * (isNamed ? 0.55 : 0.45);
+        const typeColor = {
+          wild: "#6a9a3a", bandit: "#a04040", patrol: "#4080c0",
+          convoy: "#c0a040", named: "#ff9a3a", trap: "#505050",
+        }[enc.type] || "#888";
+        if (isNamed) {
+          const pulse = 0.5 + 0.3 * Math.sin(performance.now() / 500);
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, r * 1.35, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(255,180,60,${pulse})`;
+          ctx.lineWidth = Math.max(2, hexSize * 0.1);
+          ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = "rgba(0,0,0,0.75)";
+        ctx.fill();
+        ctx.strokeStyle = typeColor;
+        ctx.lineWidth = Math.max(isNamed ? 2 : 1.5, hexSize * (isNamed ? 0.09 : 0.06));
+        ctx.stroke();
         ctx.font = `${Math.max(10, hexSize * 0.55)}px 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif`;
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillStyle = "#fff";
         ctx.fillText(enc.icon || "⚔", s.x, s.y + hexSize * 0.04);
+        boundsR = r;
       }
 
-      // Lv 배지 (우상단)
+      // Lv 배지 (우상단) — 머리 오른쪽 위
       if (enc.level != null && hexSize > 10) {
-        const lx = s.x + r * 0.7, ly = s.y - r * 0.7;
+        const headY = baseY - portraitH * 0.85;
+        const lx = s.x + boundsR * 0.7, ly = headY + hexSize * 0.1;
         const lr = Math.max(6, hexSize * 0.22);
         ctx.beginPath();
         ctx.arc(lx, ly, lr, 0, Math.PI * 2);
@@ -205,6 +221,7 @@ export function createOverlays() {
         ctx.lineWidth = 1;
         ctx.stroke();
         ctx.font = `bold ${Math.max(8, hexSize * 0.28)}px 'Segoe UI'`;
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
         ctx.fillStyle = "#1a1000";
         ctx.fillText(enc.level, lx, ly);
       }
@@ -212,8 +229,8 @@ export function createOverlays() {
       // 클릭 영역 등록
       state.encounterHits.push({
         encounterId: enc.id,
-        x: s.x - r - 2, y: s.y - r - 2,
-        w: (r + 2) * 2, h: (r + 2) * 2,
+        x: s.x - boundsR - 2, y: s.y - boundsR - 2,
+        w: (boundsR + 2) * 2, h: (boundsR + 2) * 2,
       });
     }
   }
