@@ -940,6 +940,27 @@ export function spawnEncounter(templateId, q, r) {
   if (!state) return null;
   const tpl = _tablesRef?.encounters?.get(templateId);
   if (!tpl) return null;
+
+  // 파티 Slot1(리더) → FieldObject → PrefabPath 추출 (스프라이트 폴더명)
+  let spriteKey = null;
+  let leaderName = null;
+  const parties = _tablesRef?.enemyParties?.all?.() || [];
+  const party = parties.find(ep => ep.PartyID === tpl.EnemyPartyRef);
+  if (party && party.Slot1 != null) {
+    const fos = _tablesRef?.fieldObjects?.all?.() || [];
+    const leader = fos.find(fo => fo.ID === party.Slot1);
+    if (leader) {
+      leaderName = leader.Name;
+      const pp = leader.PrefabPath || "";
+      const parts = pp.split("/");
+      if (parts.length >= 2 && parts[1].startsWith("mon_")) spriteKey = parts[1];
+    }
+  }
+
+  const minLv = Number(tpl.MinLevel) || 1;
+  const maxLv = Number(tpl.MaxLevel) || minLv;
+  const level = Math.floor(minLv + Math.random() * Math.max(1, maxLv - minLv + 1));
+
   const enc = {
     id: `enc_${Date.now()}_${_encounterSerial++}`,
     templateId,
@@ -949,6 +970,12 @@ export function spawnEncounter(templateId, q, r) {
     nextMoveTurn: (state.meta?.turn || 1) + 1,
     discovered: tpl.MovementAI !== "hidden",
     defeatCount: 0,
+    // 렌더용 캐시 필드
+    type: tpl.EncounterType,
+    icon: tpl.Icon || "⚔",
+    level,
+    name: tpl.Name || leaderName || "적",
+    spriteKey,
   };
   state.encounters.push(enc);
   emit("state:changed", { path: "encounters", action: "spawn", id: enc.id });

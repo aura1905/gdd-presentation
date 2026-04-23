@@ -1,7 +1,7 @@
 // Overlays: selected hex, party icons, movement path preview.
 import { CONFIG } from "../config.js";
 import { hexWorld } from "../util/hex.js";
-import { getSpriteData, pickFrame } from "./charSprites.js";
+import { getSpriteData, pickFrame, resolveSpriteFolder } from "./charSprites.js";
 
 const ISO_Y = 0.75;
 const JOB_COLORS = { F: "#c86464", S: "#5aaa5a", M: "#c8a03c", W: "#5a82c8", L: "#a050b4" };
@@ -161,11 +161,37 @@ export function createOverlays() {
       ctx.lineWidth = Math.max(isNamed ? 2 : 1.5, hexSize * (isNamed ? 0.09 : 0.06));
       ctx.stroke();
 
-      // 이모지 아이콘
-      ctx.font = `${Math.max(10, hexSize * 0.55)}px 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif`;
-      ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillStyle = "#fff";
-      ctx.fillText(enc.icon || "⚔", s.x, s.y + hexSize * 0.04);
+      // 스프라이트 우선, 없으면 이모지 fallback
+      let rendered = false;
+      if (enc.spriteKey) {
+        const folder = resolveSpriteFolder(enc.spriteKey);
+        if (folder) {
+          const data = getSpriteData(folder);
+          if (data && data.image && data.image.complete && data.image.naturalWidth > 0) {
+            const f = pickFrame(data, "idle", performance.now());
+            if (f) {
+              ctx.save();
+              ctx.beginPath();
+              ctx.arc(s.x, s.y, r - 1, 0, Math.PI * 2);
+              ctx.clip();
+              // 원 내부에 프레임을 contain-fit
+              const maxSide = r * 1.85;
+              const scale = Math.min(maxSide / f.w, maxSide / f.h);
+              const dw = f.w * scale, dh = f.h * scale;
+              ctx.drawImage(data.image, f.x, f.y, f.w, f.h,
+                            s.x - dw / 2, s.y - dh / 2, dw, dh);
+              ctx.restore();
+              rendered = true;
+            }
+          }
+        }
+      }
+      if (!rendered) {
+        ctx.font = `${Math.max(10, hexSize * 0.55)}px 'Segoe UI Emoji', 'Apple Color Emoji', sans-serif`;
+        ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        ctx.fillStyle = "#fff";
+        ctx.fillText(enc.icon || "⚔", s.x, s.y + hexSize * 0.04);
+      }
 
       // Lv 배지 (우상단)
       if (enc.level != null && hexSize > 10) {
