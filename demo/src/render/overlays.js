@@ -130,12 +130,13 @@ export function createOverlays() {
     if (!state.encounters.length) return;
     if (!_encDebugLogged) {
       _encDebugLogged = true;
-      const e0 = state.encounters[0];
-      console.log("[drawEncounters] 1st enc:", {
-        spriteKey: e0?.spriteKey,
-        icon: e0?.icon, type: e0?.type, name: e0?.name,
-        resolvedFolder: e0?.spriteKey ? resolveSpriteFolder(e0.spriteKey) : null,
-      });
+      for (const e of state.encounters) {
+        const folder = e.spriteKey ? resolveSpriteFolder(e.spriteKey) : null;
+        const data = folder ? getSpriteData(folder) : null;
+        const loaded = !!(data?.image?.complete && data?.image?.naturalWidth > 0);
+        const framesN = data?.frames?.length ?? 0;
+        console.log(`[draw] ${e.id}: spriteKey=${JSON.stringify(e.spriteKey)} → folder=${JSON.stringify(folder)} loaded=${loaded} frames=${framesN}`);
+      }
     }
     for (const enc of state.encounters) {
       if (!enc.discovered) continue; // 숨김(함정) 미발견 시 그리지 않음
