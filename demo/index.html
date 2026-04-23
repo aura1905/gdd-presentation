@@ -97,17 +97,17 @@
       <!-- 메인 스테이지 (배경 + 건물) — 1:1 비율 -->
       <div class="bk-stage" id="bk-stage">
         <img class="bk-bg" src="./img/barracks/bg_reboldoeux_day.png" alt="" />
-        <!-- 건물 3개 — 동일 캔버스(1024x1024) bottom-anchor 정규화 (normalize_buildings.py).
-             stage 1:1 안에서 좌/우/하 삼각 배치. width 40% 캔버스(1:1) → 건물 height ~32% stage. -->
-        <div class="bk-building" data-bld="kitchen" style="left:2%; bottom:18%; width:40%;">
+        <!-- 건물 3개 — 동일 캔버스(1024x1024) bottom-anchor 정규화.
+             stage가 frame 전체(HUD~Nav 사이) 채움. 좌/우/중하 삼각 배치, bottom% 균일. -->
+        <div class="bk-building" data-bld="kitchen" style="left:2%; bottom:24%; width:38%;">
           <img src="./img/barracks/bld_kitchen_t0.png" alt="🍳 주방" />
           <span class="bk-bld-label">🍳 주방 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
-        <div class="bk-building" data-bld="training" style="right:2%; bottom:18%; width:40%;">
+        <div class="bk-building" data-bld="training" style="right:2%; bottom:24%; width:38%;">
           <img src="./img/barracks/bld_training_t0.png" alt="⚔ 훈련장" />
           <span class="bk-bld-label">⚔ 훈련장 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
-        <div class="bk-building" data-bld="smithy" style="left:30%; bottom:-2%; width:40%;">
+        <div class="bk-building" data-bld="smithy" style="left:31%; bottom:8%; width:38%;">
           <img src="./img/barracks/bld_smithy_t0.png" alt="🔨 공방" />
           <span class="bk-bld-label">🔨 공방 <span class="bk-bld-lv">Lv 1</span></span>
         </div>

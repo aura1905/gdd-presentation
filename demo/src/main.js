@@ -3193,18 +3193,19 @@ async function boot() {
         if (frames.length === 0) continue;
         const fw = frames[0].frame.w;
         const fh = frames[0].frame.h;
+        const SCALE = 0.7;  // sprite 표시 배율 (원본 ~200px → 140px)
         const div = document.createElement("div");
         div.className = "bk-char";
         div.style.backgroundImage = `url('./assets/sprites/${c.name}/sprite.png')`;
-        div.style.width = `${fw * 0.5}px`;
-        div.style.height = `${fh * 0.5}px`;
-        div.style.backgroundSize = `auto ${fh * 0.5}px`;
+        div.style.width = `${fw * SCALE}px`;
+        div.style.height = `${fh * SCALE}px`;
+        div.style.backgroundSize = `auto ${fh * SCALE}px`;
         div.style.left = `${c.base.x}%`;
         div.style.top = `${c.base.y}%`;
         div.title = c.name;
         container.appendChild(div);
         bkCharState.push({
-          el: div, frames, fw,
+          el: div, frames, fw, scale: SCALE,
           frameIdx: Math.floor(Math.random() * Math.min(6, frames.length)),
           maxIdleFrame: Math.min(6, frames.length),  // idle 모션 (대개 첫 6프레임)
           x: c.base.x, y: c.base.y,
@@ -3220,7 +3221,7 @@ async function boot() {
     for (const s of bkCharState) {
       // frame swap (idle 모션 0~5 순환)
       s.frameIdx = (s.frameIdx + 1) % s.maxIdleFrame;
-      s.el.style.backgroundPosition = `-${s.frameIdx * s.fw * 0.5}px 0px`;
+      s.el.style.backgroundPosition = `-${s.frameIdx * s.fw * s.scale}px 0px`;
       // wander (개별 range 내 좌우 이동)
       s.x += s.vx;
       if (s.x < s.xMin || s.x > s.xMax) {
