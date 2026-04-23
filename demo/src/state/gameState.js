@@ -942,18 +942,23 @@ export function spawnEncounter(templateId, q, r) {
   if (!tpl) return null;
 
   // 파티 Slot1(리더) → FieldObject → PrefabPath 추출 (스프라이트 폴더명)
+  // FieldObjectTable은 (ID, ObjectType) 복합키 — ID 중복 가능. 적은 Boss/Enemy만 필터.
   let spriteKey = null;
   let leaderName = null;
   const parties = _tablesRef?.enemyParties?.all?.() || [];
   const party = parties.find(ep => ep.PartyID === tpl.EnemyPartyRef);
   if (party && party.Slot1 != null) {
     const fos = _tablesRef?.fieldObjects?.all?.() || [];
-    const leader = fos.find(fo => fo.ID === party.Slot1);
+    const candidates = fos.filter(fo => fo.ID === party.Slot1 && fo.ObjectType !== "Player");
+    // Boss 우선, 없으면 Enemy
+    const leader = candidates.find(fo => fo.ObjectType === "Boss")
+                || candidates.find(fo => fo.ObjectType === "Enemy")
+                || candidates[0];
     if (leader) {
       leaderName = leader.Name;
       const pp = leader.PrefabPath || "";
       const parts = pp.split("/");
-      if (parts.length >= 2 && parts[1].startsWith("mon_")) spriteKey = parts[1];
+      if (parts.length >= 2 && parts[1].toLowerCase().startsWith("mon_")) spriteKey = parts[1];
     }
   }
 
@@ -980,6 +985,42 @@ export function spawnEncounter(templateId, q, r) {
   state.encounters.push(enc);
   emit("state:changed", { path: "encounters", action: "spawn", id: enc.id });
   return enc;
+}
+
+/** 기존 복원된 encounter에 렌더 메타(spriteKey/icon/type/level/name) 백필. */
+export function backfillEncounterMetadata() {
+  if (!state?.encounters?.length) return 0;
+  const parties = _tablesRef?.enemyParties?.all?.() || [];
+  const fos = _tablesRef?.fieldObjects?.all?.() || [];
+  let updated = 0;
+  for (const enc of state.encounters) {
+    if (enc.spriteKey && enc.type && enc.icon && enc.name) continue;
+    const tpl = _tablesRef?.encounters?.get(enc.templateId);
+    if (!tpl) continue;
+    const party = parties.find(ep => ep.PartyID === tpl.EnemyPartyRef);
+    let leaderName = null, spriteKey = null;
+    if (party && party.Slot1 != null) {
+      const candidates = fos.filter(fo => fo.ID === party.Slot1 && fo.ObjectType !== "Player");
+      const leader = candidates.find(fo => fo.ObjectType === "Boss")
+                  || candidates.find(fo => fo.ObjectType === "Enemy")
+                  || candidates[0];
+      if (leader) {
+        leaderName = leader.Name;
+        const parts = (leader.PrefabPath || "").split("/");
+        if (parts.length >= 2 && parts[1].toLowerCase().startsWith("mon_")) spriteKey = parts[1];
+      }
+    }
+    enc.type = enc.type ?? tpl.EncounterType;
+    enc.icon = enc.icon ?? (tpl.Icon || "⚔");
+    enc.name = enc.name ?? (tpl.Name || leaderName || "적");
+    enc.spriteKey = enc.spriteKey ?? spriteKey;
+    if (enc.level == null) {
+      const minLv = Number(tpl.MinLevel) || 1, maxLv = Number(tpl.MaxLevel) || minLv;
+      enc.level = Math.floor(minLv + Math.random() * Math.max(1, maxLv - minLv + 1));
+    }
+    updated++;
+  }
+  return updated;
 }
 
 /** 조우 제거 (격파/만료 등). 격파 위치는 최근 기록에 추가 — 재스폰 회피용. */

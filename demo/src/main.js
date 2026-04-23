@@ -22,7 +22,7 @@ import { getSiegeProgress, getStructureCurrentHP, markDefenderDefeated, isDefend
 import { recomputeFog, applyScout, getFogState, bumpAction } from "./engine/fog.js";
 import { endTurn, computeHexIncome } from "./engine/turn.js";
 import { initQuests, ensureQuestsState, getActiveQuests, getClaimableQuests, reportProgress, claimQuestReward } from "./engine/quests.js";
-import { addCharacterToRoster, addCharacterShard, spendResource, seedInitialEncounters, getEncounterAt, removeEncounter } from "./state/gameState.js";
+import { addCharacterToRoster, addCharacterShard, spendResource, seedInitialEncounters, getEncounterAt, removeEncounter, backfillEncounterMetadata } from "./state/gameState.js";
 import { rollOnce, getDupeShardCount, getGachaCost, GRADE_COLOR, GRADE_KR } from "./engine/gacha.js";
 
 const status = (msg) => {
@@ -84,6 +84,8 @@ async function boot() {
   recomputeFog(gameState, tables);
   // 필드 조우형 적 초기 시드 (신규 세이브만)
   seedInitialEncounters();
+  // 옛 세이브 호환 — spriteKey/icon 등 렌더 메타 누락 시 백필
+  backfillEncounterMetadata();
 
   // GDD §9-3: 리더 사망한 파티는 전장 잔류 불가 — 복원 시 자동 퇴각(구 세이브 호환)
   {
