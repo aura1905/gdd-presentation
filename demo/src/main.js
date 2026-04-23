@@ -3233,6 +3233,15 @@ async function boot() {
     openBarracks();
   });
   document.getElementById("btn-close-barracks")?.addEventListener("click", closeBarracks);
+  // 하단 네비 — 월드맵 탭 = 배럭 닫기 (다른 탭들은 placeholder)
+  document.getElementById("bk-nav-worldmap")?.addEventListener("click", closeBarracks);
+  document.querySelectorAll(".bk-nav-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      const id = tab.dataset.tab;
+      if (id === "worldmap" || id === "village") return;
+      showToast(`🚧 ${tab.querySelector(".bk-nav-label").textContent} — 준비 중`, "warn");
+    });
+  });
   document.querySelectorAll("#barracks-view .bk-building").forEach(el => {
     el.addEventListener("click", () => {
       const bld = el.dataset.bld;

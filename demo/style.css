@@ -953,54 +953,92 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 #loading-status { color: #6aa06a !important; font-family: monospace; }
 
 /* ─────────────────────────────────────────
-   배럭 뷰 (가문 본거지 마을 화면)
-   배경 1:1 정사각형, 건물 3개 + SD 캐릭터 활동
+   배럭 뷰 — 9:16 모바일 포트레이트 레이아웃
+   ┌───────────┐
+   │ Top HUD   │  ← 56px
+   ├───────────┤
+   │ 배경 1:1   │  ← width 100%, height = width
+   │ + 건물 3   │
+   ├───────────┤
+   │ 캐릭터존   │  ← BG와 같은 색조로 이어짐
+   ├───────────┤
+   │ Bottom Nav│  ← 64px (4탭)
+   └───────────┘
    ───────────────────────────────────────── */
 #barracks-view { position: absolute; inset: 0; z-index: 100;
-  background: #0a0a0a; display: flex; flex-direction: column;
-  animation: bk-fade 0.25s ease; }
+  display: flex; flex-direction: column;
+  background: linear-gradient(180deg, #88c5e8 0%, #d4a878 60%, #c89858 100%);
+  animation: bk-fade 0.25s ease; overflow: hidden; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
 
-.bk-hud { position: absolute; top: 0; left: 0; right: 0; z-index: 10;
-  background: linear-gradient(180deg, rgba(20,14,10,0.92), rgba(20,14,10,0.6) 70%, transparent);
-  padding: 10px 14px; display: flex; align-items: center; gap: 10px;
-  font-size: 13px; color: #ffd452; }
-.bk-loc { font-weight: bold; font-size: 14px;
-  background: rgba(0,0,0,0.5); padding: 4px 12px; border-radius: 12px;
-  border: 1px solid rgba(255,212,82,0.4); }
-.bk-currency { background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.15); color: #fff; }
-.bk-currency b { color: #ffd452; font-variant-numeric: tabular-nums; }
-.bk-close { margin-left: auto; padding: 6px 14px; border-radius: 6px;
-  border: 1px solid #888; background: rgba(0,0,0,0.6); color: #fff;
-  font-weight: bold; font-size: 12px; cursor: pointer; }
+/* 상단 HUD */
+.bk-hud { position: relative; z-index: 10; flex: 0 0 auto;
+  padding: 10px 12px; display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: #fff;
+  background: linear-gradient(180deg, rgba(15,10,6,0.9), rgba(15,10,6,0.4) 70%, transparent);
+  height: 56px; box-sizing: border-box; }
+.bk-loc { font-weight: bold; font-size: 13px; color: #ffd452;
+  background: rgba(0,0,0,0.55); padding: 5px 10px; border-radius: 12px;
+  border: 1px solid rgba(255,212,82,0.45); white-space: nowrap; }
+.bk-currency { background: rgba(0,0,0,0.55); padding: 5px 8px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.15); font-variant-numeric: tabular-nums; }
+.bk-currency b { color: #ffd452; }
+.bk-close { margin-left: auto; padding: 5px 10px; border-radius: 6px;
+  border: 1px solid #aaa; background: rgba(0,0,0,0.65); color: #fff;
+  font-weight: bold; font-size: 11px; cursor: pointer; }
 .bk-close:hover { filter: brightness(1.25); }
 
+/* 메인 스테이지 (배경 + 건물) */
 .bk-stage { position: relative; width: 100%; aspect-ratio: 1 / 1;
-  margin-top: auto; margin-bottom: auto;
-  overflow: hidden; }
+  flex: 0 0 auto; overflow: hidden; }
 .bk-bg { position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; pointer-events: none; }
 
 .bk-building { position: absolute; cursor: pointer; z-index: 2;
   transition: transform 0.18s; transform-origin: 50% 100%;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+  filter: drop-shadow(0 5px 8px rgba(0,0,0,0.4)); }
 .bk-building:hover { transform: scale(1.06); z-index: 3; }
 .bk-building:active { transform: scale(1.02); }
 .bk-building img { display: block; width: 100%; height: auto;
   pointer-events: none; }
-.bk-bld-label { position: absolute; bottom: -20px; left: 50%;
+.bk-bld-label { position: absolute; bottom: -18px; left: 50%;
   transform: translateX(-50%); white-space: nowrap;
-  background: rgba(0,0,0,0.75); color: #ffd452;
-  padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: bold;
-  border: 1px solid rgba(255,212,82,0.4); }
+  background: rgba(0,0,0,0.78); color: #ffd452;
+  padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: bold;
+  border: 1px solid rgba(255,212,82,0.45); }
 .bk-bld-lv { color: #fff; font-weight: normal; opacity: 0.85; }
 
-/* SD 캐릭터 (sprite frame swap) */
+/* 하단 캐릭터 활동 존 (배경과 자연 연결) */
+.bk-floor { position: relative; flex: 1 1 auto; min-height: 60px;
+  background: linear-gradient(180deg, #c89858, #b08040);
+  overflow: hidden; }
+
+/* SD 캐릭터 — 스테이지+플로어 전체에서 wander */
 .bk-characters { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
 .bk-char { position: absolute;
   width: 64px; height: 60px;
   background-repeat: no-repeat; background-position: 0 0;
   image-rendering: pixelated;
-  pointer-events: auto; cursor: pointer; }
+  pointer-events: auto; cursor: pointer;
+  filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)); }
 .bk-char.flip { transform: scaleX(-1); }
+
+/* 하단 네비게이션 (4탭) — GDD §5-4 */
+.bk-nav { position: relative; z-index: 10; flex: 0 0 auto;
+  height: 64px; display: flex;
+  background: linear-gradient(180deg, rgba(40,28,18,0.95), rgba(20,14,8,0.98));
+  border-top: 1.5px solid rgba(255,212,82,0.45);
+  box-shadow: 0 -3px 12px rgba(0,0,0,0.5); }
+.bk-nav-tab { flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 2px;
+  background: transparent; border: 0; cursor: pointer; color: #aaa;
+  font-size: 10px; font-weight: bold;
+  transition: color 0.15s, background 0.15s;
+  position: relative; }
+.bk-nav-tab:hover { color: #ffd452; background: rgba(255,212,82,0.08); }
+.bk-nav-tab.active { color: #ffd452;
+  background: linear-gradient(180deg, rgba(255,212,82,0.15), transparent); }
+.bk-nav-tab.active::before { content: ""; position: absolute;
+  top: 0; left: 20%; right: 20%; height: 2px; background: #ffd452; }
+.bk-nav-icon { font-size: 22px; line-height: 1; }
+.bk-nav-label { letter-spacing: 0.5px; }
