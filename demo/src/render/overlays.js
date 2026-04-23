@@ -125,19 +125,8 @@ export function createOverlays() {
   }
 
   /** 필드 조우형 적 렌더 (GDD §5-2). */
-  let _encDebugLogged = false;
   function drawEncounters(ctx, camera, hexSize) {
     if (!state.encounters.length) return;
-    if (!_encDebugLogged) {
-      _encDebugLogged = true;
-      for (const e of state.encounters) {
-        const folder = e.spriteKey ? resolveSpriteFolder(e.spriteKey) : null;
-        const data = folder ? getSpriteData(folder) : null;
-        const loaded = !!(data?.image?.complete && data?.image?.naturalWidth > 0);
-        const framesN = data?.frames?.length ?? 0;
-        console.log(`[draw] ${e.id}: spriteKey=${JSON.stringify(e.spriteKey)} → folder=${JSON.stringify(folder)} loaded=${loaded} frames=${framesN}`);
-      }
-    }
     for (const enc of state.encounters) {
       if (!enc.discovered) continue; // 숨김(함정) 미발견 시 그리지 않음
       const p = hexWorld(enc.q, enc.r);

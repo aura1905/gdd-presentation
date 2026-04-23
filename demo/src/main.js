@@ -84,14 +84,8 @@ async function boot() {
   recomputeFog(gameState, tables);
   // 필드 조우형 적 초기 시드 (신규 세이브만)
   seedInitialEncounters();
-  // 옛 세이브 호환 — spriteKey/icon 등 렌더 메타 누락 시 백필
-  const bfN = backfillEncounterMetadata();
-  console.log(`[encounter] backfill=${bfN}건 / encounters=${gameState.encounters?.length ?? 0}`);
-  if (gameState.encounters?.length) {
-    for (const e of gameState.encounters) {
-      console.log(`  enc ${e.id}: type=${e.type} name="${e.name}" spriteKey=${JSON.stringify(e.spriteKey)} icon=${JSON.stringify(e.icon)} level=${e.level} templateId=${e.templateId}`);
-    }
-  }
+  // 옛 세이브 호환 — orphan 제거 + spriteKey/icon 등 렌더 메타 누락 시 백필
+  backfillEncounterMetadata();
 
   // GDD §9-3: 리더 사망한 파티는 전장 잔류 불가 — 복원 시 자동 퇴각(구 세이브 호환)
   {
@@ -179,10 +173,11 @@ async function boot() {
       return {
         id: e.id,
         q: e.q, r: e.r,
-        icon: tpl?.Icon || "⚔",
-        name: tpl?.Name || "?",
-        type: tpl?.EncounterType || "wild",
-        level: tpl?.MinLevel || 1,
+        icon: e.icon || tpl?.Icon || "⚔",
+        name: e.name || tpl?.Name || "?",
+        type: e.type || tpl?.EncounterType || "wild",
+        level: e.level ?? tpl?.MinLevel ?? 1,
+        spriteKey: e.spriteKey ?? null,
         discovered: e.discovered,
       };
     });

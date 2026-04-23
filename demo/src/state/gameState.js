@@ -992,6 +992,12 @@ export function backfillEncounterMetadata() {
   if (!state?.encounters?.length) return 0;
   const parties = _tablesRef?.enemyParties?.all?.() || [];
   const fos = _tablesRef?.fieldObjects?.all?.() || [];
+  // 템플릿이 더 이상 존재하지 않는 orphan encounter 제거 (예: 폐기된 TemplateID 1004)
+  const before = state.encounters.length;
+  state.encounters = state.encounters.filter(e => _tablesRef?.encounters?.get(e.templateId));
+  if (state.encounters.length !== before) {
+    console.log(`[encounter] orphan 제거: ${before - state.encounters.length}건 (폐기된 템플릿)`);
+  }
   let updated = 0;
   for (const enc of state.encounters) {
     if (enc.spriteKey && enc.type && enc.icon && enc.name) continue;
