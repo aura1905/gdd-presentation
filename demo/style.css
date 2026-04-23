@@ -951,3 +951,56 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .splash-inner h1 { font-size: 28px; color: #ffd452; margin-bottom: 8px; }
 .splash-inner p { color: #aaa; font-size: 13px; margin: 4px 0; }
 #loading-status { color: #6aa06a !important; font-family: monospace; }
+
+/* ─────────────────────────────────────────
+   배럭 뷰 (가문 본거지 마을 화면)
+   배경 1:1 정사각형, 건물 3개 + SD 캐릭터 활동
+   ───────────────────────────────────────── */
+#barracks-view { position: absolute; inset: 0; z-index: 100;
+  background: #0a0a0a; display: flex; flex-direction: column;
+  animation: bk-fade 0.25s ease; }
+@keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.bk-hud { position: absolute; top: 0; left: 0; right: 0; z-index: 10;
+  background: linear-gradient(180deg, rgba(20,14,10,0.92), rgba(20,14,10,0.6) 70%, transparent);
+  padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: #ffd452; }
+.bk-loc { font-weight: bold; font-size: 14px;
+  background: rgba(0,0,0,0.5); padding: 4px 12px; border-radius: 12px;
+  border: 1px solid rgba(255,212,82,0.4); }
+.bk-currency { background: rgba(0,0,0,0.5); padding: 4px 10px; border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.15); color: #fff; }
+.bk-currency b { color: #ffd452; font-variant-numeric: tabular-nums; }
+.bk-close { margin-left: auto; padding: 6px 14px; border-radius: 6px;
+  border: 1px solid #888; background: rgba(0,0,0,0.6); color: #fff;
+  font-weight: bold; font-size: 12px; cursor: pointer; }
+.bk-close:hover { filter: brightness(1.25); }
+
+.bk-stage { position: relative; width: 100%; aspect-ratio: 1 / 1;
+  margin-top: auto; margin-bottom: auto;
+  overflow: hidden; }
+.bk-bg { position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; pointer-events: none; }
+
+.bk-building { position: absolute; cursor: pointer; z-index: 2;
+  transition: transform 0.18s; transform-origin: 50% 100%;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.4)); }
+.bk-building:hover { transform: scale(1.06); z-index: 3; }
+.bk-building:active { transform: scale(1.02); }
+.bk-building img { display: block; width: 100%; height: auto;
+  pointer-events: none; }
+.bk-bld-label { position: absolute; bottom: -20px; left: 50%;
+  transform: translateX(-50%); white-space: nowrap;
+  background: rgba(0,0,0,0.75); color: #ffd452;
+  padding: 2px 8px; border-radius: 8px; font-size: 11px; font-weight: bold;
+  border: 1px solid rgba(255,212,82,0.4); }
+.bk-bld-lv { color: #fff; font-weight: normal; opacity: 0.85; }
+
+/* SD 캐릭터 (sprite frame swap) */
+.bk-characters { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+.bk-char { position: absolute;
+  width: 64px; height: 60px;
+  background-repeat: no-repeat; background-position: 0 0;
+  image-rendering: pixelated;
+  pointer-events: auto; cursor: pointer; }
+.bk-char.flip { transform: scaleX(-1); }

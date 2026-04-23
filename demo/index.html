@@ -78,8 +78,39 @@
       <button id="btn-zoom-strat" type="button" title="전략맵">▣</button>
       <button id="btn-zoom-tile" type="button" title="타일맵">◉</button>
       <button id="btn-outpost-list" type="button" title="내 거점 목록">🏰</button>
+      <button id="btn-barracks" type="button" title="배럭 — 가문 본거지">🏘</button>
       <button id="btn-reset-encounters" type="button" data-tip="🧪 조우 리셋 (테스트)|현재 조우 모두 제거 후 초기 6마리 재배치.">🧪</button>
     </aside>
+
+    <!-- 배럭 뷰 — 풀스크린 오버레이 (가문 본거지 마을 화면) -->
+    <section id="barracks-view" hidden>
+      <div class="bk-stage" id="bk-stage">
+        <!-- 배경 -->
+        <img class="bk-bg" src="./img/barracks/bg_reboldoeux_day.png" alt="" />
+        <!-- 건물 3개 (좌표는 stage % 기반, JS에서 src tier 변경) -->
+        <div class="bk-building" data-bld="kitchen" style="left:18%; top:62%; width:22%;">
+          <img src="./img/barracks/bld_kitchen_t0.png" alt="🍳 주방" />
+          <span class="bk-bld-label">🍳 주방 <span class="bk-bld-lv">Lv 1</span></span>
+        </div>
+        <div class="bk-building" data-bld="smithy" style="left:42%; top:70%; width:22%;">
+          <img src="./img/barracks/bld_smithy_t0.png" alt="🔨 공방" />
+          <span class="bk-bld-label">🔨 공방 <span class="bk-bld-lv">Lv 1</span></span>
+        </div>
+        <div class="bk-building" data-bld="training" style="left:66%; top:62%; width:22%;">
+          <img src="./img/barracks/bld_training_t0.png" alt="⚔ 훈련장" />
+          <span class="bk-bld-label">⚔ 훈련장 <span class="bk-bld-lv">Lv 1</span></span>
+        </div>
+        <!-- SD 캐릭터 영역 (JS가 채움) -->
+        <div class="bk-characters" id="bk-characters"></div>
+      </div>
+      <!-- 상단 HUD -->
+      <header class="bk-hud">
+        <span class="bk-loc">🏰 리볼도외</span>
+        <span class="bk-currency">💰 <b id="bk-gold">0</b></span>
+        <span class="bk-currency">🌾 <b id="bk-grain">0</b></span>
+        <button class="bk-close" id="btn-close-barracks">⬅ 월드맵</button>
+      </header>
+    </section>
 
     <!-- 하단 액션 바 (접힌 상태로 시작) -->
     <section id="hex-panel" hidden>

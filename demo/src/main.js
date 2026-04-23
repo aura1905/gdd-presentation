@@ -3133,6 +3133,115 @@ async function boot() {
     if (e.key === "Escape" && !outpostPanel.hidden) closeOutpostPanel();
   });
 
+  // ─── 배럭 뷰 (가문 본거지 마을 화면) ───
+  // 진입: 우상단 [🏘 배럭] 버튼 / 이탈: 좌상단 [⬅ 월드맵] 버튼.
+  // 건물 클릭 시 Tier 0→1→2→0 순환 (시각 변화 데모용 — 실제 업그레이드 시스템과 별개).
+  // SD 캐릭터: demo/assets/sprites/<Name>/sprite.png + frames.json 활용해 광장에서 wander.
+  const barracksView = document.getElementById("barracks-view");
+  const TIER_NAMES = ["Lv 1", "Lv 5", "Lv 10"];
+  const barracksTier = { kitchen: 0, smithy: 0, training: 0 };
+  let bkCharLoop = null;
+
+  function openBarracks() {
+    if (!barracksView) return;
+    barracksView.hidden = false;
+    updateBarracksHud();
+    spawnBarracksCharacters();
+    if (!bkCharLoop) bkCharLoop = setInterval(animateBarracksCharacters, 200);
+  }
+  function closeBarracks() {
+    if (!barracksView) return;
+    barracksView.hidden = true;
+    if (bkCharLoop) { clearInterval(bkCharLoop); bkCharLoop = null; }
+  }
+  function updateBarracksHud() {
+    const gs = getState();
+    document.getElementById("bk-gold").textContent = gs.resources?.gold || 0;
+    document.getElementById("bk-grain").textContent = gs.resources?.grain || 0;
+  }
+  function setBuildingTier(bld, tier) {
+    barracksTier[bld] = tier;
+    const el = barracksView.querySelector(`.bk-building[data-bld="${bld}"]`);
+    if (!el) return;
+    el.querySelector("img").src = `./img/barracks/bld_${bld}_t${tier}.png`;
+    el.querySelector(".bk-bld-lv").textContent = TIER_NAMES[tier];
+  }
+
+  // SD 캐릭터 — frames.json 기반 sprite frame swap 애니메이션
+  // 광장 영역에서 5명 wander (배럭 = idle 캐릭터 표시 prox)
+  const BK_CHARS = [
+    { name: "Panfilo_M",  base: { x: 30, y: 78 } },
+    { name: "Daria_F",    base: { x: 50, y: 82 } },
+    { name: "Emilia_F",   base: { x: 70, y: 78 } },
+    { name: "Andre_M",    base: { x: 25, y: 88 } },
+    { name: "Catherine_F", base: { x: 75, y: 88 } },
+  ];
+  const bkCharState = [];
+
+  async function spawnBarracksCharacters() {
+    const container = document.getElementById("bk-characters");
+    if (!container) return;
+    container.innerHTML = "";
+    bkCharState.length = 0;
+    for (const c of BK_CHARS) {
+      try {
+        const framesData = await fetch(`./assets/sprites/${c.name}/frames.json`).then(r => r.json());
+        const frames = Object.values(framesData.frames || {});
+        if (frames.length === 0) continue;
+        const fw = frames[0].frame.w;
+        const fh = frames[0].frame.h;
+        const div = document.createElement("div");
+        div.className = "bk-char";
+        div.style.backgroundImage = `url('./assets/sprites/${c.name}/sprite.png')`;
+        div.style.width = `${fw * 0.5}px`;
+        div.style.height = `${fh * 0.5}px`;
+        div.style.backgroundSize = `auto ${fh * 0.5}px`;
+        div.style.left = `${c.base.x}%`;
+        div.style.top = `${c.base.y}%`;
+        div.title = c.name;
+        container.appendChild(div);
+        bkCharState.push({
+          el: div, frames, fw,
+          frameIdx: Math.floor(Math.random() * Math.min(6, frames.length)),
+          maxIdleFrame: Math.min(6, frames.length),  // idle 모션 (대개 첫 6프레임)
+          x: c.base.x, y: c.base.y,
+          vx: (Math.random() - 0.5) * 0.4,  // wander 속도
+          flip: false,
+        });
+      } catch (e) { /* sprite 없음 — 스킵 */ }
+    }
+  }
+
+  function animateBarracksCharacters() {
+    for (const s of bkCharState) {
+      // frame swap (idle 모션 0~5 순환)
+      s.frameIdx = (s.frameIdx + 1) % s.maxIdleFrame;
+      s.el.style.backgroundPosition = `-${s.frameIdx * s.fw * 0.5}px 0px`;
+      // wander (좌우로 천천히)
+      s.x += s.vx;
+      if (s.x < 15 || s.x > 85) {
+        s.vx *= -1;
+        s.flip = !s.flip;
+        s.el.classList.toggle("flip", s.flip);
+      }
+      s.el.style.left = `${s.x}%`;
+    }
+  }
+
+  document.getElementById("btn-barracks")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    openBarracks();
+  });
+  document.getElementById("btn-close-barracks")?.addEventListener("click", closeBarracks);
+  document.querySelectorAll("#barracks-view .bk-building").forEach(el => {
+    el.addEventListener("click", () => {
+      const bld = el.dataset.bld;
+      const next = (barracksTier[bld] + 1) % 3;
+      setBuildingTier(bld, next);
+      showToast(`🔧 ${bld} → ${TIER_NAMES[next]}`, "exp");
+    });
+  });
+
   function renderOutpostList() {
     const gs = getState();
     // 점령된 City/Fort 모두 + 주둔 파티 매핑
