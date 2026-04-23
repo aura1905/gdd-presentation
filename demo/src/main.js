@@ -85,7 +85,14 @@ async function boot() {
   // 필드 조우형 적 초기 시드 (신규 세이브만)
   seedInitialEncounters();
   // 옛 세이브 호환 — spriteKey/icon 등 렌더 메타 누락 시 백필
-  backfillEncounterMetadata();
+  const bfN = backfillEncounterMetadata();
+  console.log(`[encounter] backfill: ${bfN}건 업데이트 / encounters=${gameState.encounters?.length ?? 0}`);
+  if (gameState.encounters?.length) {
+    const sample = gameState.encounters.slice(0, 3).map(e => ({
+      id: e.id, type: e.type, name: e.name, spriteKey: e.spriteKey, level: e.level,
+    }));
+    console.log("[encounter] sample:", sample);
+  }
 
   // GDD §9-3: 리더 사망한 파티는 전장 잔류 불가 — 복원 시 자동 퇴각(구 세이브 호환)
   {

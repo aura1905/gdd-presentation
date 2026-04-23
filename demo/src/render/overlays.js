@@ -125,8 +125,18 @@ export function createOverlays() {
   }
 
   /** 필드 조우형 적 렌더 (GDD §5-2). */
+  let _encDebugLogged = false;
   function drawEncounters(ctx, camera, hexSize) {
     if (!state.encounters.length) return;
+    if (!_encDebugLogged) {
+      _encDebugLogged = true;
+      const e0 = state.encounters[0];
+      console.log("[drawEncounters] 1st enc:", {
+        spriteKey: e0?.spriteKey,
+        icon: e0?.icon, type: e0?.type, name: e0?.name,
+        resolvedFolder: e0?.spriteKey ? resolveSpriteFolder(e0.spriteKey) : null,
+      });
+    }
     for (const enc of state.encounters) {
       if (!enc.discovered) continue; // 숨김(함정) 미발견 시 그리지 않음
       const p = hexWorld(enc.q, enc.r);
