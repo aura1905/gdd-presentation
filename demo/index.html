@@ -84,6 +84,7 @@
 
     <!-- 배럭 뷰 — 9:16 모바일 포트레이트 레이아웃 (HUD + 스테이지 + 플로어 + 네비) -->
     <section id="barracks-view" hidden>
+      <div class="bk-frame">
       <!-- 상단 HUD -->
       <header class="bk-hud">
         <span class="bk-loc">🏰 리볼도외</span>
@@ -97,16 +98,16 @@
       <div class="bk-stage" id="bk-stage">
         <img class="bk-bg" src="./img/barracks/bg_reboldoeux_day.png" alt="" />
         <!-- 건물 3개 — 동일 캔버스(1024x1024) bottom-anchor 정규화 (normalize_buildings.py).
-             동일 width % + bottom% 좌표로 시각 사이즈/지면 라인 균형. -->
-        <div class="bk-building" data-bld="kitchen" style="left:0%; bottom:14%; width:34%;">
+             stage 1:1 안에서 좌/우/하 삼각 배치. width 40% 캔버스(1:1) → 건물 height ~32% stage. -->
+        <div class="bk-building" data-bld="kitchen" style="left:2%; bottom:18%; width:40%;">
           <img src="./img/barracks/bld_kitchen_t0.png" alt="🍳 주방" />
           <span class="bk-bld-label">🍳 주방 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
-        <div class="bk-building" data-bld="training" style="right:0%; bottom:14%; width:34%;">
+        <div class="bk-building" data-bld="training" style="right:2%; bottom:18%; width:40%;">
           <img src="./img/barracks/bld_training_t0.png" alt="⚔ 훈련장" />
           <span class="bk-bld-label">⚔ 훈련장 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
-        <div class="bk-building" data-bld="smithy" style="left:33%; bottom:0%; width:34%;">
+        <div class="bk-building" data-bld="smithy" style="left:30%; bottom:-2%; width:40%;">
           <img src="./img/barracks/bld_smithy_t0.png" alt="🔨 공방" />
           <span class="bk-bld-label">🔨 공방 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
@@ -154,6 +155,7 @@
           <span class="bk-nav-label">상점</span>
         </button>
       </nav>
+      </div><!-- /.bk-frame -->
     </section>
 
     <!-- 하단 액션 바 (접힌 상태로 시작) -->
