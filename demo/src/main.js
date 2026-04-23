@@ -3169,12 +3169,15 @@ async function boot() {
 
   // SD 캐릭터 — frames.json 기반 sprite frame swap 애니메이션
   // 광장 영역에서 5명 wander (배럭 = idle 캐릭터 표시 prox)
+  // 캐릭터 wander 영역 = bk-characters 컨테이너 (HUD 56px ~ Nav 64px 사이).
+  // y % = 컨테이너 내 세로 위치 (0% top = HUD 바로 아래, 100% bottom = Nav 바로 위).
+  // 건물 사이 통로 + 하단 광장 분산 → 자연스럽게 마을 활동 느낌.
   const BK_CHARS = [
-    { name: "Panfilo_M",  base: { x: 30, y: 78 } },
-    { name: "Daria_F",    base: { x: 50, y: 82 } },
-    { name: "Emilia_F",   base: { x: 70, y: 78 } },
-    { name: "Andre_M",    base: { x: 25, y: 88 } },
-    { name: "Catherine_F", base: { x: 75, y: 88 } },
+    { name: "Panfilo_M",   base: { x: 30, y: 55 }, range: [20, 45] },  // 좌측 상단 (주방-공방 사이)
+    { name: "Daria_F",     base: { x: 50, y: 75 }, range: [40, 60] },  // 중앙 하단 (광장)
+    { name: "Emilia_F",    base: { x: 70, y: 55 }, range: [55, 80] },  // 우측 상단 (훈련장 근처)
+    { name: "Andre_M",     base: { x: 20, y: 88 }, range: [10, 35] },  // 좌측 하단 (플로어)
+    { name: "Catherine_F", base: { x: 80, y: 88 }, range: [65, 90] },  // 우측 하단 (플로어)
   ];
   const bkCharState = [];
 
@@ -3205,7 +3208,8 @@ async function boot() {
           frameIdx: Math.floor(Math.random() * Math.min(6, frames.length)),
           maxIdleFrame: Math.min(6, frames.length),  // idle 모션 (대개 첫 6프레임)
           x: c.base.x, y: c.base.y,
-          vx: (Math.random() - 0.5) * 0.4,  // wander 속도
+          xMin: c.range[0], xMax: c.range[1],
+          vx: (Math.random() < 0.5 ? -1 : 1) * (0.2 + Math.random() * 0.3),  // 0.2~0.5
           flip: false,
         });
       } catch (e) { /* sprite 없음 — 스킵 */ }
@@ -3217,9 +3221,10 @@ async function boot() {
       // frame swap (idle 모션 0~5 순환)
       s.frameIdx = (s.frameIdx + 1) % s.maxIdleFrame;
       s.el.style.backgroundPosition = `-${s.frameIdx * s.fw * 0.5}px 0px`;
-      // wander (좌우로 천천히)
+      // wander (개별 range 내 좌우 이동)
       s.x += s.vx;
-      if (s.x < 15 || s.x > 85) {
+      if (s.x < s.xMin || s.x > s.xMax) {
+        s.x = Math.max(s.xMin, Math.min(s.xMax, s.x));
         s.vx *= -1;
         s.flip = !s.flip;
         s.el.classList.toggle("flip", s.flip);
@@ -3233,14 +3238,22 @@ async function boot() {
     openBarracks();
   });
   document.getElementById("btn-close-barracks")?.addEventListener("click", closeBarracks);
-  // 하단 네비 — 월드맵 탭 = 배럭 닫기 (다른 탭들은 placeholder)
-  document.getElementById("bk-nav-worldmap")?.addEventListener("click", closeBarracks);
+  // 하단 네비 — 단일 핸들러로 통합 (월드맵=닫기 / 배럭=현재 / 나머지=토스트)
   document.querySelectorAll(".bk-nav-tab").forEach(tab => {
-    tab.addEventListener("click", () => {
+    tab.addEventListener("click", (e) => {
+      e.stopPropagation();
       const id = tab.dataset.tab;
-      if (id === "worldmap" || id === "village") return;
+      if (id === "worldmap") { closeBarracks(); return; }
+      if (id === "village") return;  // 이미 배럭 (현재 탭)
       showToast(`🚧 ${tab.querySelector(".bk-nav-label").textContent} — 준비 중`, "warn");
     });
+  });
+  // 하단 빠른 액션 바
+  document.getElementById("bk-action-collect")?.addEventListener("click", () => {
+    showToast("📦 전체 수거 — 준비 중 (생산 시스템 도입 시 활성화)", "warn");
+  });
+  document.getElementById("bk-action-manage")?.addEventListener("click", () => {
+    showToast("⚙ 시설 관리 — 준비 중 (각 건물 클릭으로 임시 Tier 변경)", "warn");
   });
   document.querySelectorAll("#barracks-view .bk-building").forEach(el => {
     el.addEventListener("click", () => {

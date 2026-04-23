@@ -90,31 +90,44 @@
         <span class="bk-currency">💰 <b id="bk-gold">0</b></span>
         <span class="bk-currency">🌾 <b id="bk-grain">0</b></span>
         <span class="bk-currency">⛏️ <b id="bk-iron">0</b></span>
-        <button class="bk-close" id="btn-close-barracks">⬅ 월드맵</button>
+        <button type="button" class="bk-close" id="btn-close-barracks">⬅ 월드맵</button>
       </header>
 
       <!-- 메인 스테이지 (배경 + 건물) — 1:1 비율 -->
       <div class="bk-stage" id="bk-stage">
         <img class="bk-bg" src="./img/barracks/bg_reboldoeux_day.png" alt="" />
-        <!-- 건물 3개 — width 픽셀로 정규화 (실제 이미지 비율 다름 → 시각적 사이즈 균등) -->
-        <div class="bk-building" data-bld="kitchen" style="left:14%; top:64%; width:22%;">
+        <!-- 건물 3개 — 분산 배치 (좌상/우상/중하 삼각형, 캐릭터 통로 확보) -->
+        <div class="bk-building" data-bld="kitchen" style="left:6%; top:42%; width:21%;">
           <img src="./img/barracks/bld_kitchen_t0.png" alt="🍳 주방" />
           <span class="bk-bld-label">🍳 주방 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
-        <div class="bk-building" data-bld="smithy" style="left:39%; top:70%; width:22%;">
-          <img src="./img/barracks/bld_smithy_t0.png" alt="🔨 공방" />
-          <span class="bk-bld-label">🔨 공방 <span class="bk-bld-lv">Lv 1</span></span>
-        </div>
-        <div class="bk-building" data-bld="training" style="left:62%; top:64%; width:28%;">
+        <div class="bk-building" data-bld="training" style="left:62%; top:42%; width:30%;">
           <img src="./img/barracks/bld_training_t0.png" alt="⚔ 훈련장" />
           <span class="bk-bld-label">⚔ 훈련장 <span class="bk-bld-lv">Lv 1</span></span>
+        </div>
+        <div class="bk-building" data-bld="smithy" style="left:36%; top:70%; width:25%;">
+          <img src="./img/barracks/bld_smithy_t0.png" alt="🔨 공방" />
+          <span class="bk-bld-label">🔨 공방 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
       </div>
 
       <!-- 하단 광장 연장 (캐릭터 wander 영역) -->
-      <div class="bk-floor"></div>
+      <div class="bk-floor">
+        <!-- 빠른 액션 바 (전체 수거 / 시설 관리) — GDD §2-3 -->
+        <div class="bk-actionbar">
+          <button type="button" class="bk-action" id="bk-action-collect">
+            <span class="bk-action-icon">📦</span>
+            <span class="bk-action-label">전체 수거</span>
+            <span class="bk-action-badge">3</span>
+          </button>
+          <button type="button" class="bk-action" id="bk-action-manage">
+            <span class="bk-action-icon">⚙</span>
+            <span class="bk-action-label">시설 관리</span>
+          </button>
+        </div>
+      </div>
 
-      <!-- SD 캐릭터 영역 (스테이지+플로어 전체 덮음, JS가 채움) -->
+      <!-- SD 캐릭터 영역 (HUD~Nav 사이 전체, JS가 채움) -->
       <div class="bk-characters" id="bk-characters"></div>
 
       <!-- 하단 네비게이션 — GDD §5-4 (4탭) -->

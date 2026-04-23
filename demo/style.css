@@ -1008,13 +1008,37 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   border: 1px solid rgba(255,212,82,0.45); }
 .bk-bld-lv { color: #fff; font-weight: normal; opacity: 0.85; }
 
-/* 하단 캐릭터 활동 존 (배경과 자연 연결) */
-.bk-floor { position: relative; flex: 1 1 auto; min-height: 60px;
+/* 하단 광장 (캐릭터 활동 존 + 빠른 액션 바) */
+.bk-floor { position: relative; flex: 1 1 auto; min-height: 80px;
   background: linear-gradient(180deg, #c89858, #b08040);
-  overflow: hidden; }
+  overflow: hidden; display: flex; flex-direction: column;
+  justify-content: flex-end; padding: 8px 10px; }
 
-/* SD 캐릭터 — 스테이지+플로어 전체에서 wander */
-.bk-characters { position: absolute; inset: 0; pointer-events: none; z-index: 4; }
+/* 빠른 액션 바 (전체 수거 / 시설 관리 등) — GDD §2-3 */
+.bk-actionbar { display: flex; gap: 8px; justify-content: flex-end;
+  z-index: 5; pointer-events: auto; }
+.bk-action { position: relative; display: flex; align-items: center; gap: 5px;
+  padding: 7px 12px; border-radius: 18px;
+  border: 1.5px solid rgba(255,212,82,0.5);
+  background: linear-gradient(180deg, rgba(50,32,18,0.92), rgba(30,18,10,0.95));
+  color: #ffd452; font-size: 11px; font-weight: bold; cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+  transition: filter 0.12s, transform 0.12s; }
+.bk-action:hover { filter: brightness(1.2); transform: translateY(-1px); }
+.bk-action:active { transform: translateY(0); }
+.bk-action-icon { font-size: 16px; line-height: 1; }
+.bk-action-label { letter-spacing: 0.3px; }
+.bk-action-badge { position: absolute; top: -5px; right: -5px;
+  min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: linear-gradient(180deg, #f55, #c33); color: #fff;
+  font-size: 10px; font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+  border: 1.5px solid rgba(0,0,0,0.4);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+/* SD 캐릭터 — HUD~Nav 사이 전체에서 wander (위로 stage / 아래로 floor 자유 이동) */
+.bk-characters { position: absolute; top: 56px; left: 0; right: 0; bottom: 64px;
+  pointer-events: none; z-index: 4; }
 .bk-char { position: absolute;
   width: 64px; height: 60px;
   background-repeat: no-repeat; background-position: 0 0;
