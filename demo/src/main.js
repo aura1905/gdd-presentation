@@ -3196,7 +3196,7 @@ async function boot() {
         if (frames.length === 0) continue;
         const fw = frames[0].frame.w;
         const fh = frames[0].frame.h;
-        const SCALE = 0.6;  // sprite 표시 배율 (원본 ~200px → 120px)
+        const SCALE = 0.3;  // sprite 표시 배율 (원본 ~200px → 60px, 절반)
         const div = document.createElement("div");
         div.className = "bk-char";
         div.style.backgroundImage = `url('./assets/sprites/${c.name}/sprite.png')`;
