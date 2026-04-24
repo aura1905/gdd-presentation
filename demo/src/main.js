@@ -3201,9 +3201,11 @@ async function boot() {
         }
         const fw = frames[0].frame.w;
         const fh = frames[0].frame.h;
-        const SCALE = 0.3;
+        const SCALE = 0.36;  // 20% 키움 (0.3 → 0.36)
+        const vx = (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.4);
+        const initialFlip = vx < 0;  // 좌측 이동이면 sprite 좌우 반전 (오른쪽 기본 가정)
         const div = document.createElement("div");
-        div.className = "bk-char";
+        div.className = "bk-char" + (initialFlip ? " flip" : "");
         div.style.backgroundImage = `url('./assets/sprites/${c.name}/sprite.png')`;
         div.style.width = `${fw * SCALE}px`;
         div.style.height = `${fh * SCALE}px`;
@@ -3212,19 +3214,17 @@ async function boot() {
         div.style.top = `${c.base.y}%`;
         div.title = c.name;
         container.appendChild(div);
-        // idle/run 태그 fallback (없으면 첫 6프레임 idle)
         const idleTag = tagMap.idle || { from: 0, to: Math.min(5, frames.length - 1) };
         const runTag = tagMap.run || idleTag;
         bkCharState.push({
           el: div, frames, fw, scale: SCALE,
           tagMap, idleTag, runTag,
-          state: "run",  // 시작은 wander
+          state: "run",
           frameIdx: runTag.from,
           x: c.base.x, y: c.base.y,
           xMin: c.range[0], xMax: c.range[1],
-          vx: (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.4),  // 빠르게 (0.5~0.9)
-          flip: false,
-          pauseTicks: 0,  // idle 멈춤 카운트
+          vx, flip: initialFlip,
+          pauseTicks: 0,
         });
       } catch (e) { /* sprite 없음 — 스킵 */ }
     }
