@@ -3174,13 +3174,13 @@ async function boot() {
   // 건물 사이 통로 + 하단 광장 분산 → 자연스럽게 마을 활동 느낌.
   // 캐릭터 wander 영역 = 광장 중앙 좁은 띠 (건물 사이 통로).
   // y 30~50 = 주방/훈련장 아래 ~ 공방 위 사이 광장 영역. 건물 가리지 않음.
-  // 캐릭터 wander = 건물 아래 ~ 앞벽 위 사이 광장 (y 65~78)
+  // 캐릭터 wander = 광장 가운데 cobblestone 마당 (y 52~64, 건물 라인 바로 아래)
   const BK_CHARS = [
-    { name: "Panfilo_M",   base: { x: 18, y: 68 }, range: [8, 32] },
-    { name: "Daria_F",     base: { x: 45, y: 75 }, range: [38, 55] },
-    { name: "Emilia_F",    base: { x: 82, y: 68 }, range: [68, 92] },
-    { name: "Andre_M",     base: { x: 30, y: 78 }, range: [12, 45] },
-    { name: "Catherine_F", base: { x: 70, y: 78 }, range: [55, 90] },
+    { name: "Panfilo_M",   base: { x: 22, y: 54 }, range: [12, 32] },
+    { name: "Daria_F",     base: { x: 45, y: 60 }, range: [36, 56] },
+    { name: "Emilia_F",    base: { x: 78, y: 54 }, range: [62, 88] },
+    { name: "Andre_M",     base: { x: 35, y: 64 }, range: [15, 45] },
+    { name: "Catherine_F", base: { x: 65, y: 64 }, range: [55, 88] },
   ];
   const bkCharState = [];
 
