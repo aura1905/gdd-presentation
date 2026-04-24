@@ -3203,7 +3203,7 @@ async function boot() {
         const fh = frames[0].frame.h;
         const SCALE = 0.36;  // 20% 키움 (0.3 → 0.36)
         const vx = (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.4);
-        const initialFlip = vx < 0;  // 좌측 이동이면 sprite 좌우 반전 (오른쪽 기본 가정)
+        const initialFlip = vx > 0;  // sprite 기본이 좌측 보고 있음 → 우측 이동 시 flip
         const div = document.createElement("div");
         div.className = "bk-char" + (initialFlip ? " flip" : "");
         div.style.backgroundImage = `url('./assets/sprites/${c.name}/sprite.png')`;
@@ -3251,7 +3251,7 @@ async function boot() {
         if (s.x < s.xMin || s.x > s.xMax) {
           s.x = Math.max(s.xMin, Math.min(s.xMax, s.x));
           s.vx *= -1;
-          s.flip = !s.flip;
+          s.flip = s.vx > 0;  // sprite 기본 좌측 → 우측 이동 시 flip
           s.el.classList.toggle("flip", s.flip);
           // 끝에 도달 → idle 잠깐 (5~10틱 = 0.5~1초)
           s.state = "idle";
