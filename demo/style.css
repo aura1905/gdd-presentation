@@ -969,13 +969,16 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   display: flex; align-items: center; justify-content: center;
   background: #000;  /* letterbox 양옆 */
   animation: bk-fade 0.25s ease; overflow: hidden; }
+#barracks-view[hidden] { display: none !important; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
 
-/* 9:16 모바일 포트레이트 frame (정사각/landscape viewport에서도 9:16 유지). */
+/* 9:16 모바일 포트레이트 frame — 정사각/landscape viewport에서 letterbox.
+   aspect-ratio + max-width 조합으로 height 우선 / overflow 시 width 우선 자동 전환. */
 .bk-frame { position: relative;
   height: 100%;
-  width: calc(100% * 9 / 16);  /* viewport 높이 기준 9:16 */
+  aspect-ratio: 9 / 16;
   max-width: 100%;
+  max-height: 100%;
   display: flex; flex-direction: column;
   background: linear-gradient(180deg, #88c5e8 0%, #d4a878 60%, #c89858 100%);
   overflow: hidden;
@@ -1004,9 +1007,9 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .bk-bg { position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; object-position: center top; pointer-events: none; }
 /* 앞쪽 성벽 + 게이트 — foreground 레이어 (건물보다 z 높음 → 자연스러운 가림).
-   가로 wide sprite (~3:1), 하단에 안착, 너무 가리지 않게 작은 크기. */
+   가로 wide sprite (~3:1), 하단에 안착, 게이트 강조 위해 30% 까지. */
 .bk-frontwall { position: absolute; left: 0; right: 0; bottom: 0;
-  width: 100%; height: auto; max-height: 22%; object-fit: contain;
+  width: 100%; height: auto; max-height: 18%; object-fit: contain;
   object-position: center bottom; z-index: 5;
   pointer-events: none;
   filter: drop-shadow(0 -3px 6px rgba(0,0,0,0.3)); }

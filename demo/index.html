@@ -97,19 +97,19 @@
       <!-- 메인 스테이지 (배경 + 건물) — 1:1 비율 -->
       <div class="bk-stage" id="bk-stage">
         <img class="bk-bg" src="./img/barracks/bg_reboldoeux_day.png?v=castle3" alt="" />
-        <!-- 건물 3개 — 4칸 크기로 키움, 광장 상부 활용 (위로 배치).
-             훈련장은 1층 가로형(3칸) → width 더 큼. 정규화: 주방/공방 정사각, 훈련장 가로형. -->
-        <div class="bk-building" data-bld="kitchen" style="left:2%; bottom:48%; width:46%;">
+        <!-- 건물 3개 일직선 — 광장 가운데 라인 (주방-공방-훈련장).
+             광장 좁아서 일직선이 가장 자연스러움. 캐릭터는 광장 앞 잔디로 활동 영역 분리. -->
+        <div class="bk-building" data-bld="kitchen" style="left:1%; bottom:30%; width:34%;">
           <img src="./img/barracks/bld_kitchen_t0.png" alt="🍳 주방" />
           <span class="bk-bld-label">🍳 주방 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
-        <div class="bk-building" data-bld="training" style="right:0%; bottom:48%; width:52%;">
-          <img src="./img/barracks/bld_training_t0.png" alt="⚔ 훈련장" />
-          <span class="bk-bld-label">⚔ 훈련장 <span class="bk-bld-lv">Lv 1</span></span>
-        </div>
-        <div class="bk-building" data-bld="smithy" style="left:27%; bottom:18%; width:46%;">
+        <div class="bk-building" data-bld="smithy" style="left:34%; bottom:30%; width:34%;">
           <img src="./img/barracks/bld_smithy_t0.png" alt="🔨 공방" />
           <span class="bk-bld-label">🔨 공방 <span class="bk-bld-lv">Lv 1</span></span>
+        </div>
+        <div class="bk-building" data-bld="training" style="right:1%; bottom:30%; width:36%;">
+          <img src="./img/barracks/bld_training_t0.png" alt="⚔ 훈련장" />
+          <span class="bk-bld-label">⚔ 훈련장 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
         <!-- 앞쪽 성벽 + 게이트 (foreground) — 가로 wide, 하단 위치 -->
         <img class="bk-frontwall" src="./img/barracks/fg_front_wall_gate.png?v=castle3" alt="" />

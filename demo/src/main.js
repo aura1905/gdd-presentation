@@ -3172,12 +3172,15 @@ async function boot() {
   // 캐릭터 wander 영역 = bk-characters 컨테이너 (HUD 56px ~ Nav 64px 사이).
   // y % = 컨테이너 내 세로 위치 (0% top = HUD 바로 아래, 100% bottom = Nav 바로 위).
   // 건물 사이 통로 + 하단 광장 분산 → 자연스럽게 마을 활동 느낌.
+  // 캐릭터 wander 영역 = 광장 중앙 좁은 띠 (건물 사이 통로).
+  // y 30~50 = 주방/훈련장 아래 ~ 공방 위 사이 광장 영역. 건물 가리지 않음.
+  // 캐릭터 wander = 건물 아래 ~ 앞벽 위 사이 광장 (y 65~78)
   const BK_CHARS = [
-    { name: "Panfilo_M",   base: { x: 30, y: 55 }, range: [20, 45] },  // 좌측 상단 (주방-공방 사이)
-    { name: "Daria_F",     base: { x: 50, y: 75 }, range: [40, 60] },  // 중앙 하단 (광장)
-    { name: "Emilia_F",    base: { x: 70, y: 55 }, range: [55, 80] },  // 우측 상단 (훈련장 근처)
-    { name: "Andre_M",     base: { x: 20, y: 88 }, range: [10, 35] },  // 좌측 하단 (플로어)
-    { name: "Catherine_F", base: { x: 80, y: 88 }, range: [65, 90] },  // 우측 하단 (플로어)
+    { name: "Panfilo_M",   base: { x: 18, y: 68 }, range: [8, 32] },
+    { name: "Daria_F",     base: { x: 45, y: 75 }, range: [38, 55] },
+    { name: "Emilia_F",    base: { x: 82, y: 68 }, range: [68, 92] },
+    { name: "Andre_M",     base: { x: 30, y: 78 }, range: [12, 45] },
+    { name: "Catherine_F", base: { x: 70, y: 78 }, range: [55, 90] },
   ];
   const bkCharState = [];
 
@@ -3193,7 +3196,7 @@ async function boot() {
         if (frames.length === 0) continue;
         const fw = frames[0].frame.w;
         const fh = frames[0].frame.h;
-        const SCALE = 0.7;  // sprite 표시 배율 (원본 ~200px → 140px)
+        const SCALE = 0.6;  // sprite 표시 배율 (원본 ~200px → 120px)
         const div = document.createElement("div");
         div.className = "bk-char";
         div.style.backgroundImage = `url('./assets/sprites/${c.name}/sprite.png')`;
