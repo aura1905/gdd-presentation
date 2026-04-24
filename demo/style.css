@@ -1009,7 +1009,7 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 /* 앞쪽 성벽 + 게이트 — foreground 레이어 (건물보다 z 높음 → 자연스러운 가림).
    가로 wide sprite (~3:1), 하단에 안착, 게이트 강조 위해 30% 까지. */
 .bk-frontwall { position: absolute; left: 0; right: 0; bottom: 0;
-  width: 90%; max-width: 90%; height: auto; max-height: 14%;
+  width: 100%; max-width: 100%; height: auto; max-height: 28%;
   margin: 0 auto; object-fit: contain;
   object-position: center bottom; z-index: 5;
   pointer-events: none;
