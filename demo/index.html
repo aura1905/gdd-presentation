@@ -82,6 +82,25 @@
       <button id="btn-reset-encounters" type="button" data-tip="🧪 조우 리셋 (테스트)|현재 조우 모두 제거 후 초기 6마리 재배치.">🧪</button>
     </aside>
 
+    <!-- 월드맵 하단 네비 — 배럭 진입 + 다른 탭 placeholder. 배럭 뷰 네비와 동일 구조. -->
+    <nav class="wm-nav">
+      <button type="button" class="bk-nav-tab" data-wm-tab="village" id="wm-nav-barracks">
+        <span class="bk-nav-icon">🏘</span><span class="bk-nav-label">배럭</span>
+      </button>
+      <button type="button" class="bk-nav-tab active" data-wm-tab="worldmap">
+        <span class="bk-nav-icon">🗺</span><span class="bk-nav-label">월드맵</span>
+      </button>
+      <button type="button" class="bk-nav-tab" data-wm-tab="party">
+        <span class="bk-nav-icon">⚔</span><span class="bk-nav-label">편성</span>
+      </button>
+      <button type="button" class="bk-nav-tab" data-wm-tab="family">
+        <span class="bk-nav-icon">🏛</span><span class="bk-nav-label">가문</span>
+      </button>
+      <button type="button" class="bk-nav-tab" data-wm-tab="shop">
+        <span class="bk-nav-icon">🛒</span><span class="bk-nav-label">상점</span>
+      </button>
+    </nav>
+
     <!-- 배럭 뷰 — 9:16 모바일 포트레이트 레이아웃 (HUD + 스테이지 + 플로어 + 네비) -->
     <section id="barracks-view" hidden>
       <div class="bk-frame">

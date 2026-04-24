@@ -3241,6 +3241,16 @@ async function boot() {
     e.stopPropagation();
     openBarracks();
   });
+  // 월드맵 하단 네비 (배럭 진입 + 다른 탭 placeholder)
+  document.querySelectorAll(".wm-nav .bk-nav-tab").forEach(tab => {
+    tab.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id = tab.dataset.wmTab;
+      if (id === "village") { openBarracks(); return; }
+      if (id === "worldmap") return;  // 이미 월드맵
+      showToast(`🚧 ${tab.querySelector(".bk-nav-label").textContent} — 준비 중`, "warn");
+    });
+  });
   document.getElementById("btn-close-barracks")?.addEventListener("click", closeBarracks);
   // 하단 네비 — 단일 핸들러로 통합 (월드맵=닫기 / 배럭=현재 / 나머지=토스트)
   document.querySelectorAll(".bk-nav-tab").forEach(tab => {
