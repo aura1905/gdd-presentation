@@ -3147,7 +3147,7 @@ async function boot() {
     barracksView.hidden = false;
     updateBarracksHud();
     spawnBarracksCharacters();
-    if (!bkCharLoop) bkCharLoop = setInterval(animateBarracksCharacters, 200);
+    if (!bkCharLoop) bkCharLoop = setInterval(animateBarracksCharacters, 100);
   }
   function closeBarracks() {
     if (!barracksView) return;
@@ -3194,9 +3194,14 @@ async function boot() {
         const framesData = await fetch(`./assets/sprites/${c.name}/frames.json`).then(r => r.json());
         const frames = Object.values(framesData.frames || {});
         if (frames.length === 0) continue;
+        // Aseprite meta.tags에서 idle/run 추출
+        const tagMap = {};
+        for (const t of (framesData.meta?.tags || [])) {
+          tagMap[t.name] = { from: t.from, to: t.to };
+        }
         const fw = frames[0].frame.w;
         const fh = frames[0].frame.h;
-        const SCALE = 0.3;  // sprite 표시 배율 (원본 ~200px → 60px, 절반)
+        const SCALE = 0.3;
         const div = document.createElement("div");
         div.className = "bk-char";
         div.style.backgroundImage = `url('./assets/sprites/${c.name}/sprite.png')`;
@@ -3207,14 +3212,19 @@ async function boot() {
         div.style.top = `${c.base.y}%`;
         div.title = c.name;
         container.appendChild(div);
+        // idle/run 태그 fallback (없으면 첫 6프레임 idle)
+        const idleTag = tagMap.idle || { from: 0, to: Math.min(5, frames.length - 1) };
+        const runTag = tagMap.run || idleTag;
         bkCharState.push({
           el: div, frames, fw, scale: SCALE,
-          frameIdx: Math.floor(Math.random() * Math.min(6, frames.length)),
-          maxIdleFrame: Math.min(6, frames.length),  // idle 모션 (대개 첫 6프레임)
+          tagMap, idleTag, runTag,
+          state: "run",  // 시작은 wander
+          frameIdx: runTag.from,
           x: c.base.x, y: c.base.y,
           xMin: c.range[0], xMax: c.range[1],
-          vx: (Math.random() < 0.5 ? -1 : 1) * (0.2 + Math.random() * 0.3),  // 0.2~0.5
+          vx: (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.4),  // 빠르게 (0.5~0.9)
           flip: false,
+          pauseTicks: 0,  // idle 멈춤 카운트
         });
       } catch (e) { /* sprite 없음 — 스킵 */ }
     }
@@ -3222,18 +3232,34 @@ async function boot() {
 
   function animateBarracksCharacters() {
     for (const s of bkCharState) {
-      // frame swap (idle 모션 0~5 순환)
-      s.frameIdx = (s.frameIdx + 1) % s.maxIdleFrame;
+      // 상태 따라 frame range 결정
+      const tag = s.state === "idle" ? s.idleTag : s.runTag;
+      // frame 순환 (from~to)
+      s.frameIdx++;
+      if (s.frameIdx > tag.to || s.frameIdx < tag.from) s.frameIdx = tag.from;
       s.el.style.backgroundPosition = `-${s.frameIdx * s.fw * s.scale}px 0px`;
-      // wander (개별 range 내 좌우 이동)
-      s.x += s.vx;
-      if (s.x < s.xMin || s.x > s.xMax) {
-        s.x = Math.max(s.xMin, Math.min(s.xMax, s.x));
-        s.vx *= -1;
-        s.flip = !s.flip;
-        s.el.classList.toggle("flip", s.flip);
+
+      // 상태 전환 + wander
+      if (s.state === "idle") {
+        s.pauseTicks--;
+        if (s.pauseTicks <= 0) {
+          s.state = "run";
+          s.frameIdx = s.runTag.from;
+        }
+      } else {
+        s.x += s.vx;
+        if (s.x < s.xMin || s.x > s.xMax) {
+          s.x = Math.max(s.xMin, Math.min(s.xMax, s.x));
+          s.vx *= -1;
+          s.flip = !s.flip;
+          s.el.classList.toggle("flip", s.flip);
+          // 끝에 도달 → idle 잠깐 (5~10틱 = 0.5~1초)
+          s.state = "idle";
+          s.frameIdx = s.idleTag.from;
+          s.pauseTicks = 5 + Math.floor(Math.random() * 6);
+        }
+        s.el.style.left = `${s.x}%`;
       }
-      s.el.style.left = `${s.x}%`;
     }
   }
 
