@@ -3327,10 +3327,9 @@ async function boot() {
     if (items.length === 0) { stack.style.display = "none"; return; }
     stack.style.display = "";
     stack.innerHTML = items.join("");
-    // 건물 중간 — castle 정문 위쪽 (광장 시작점 부근)
-    const pos = isoCellToPos(2, 2);
-    stack.style.left = `${pos.x}%`;
-    stack.style.top = `${pos.y}%`;
+    // 건물 중간 — frame 직접 좌표 (그리드 위쪽이라 cell 매핑 안 됨)
+    stack.style.left = `50%`;
+    stack.style.top = `40%`;
   }
   const GRID_STORAGE_KEY = "barracks_grid_walkable_v6";  // v6: default 매핑 자동 적용
   // localStorage 복원
