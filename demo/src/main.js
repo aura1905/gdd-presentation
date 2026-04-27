@@ -3141,8 +3141,19 @@ async function boot() {
   // 건물 클릭 시 Tier 0→1→2→0 순환 (시각 변화 데모용 — 실제 업그레이드 시스템과 별개).
   // SD 캐릭터: demo/assets/sprites/<Name>/sprite.png + frames.json 활용해 광장에서 wander.
   const barracksView = document.getElementById("barracks-view");
-  const TIER_NAMES = ["Lv 1", "Lv 5", "Lv 10"];
-  const barracksTier = { kitchen: 0, smithy: 0, training: 0 };
+  // 시설 Lv 마일스톤 인덱스 (0~4 = Lv 1/3/5/7/10)
+  const BARRACKS_TIER_KEY = "barracks_tier_v1";
+  const barracksTier = (() => {
+    const init = { kitchen: 0, smithy: 0, training: 0 };
+    try {
+      const s = localStorage.getItem(BARRACKS_TIER_KEY);
+      if (s) Object.assign(init, JSON.parse(s));
+    } catch (e) {}
+    return init;
+  })();
+  function saveBarracksTier() {
+    try { localStorage.setItem(BARRACKS_TIER_KEY, JSON.stringify(barracksTier)); } catch (e) {}
+  }
   let bkCharLoop = null;
 
   // ─── 그리드 시스템 (isometric, 광장 다이아몬드 1.1배) ───
@@ -3197,12 +3208,42 @@ async function boot() {
     catch (e) { /* ignore */ }
   }
 
-  // ─── 자원 생산 시스템 (mock — 실제 GDD 생산 공식 들어오기 전 데모용) ───
-  // 5초마다 시설 Tier에 따라 자원 누적 → castle 정문 앞 더미로 시각화 → 클릭 수거.
+  // ─── 시설 Lv 시스템 (gdd_barracks_life_v2.md §3-2 기반) ───
+  // 마일스톤 5단계 (Lv.1, 3, 5, 7, 10). 각 단계별 효과 + 업그레이드 cost.
+  // tier index 0~4 = Lv 1/3/5/7/10
+  const FACILITY_LEVELS = {
+    kitchen: [
+      { lv: 1,  effect: "기본 음식 생산",                       cost: null,                              prod: { grain: 1 } },
+      { lv: 3,  effect: "요리 속도 +20%",                      cost: { wood: 1500, vis: 3000 },         prod: { grain: 2 } },
+      { lv: 5,  effect: "중급 레시피 해금, 대성공 +5%",         cost: { wood: 5000, vis: 10000 },        prod: { grain: 3 } },
+      { lv: 7,  effect: "고급 레시피 해금",                    cost: { wood: 12000, vis: 25000 },       prod: { grain: 5 } },
+      { lv: 10, effect: "특급 레시피, 대성공 +15%",            cost: { wood: 30000, vis: 60000 },       prod: { grain: 8 } },
+    ],
+    smithy: [
+      { lv: 1,  effect: "Common 장비 제작, 기초 전술서",       cost: null,                                       prod: { iron: 1 } },
+      { lv: 3,  effect: "Uncommon 해금",                       cost: { wood: 2000, iron: 1000, vis: 4000 },      prod: { iron: 2 } },
+      { lv: 5,  effect: "Rare 해금, 전술서 등급 UP",           cost: { wood: 6000, iron: 3000, vis: 12000 },     prod: { iron: 3 } },
+      { lv: 7,  effect: "장비 부스탯 보정 +10%",               cost: { wood: 15000, iron: 8000, vis: 30000 },    prod: { iron: 5 } },
+      { lv: 10, effect: "Epic 해금 (보석광 추가 필요)",        cost: { wood: 35000, iron: 18000, vis: 70000 },   prod: { iron: 8 } },
+    ],
+    training: [
+      { lv: 1,  effect: "TXP 30/시간, 훈련 슬롯 2",            cost: null,                              prod: { txp: 30 } },
+      { lv: 3,  effect: "TXP +20/시간, 슬롯 3",                cost: { wood: 2000, vis: 5000 },         prod: { txp: 50 } },
+      { lv: 5,  effect: "TXP +50/시간, 슬롯 4",                cost: { wood: 6000, vis: 15000 },        prod: { txp: 100 } },
+      { lv: 7,  effect: "TXP +80/시간, 슬롯 5",                cost: { wood: 15000, vis: 35000 },       prod: { txp: 180 } },
+      { lv: 10, effect: "TXP +120/시간, 슬롯 6, 마스터 훈련",  cost: { wood: 35000, vis: 80000 },       prod: { txp: 300 } },
+    ],
+  };
+  const FACILITY_LABEL = { kitchen: "🍳 주방", smithy: "🔨 공방", training: "⚔ 훈련장" };
+  const FACILITY_JOB = { kitchen: "요리사", smithy: "장인", training: "교관" };
+  const RES_LABEL = { gold: "💰", grain: "🌾", iron: "⛏️", wood: "🌲", stone: "🪨", herbs: "🌿", vis: "✨", gem: "💎", scroll: "📜", rp: "📘", txp: "🎓" };
+
+  // ─── 자원 생산 시스템 (시설 Lv 기반) ───
+  // 5초마다 시설 마일스톤(tier)에 따라 자원 누적 → castle 정문 앞 더미 → 클릭 수거.
   const PRODUCTION_RATES = {
-    kitchen:  [{ grain: 1 }, { grain: 2 }, { grain: 4 }],   // Tier 0/1/2
-    smithy:   [{ iron: 1 },  { iron: 2 },  { iron: 4 }],
-    training: [{},           {},           {}],             // 훈련포인트는 추후
+    kitchen:  FACILITY_LEVELS.kitchen.map(l => l.prod),
+    smithy:   FACILITY_LEVELS.smithy.map(l => l.prod),
+    training: FACILITY_LEVELS.training.map(l => l.prod),
   };
   const PRODUCTION_TICK_MS = 5000;
   const PRODUCTION_STORAGE_KEY = "barracks_production_v1";
@@ -3527,6 +3568,8 @@ async function boot() {
     barracksView.hidden = false;
     updateBarracksHud();
     setupBarracksGrid();
+    // 저장된 시설 Tier로 라벨/이미지 동기화
+    for (const id of Object.keys(FACILITY_LEVELS)) setBuildingTier(id, barracksTier[id] || 0);
     spawnBarracksCharacters();
     renderProductionStack();
     if (!bkCharLoop) bkCharLoop = setInterval(animateBarracksCharacters, 100);
@@ -3555,10 +3598,14 @@ async function boot() {
   }
   function setBuildingTier(bld, tier) {
     barracksTier[bld] = tier;
+    saveBarracksTier();
     const el = barracksView.querySelector(`.bk-building[data-bld="${bld}"]`);
     if (!el) return;
-    el.querySelector("img").src = `./img/barracks/bld_${bld}_t${tier}.png`;
-    el.querySelector(".bk-bld-lv").textContent = TIER_NAMES[tier];
+    // 이미지는 t0/t1/t2 3장만. tier 0~4(Lv 1~10) 매핑: 0/1→t0, 2/3→t1, 4→t2
+    const imgIdx = Math.min(2, Math.floor(tier / 2));
+    el.querySelector("img").src = `./img/barracks/bld_${bld}_t${imgIdx}.png`;
+    const lv = FACILITY_LEVELS[bld]?.[tier]?.lv ?? "?";
+    el.querySelector(".bk-bld-lv").textContent = `Lv.${lv}`;
   }
 
   // SD 캐릭터 — frames.json 기반 sprite frame swap 애니메이션
@@ -3806,23 +3853,41 @@ async function boot() {
   const manageBtn = document.getElementById("bk-action-manage");
   if (manageBtn) manageBtn.style.display = "none";
 
+  // 자원 cost 표시 + 자원 부족 체크
+  function formatCost(cost) {
+    if (!cost) return "—";
+    return Object.entries(cost)
+      .map(([r, a]) => `${RES_LABEL[r] || r} ${a.toLocaleString()}`).join(" · ");
+  }
+  function canAffordCost(cost) {
+    if (!cost) return true;
+    const gs = getState();
+    for (const [r, a] of Object.entries(cost)) {
+      if ((gs.resources?.[r] || 0) < a) return false;
+    }
+    return true;
+  }
+  function spendCost(cost) {
+    if (!cost) return;
+    const gs = getState();
+    for (const [r, a] of Object.entries(cost)) {
+      gs.resources[r] = (gs.resources[r] || 0) - a;
+    }
+    saveState(gs);
+  }
+  function formatProd(prod) {
+    if (!prod || Object.keys(prod).length === 0) return "(없음)";
+    return Object.entries(prod).map(([r, a]) => `${RES_LABEL[r] || r} ${a}`).join(" · ");
+  }
+
   // 시설 클릭 → 관리 팝업
   function openBuildingPanel(bld) {
     const def = BUILDING_DEF[bld];
-    if (!def) return;
-    const tier = barracksTier[bld];
-    const TIER_LABEL = ["Lv 1", "Lv 5", "Lv 10"];
-    const NAME_KR = { kitchen: "🍳 주방", smithy: "🔨 공방", training: "⚔ 훈련장" };
-    const rates = (PRODUCTION_RATES[bld] || [])[tier] || {};
-    const ratesText = Object.entries(rates).map(([r, a]) => {
-      const e = {grain:"🌾",iron:"⛏️",gold:"💰"}[r] || r;
-      return `${e} ${a}/틱`;
-    }).join(" · ") || "(생산 없음)";
-    const nextRates = (PRODUCTION_RATES[bld] || [])[tier + 1];
-    const nextRatesText = nextRates ? Object.entries(nextRates).map(([r, a]) => {
-      const e = {grain:"🌾",iron:"⛏️",gold:"💰"}[r] || r;
-      return `${e} ${a}/틱`;
-    }).join(" · ") : null;
+    const levels = FACILITY_LEVELS[bld];
+    if (!def || !levels) return;
+    const tier = barracksTier[bld];          // 0~4 (Lv 1/3/5/7/10)
+    const cur = levels[tier];
+    const next = levels[tier + 1];           // null = 최대치
 
     let modal = document.getElementById("bk-building-modal");
     if (!modal) {
@@ -3834,32 +3899,55 @@ async function boot() {
         if (e.target === modal) modal.style.display = "none";
       });
     }
+
+    // 마일스톤 진행률 표시 (5단계 dot)
+    const dotsHtml = levels.map((lv, i) =>
+      `<span class="bk-tier-dot ${i <= tier ? 'on' : ''}" title="Lv.${lv.lv}">${lv.lv}</span>`
+    ).join("<span class='bk-tier-arrow'>›</span>");
+
+    let upgradeHtml = "";
+    if (next) {
+      const afford = canAffordCost(next.cost);
+      upgradeHtml = `
+        <div class="bk-modal-section">
+          <div class="bk-modal-label">다음 마일스톤 — Lv.${next.lv}</div>
+          <div class="bk-modal-value">${next.effect}</div>
+          <div class="bk-modal-sub">생산: ${formatProd(next.prod)}</div>
+        </div>
+        <div class="bk-modal-section">
+          <div class="bk-modal-label">업그레이드 비용</div>
+          <div class="bk-modal-value ${afford ? '' : 'cost-short'}">${formatCost(next.cost)}</div>
+        </div>
+        <button class="bk-modal-action" id="bk-modal-upgrade" ${afford ? "" : "disabled"}>
+          🔧 ${afford ? `Lv.${next.lv}로 업그레이드` : "자원 부족"}
+        </button>
+      `;
+    } else {
+      upgradeHtml = `<div class="bk-modal-section"><em>✨ 최대 레벨 — Lv.${cur.lv}</em></div>`;
+    }
+
     modal.innerHTML = `
       <div class="bk-modal-card">
         <header class="bk-modal-head">
-          <h3>${NAME_KR[bld]} <span class="bk-modal-tier">${TIER_LABEL[tier]}</span></h3>
+          <h3>${FACILITY_LABEL[bld]} <span class="bk-modal-tier">Lv.${cur.lv}</span></h3>
           <button class="bk-modal-close" id="bk-modal-close">✕</button>
         </header>
         <div class="bk-modal-body">
+          <div class="bk-tier-track">${dotsHtml}</div>
           <div class="bk-modal-section">
-            <div class="bk-modal-label">생산 (현재)</div>
-            <div class="bk-modal-value">${ratesText}</div>
+            <div class="bk-modal-label">현재 효과</div>
+            <div class="bk-modal-value">${cur.effect}</div>
+            <div class="bk-modal-sub">생산: ${formatProd(cur.prod)} (5초마다)</div>
+          </div>
+          <div class="bk-modal-section">
+            <div class="bk-modal-label">자동 배치 직업</div>
+            <div class="bk-modal-value">${FACILITY_JOB[bld]} (배치 시스템 추후)</div>
           </div>
           <div class="bk-modal-section">
             <div class="bk-modal-label">footprint</div>
             <div class="bk-modal-value">${def.footprint.w}×${def.footprint.h} cells (col ${barracksBuildings[bld]?.col ?? "?"}, row ${barracksBuildings[bld]?.row ?? "?"})</div>
           </div>
-          <div class="bk-modal-section">
-            <div class="bk-modal-label">배치 캐릭터</div>
-            <div class="bk-modal-value">(추후 — 슬롯 배정 시스템 도입 예정)</div>
-          </div>
-          ${nextRatesText ? `
-            <div class="bk-modal-section">
-              <div class="bk-modal-label">다음 Tier (${TIER_LABEL[tier+1]})</div>
-              <div class="bk-modal-value">${nextRatesText}</div>
-            </div>
-            <button class="bk-modal-action" id="bk-modal-upgrade">🔧 업그레이드 (데모 — 즉시 Tier↑)</button>
-          ` : `<div class="bk-modal-section"><em>최대 Tier</em></div>`}
+          ${upgradeHtml}
         </div>
       </div>
     `;
@@ -3868,11 +3956,17 @@ async function boot() {
       modal.style.display = "none";
     });
     const upBtn = document.getElementById("bk-modal-upgrade");
-    if (upBtn) {
+    if (upBtn && next) {
       upBtn.addEventListener("click", () => {
-        const next = (barracksTier[bld] + 1) % 3;
-        setBuildingTier(bld, next);
-        showToast(`🔧 ${NAME_KR[bld]} → ${TIER_LABEL[next]}`, "exp");
+        if (!canAffordCost(next.cost)) {
+          showToast("자원 부족", "warn");
+          return;
+        }
+        spendCost(next.cost);
+        const newTier = barracksTier[bld] + 1;
+        setBuildingTier(bld, newTier);
+        updateHud();
+        showToast(`🔧 ${FACILITY_LABEL[bld]} → Lv.${next.lv}`, "exp");
         openBuildingPanel(bld);  // 갱신
       });
     }
