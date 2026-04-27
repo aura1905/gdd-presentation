@@ -3165,7 +3165,8 @@ async function boot() {
     occupied: new Set(),   // 호환용 alias (= blocked)
     buildings: [],
     visible: false,
-    pickerMode: false,     // true = cell 클릭으로 walkable/blocked 토글
+    pickerMode: false,     // true = cell 클릭/드래그로 페인팅
+    paintBrush: "blocked", // "walkable" | "blocked" | "erase" — 드래그 paint 색
   };
   const GRID_STORAGE_KEY = "barracks_grid_walkable_v6";  // v6: default 매핑 자동 적용
   // localStorage 복원
@@ -3245,31 +3246,9 @@ async function boot() {
       el.style.transform = "translate(-50%, -85%)";  // cell center에 발 닿게
     }
   }
-  function applyDefaultGridState() {
-    // 사용자 그림 패턴 기반 default. 다이아몬드 가운데 axis = 광장+외부 walkable.
-    // 가장자리/위쪽 castle 본체 = blocked. 사용자가 picker로 fine-tune 가능.
-    // (col+row) ~ 다이아몬드 세로축 (top=0 ~ bottom=cols+rows-2)
-    // (col-row) ~ 다이아몬드 가로축 (left=-rows+1 ~ right=cols-1)
-    for (let c = 0; c < GRID.cols; c++) {
-      for (let r = 0; r < GRID.rows; r++) {
-        const k = `${c},${r}`;
-        if (GRID.walkable.has(k) || GRID.blocked.has(k)) continue;  // 사용자 picker 결과 보존
-        const sum = c + r;
-        const diff = Math.abs(c - r);
-        // 광장 cobblestone (frame y 50~70%) ~ sum 9-22, diff <= 5
-        // castle 외부 grass (frame y 70~95%) ~ sum 22-28, diff <= 4
-        const inPlaza  = sum >= 9 && sum <= 22 && diff <= 5;
-        const inOutside = sum >= 22 && sum <= 27 && diff <= 4;
-        if (inPlaza || inOutside) GRID.walkable.add(k);
-        else GRID.blocked.add(k);
-      }
-    }
-    saveGridState();
-  }
   function setupBarracksGrid() {
     GRID.occupied.clear();
     GRID.buildings.length = 0;
-    applyDefaultGridState();
     renderGridOverlay();
   }
   // cell 상태: "walkable" | "blocked" | "unset"
@@ -3287,11 +3266,12 @@ async function boot() {
     else if (state === "blocked") GRID.blocked.add(k);
     saveGridState();
   }
-  // picker: cell 클릭 → unset → walkable → blocked → unset 사이클
-  function cyclePickerCell(c, r) {
-    const cur = cellState(c, r);
-    const next = cur === "unset" ? "walkable" : cur === "walkable" ? "blocked" : "unset";
-    setCellState(c, r, next);
+  // 페인팅 (드래그 / 클릭): 현재 brush 색을 cell에 그대로 적용
+  function paintCell(c, r) {
+    const target = GRID.paintBrush === "erase" ? "unset" : GRID.paintBrush;
+    if (cellState(c, r) === target) return false;
+    setCellState(c, r, target);
+    return true;
   }
 
   function renderGridOverlay() {
@@ -3327,10 +3307,17 @@ async function boot() {
         poly.setAttribute("stroke-width", "0.12");
         poly.setAttribute("stroke-dasharray", "0.4,0.25");
         if (GRID.pickerMode) {
-          poly.style.cursor = "pointer";
-          poly.addEventListener("click", () => {
-            cyclePickerCell(c, r);
-            renderGridOverlay();
+          poly.style.cursor = "crosshair";
+          poly.dataset.cellC = c;
+          poly.dataset.cellR = r;
+          // mousedown 시작 + mouseenter (드래그 중) → paint
+          poly.addEventListener("mousedown", (ev) => {
+            ev.preventDefault();
+            window.__paintingGrid = true;
+            if (paintCell(c, r)) renderGridOverlay();
+          });
+          poly.addEventListener("mouseenter", () => {
+            if (window.__paintingGrid && paintCell(c, r)) renderGridOverlay();
           });
         }
         svg.appendChild(poly);
@@ -3508,14 +3495,77 @@ async function boot() {
     openBarracks();
   });
   document.getElementById("btn-close-barracks")?.addEventListener("click", closeBarracks);
-  // # 버튼: visible + picker 함께 토글 (사용자가 cell 클릭으로 walkable/blocked 정의)
+  // 드래그 페인팅 종료 (mouseup 어디든)
+  window.addEventListener("mouseup", () => { window.__paintingGrid = false; });
+
+  // 그리드 paint 도구 패널 (picker 모드 ON 시 floating)
+  function ensureGridPaintPanel() {
+    let panel = document.getElementById("grid-paint-panel");
+    if (panel) return panel;
+    panel = document.createElement("div");
+    panel.id = "grid-paint-panel";
+    panel.innerHTML = `
+      <div class="gpp-title">🎯 그리드 페인터</div>
+      <div class="gpp-brushes">
+        <button data-brush="blocked" class="gpp-btn gpp-blocked">🟥 못감</button>
+        <button data-brush="walkable" class="gpp-btn gpp-walkable">🟩 갈수있음</button>
+        <button data-brush="erase" class="gpp-btn gpp-erase">⬜ 미정</button>
+      </div>
+      <div class="gpp-tools">
+        <button id="gpp-clear" class="gpp-btn-sm">전체 초기화</button>
+        <button id="gpp-export" class="gpp-btn-sm">JSON 출력</button>
+        <button id="gpp-close" class="gpp-btn-sm">닫기</button>
+      </div>
+      <pre id="gpp-output" hidden></pre>
+    `;
+    document.getElementById("barracks-view").appendChild(panel);
+
+    panel.querySelectorAll(".gpp-btn[data-brush]").forEach(b => {
+      b.addEventListener("click", () => {
+        GRID.paintBrush = b.dataset.brush;
+        panel.querySelectorAll(".gpp-btn[data-brush]").forEach(x =>
+          x.classList.toggle("active", x === b));
+      });
+    });
+    panel.querySelector(`.gpp-btn[data-brush="${GRID.paintBrush}"]`)?.classList.add("active");
+
+    document.getElementById("gpp-clear").addEventListener("click", () => {
+      if (!confirm("그리드 전체 초기화?")) return;
+      GRID.walkable.clear(); GRID.blocked.clear(); saveGridState(); renderGridOverlay();
+    });
+    document.getElementById("gpp-export").addEventListener("click", () => {
+      const out = document.getElementById("gpp-output");
+      out.hidden = false;
+      out.textContent = JSON.stringify({
+        cols: GRID.cols, rows: GRID.rows,
+        walkable: [...GRID.walkable].sort(),
+        blocked: [...GRID.blocked].sort(),
+      }, null, 2);
+      out.scrollIntoView();
+    });
+    document.getElementById("gpp-close").addEventListener("click", () => {
+      GRID.visible = false; GRID.pickerMode = false;
+      renderGridOverlay();
+      panel.style.display = "none";
+    });
+    return panel;
+  }
+
+  // # 버튼: visible + picker 함께 토글 + paint 패널 표시
   document.getElementById("btn-toggle-grid")?.addEventListener("click", (e) => {
     e.stopPropagation();
     const on = !GRID.visible;
     GRID.visible = on;
     GRID.pickerMode = on;
     renderGridOverlay();
-    if (on) showToast("🎯 그리드 picker — cell 클릭: 미정 → 가능 → 불가 순환", "exp");
+    if (on) {
+      const p = ensureGridPaintPanel();
+      p.style.display = "";
+      showToast("🎯 그리드 페인터 ON — 드래그로 칠하기", "exp");
+    } else {
+      const p = document.getElementById("grid-paint-panel");
+      if (p) p.style.display = "none";
+    }
   });
   // #tab-dock 배럭 탭 — 토글 (월드맵 ↔ 배럭). 다른 탭(가문/임무/모집)은 별도 핸들러에서 처리.
   document.querySelector('#tab-dock button[data-tab="barracks"]')?.addEventListener("click", (e) => {
