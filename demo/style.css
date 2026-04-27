@@ -973,15 +973,13 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 #barracks-view[hidden] { display: none !important; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
 
-/* 9:16 모바일 포트레이트 frame — 양옆 letterbox는 #barracks-view background로
-   자연스러운 하늘+잔디 그라디언트로 이어짐 (검은색 X). */
+/* 배럭 frame — 배경 1024×1024 정사각 그대로 표시 (1:1). */
 .bk-frame { position: relative;
-  height: 100%;
-  aspect-ratio: 9 / 16;
+  aspect-ratio: 1 / 1;
   max-width: 100%;
   max-height: 100%;
+  height: 100%;
   display: flex; flex-direction: column;
-  background: linear-gradient(180deg, #88c5e8 0%, #d4a878 60%, #c89858 100%);
   overflow: hidden;
   box-shadow: 0 0 40px rgba(0,0,0,0.4); }
 
@@ -1002,10 +1000,8 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   font-weight: bold; font-size: 11px; cursor: pointer; }
 .bk-close:hover { filter: brightness(1.25); }
 
-/* 메인 스테이지 — 1:1 정사각 (배경 이미지 1024×1024 원본 비율). frame 위쪽에 배치.
-   frame 아래 남은 영역 = .bk-floor (액션바 + 캐릭터 wander). */
-.bk-stage { position: relative; width: 100%; aspect-ratio: 1 / 1;
-  flex: 0 0 auto;
+/* 메인 스테이지 — frame(1:1)과 동일하게 1:1 차지. 배경/건물/캐릭터 모두 안에 배치. */
+.bk-stage { position: absolute; inset: 0; width: 100%; height: 100%;
   overflow: hidden; }
 
 /* 그리드 디버그 셀 표시 — 토글 버튼으로 on/off */
@@ -1042,7 +1038,7 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .bk-bld-lv { color: #fff; font-weight: normal; opacity: 0.85; }
 
 /* 하단 광장 박스 제거 — stage가 frame 전체 채움. floor 컨테이너는 액션바 wrapper 역할만. */
-.bk-floor { position: absolute; left: 0; right: 0; bottom: 64px;
+.bk-floor { position: absolute; left: 0; right: 0; bottom: 0;
   z-index: 6; padding: 8px 10px; pointer-events: none; }
 
 /* 빠른 액션 바 (전체 수거 / 시설 관리 등) — GDD §2-3 */
@@ -1068,7 +1064,7 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   box-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
 /* SD 캐릭터 — frame 내부 HUD~Nav 사이 전체에서 wander */
-.bk-frame .bk-characters { position: absolute; top: 56px; left: 0; right: 0; bottom: 64px;
+.bk-frame .bk-characters { position: absolute; top: 56px; left: 0; right: 0; bottom: 0;
   pointer-events: none; z-index: 4; }
 .bk-char { position: absolute;
   background-repeat: no-repeat; background-position: 0 0;
