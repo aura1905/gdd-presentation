@@ -2357,6 +2357,7 @@ async function boot() {
   const familyContent = document.getElementById("family-content");
 
   function openFamilyPanel() {
+    if (barracksView && !barracksView.hidden) closeBarracks();
     familyPanel.hidden = false;
     familyBtn.classList.add("active");
     wmBtn.classList.remove("active");
@@ -2716,6 +2717,7 @@ async function boot() {
   const questContent = document.getElementById("quest-content");
 
   function openQuestPanel() {
+    if (barracksView && !barracksView.hidden) closeBarracks();
     closeFamilyPanel();
     questPanel.hidden = false;
     questBtn.classList.add("active");
@@ -2754,6 +2756,7 @@ async function boot() {
   let lastGachaResults = null; // 직전 뽑기 결과 (재렌더 시 표시 유지)
 
   function openGachaPanel() {
+    if (barracksView && !barracksView.hidden) closeBarracks();
     closeFamilyPanel();
     closeQuestPanel();
     gachaPanel.hidden = false;
