@@ -3148,11 +3148,11 @@ async function boot() {
   const GRID = {
     cols: 8,
     rows: 8,
-    corners: {  // frame % — 광장 다이아몬드 4 corner
-      top:    { x: 50, y: 28 },
-      right:  { x: 90, y: 52 },
+    corners: {  // frame % — 광장 cobblestone 다이아몬드 4 corner (배경에 맞춤)
+      top:    { x: 50, y: 38 },
+      right:  { x: 85, y: 58 },
       bottom: { x: 50, y: 76 },
-      left:   { x: 10, y: 52 },
+      left:   { x: 15, y: 58 },
     },
     occupied: new Set(),
     buildings: [],
@@ -3405,32 +3405,25 @@ async function boot() {
     e.stopPropagation();
     openBarracks();
   });
-  // 월드맵 하단 네비 (배럭 진입 + 다른 탭 placeholder)
-  document.querySelectorAll(".wm-nav .bk-nav-tab").forEach(tab => {
-    tab.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const id = tab.dataset.wmTab;
-      if (id === "village") { openBarracks(); return; }
-      if (id === "worldmap") return;  // 이미 월드맵
-      showToast(`🚧 ${tab.querySelector(".bk-nav-label").textContent} — 준비 중`, "warn");
-    });
-  });
   document.getElementById("btn-close-barracks")?.addEventListener("click", closeBarracks);
   document.getElementById("btn-toggle-grid")?.addEventListener("click", (e) => {
     e.stopPropagation();
     GRID.visible = !GRID.visible;
     renderGridOverlay();
   });
-  // 하단 네비 — 단일 핸들러로 통합 (월드맵=닫기 / 배럭=현재 / 나머지=토스트)
-  document.querySelectorAll(".bk-nav-tab").forEach(tab => {
-    tab.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const id = tab.dataset.tab;
-      if (id === "worldmap") { closeBarracks(); return; }
-      if (id === "village") return;  // 이미 배럭 (현재 탭)
-      showToast(`🚧 ${tab.querySelector(".bk-nav-label").textContent} — 준비 중`, "warn");
-    });
+  // #tab-dock 배럭 탭 — 토글 (월드맵 ↔ 배럭). 다른 탭(가문/임무/모집)은 별도 핸들러에서 처리.
+  document.querySelector('#tab-dock button[data-tab="barracks"]')?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (barracksView && !barracksView.hidden) closeBarracks();
+    else openBarracks();
   });
+  // 배럭 화면에서 월드맵 탭 클릭 → 닫기. 월드맵 화면에서는 family/quest/gacha 핸들러에서 자체 처리.
+  document.querySelector('#tab-dock button[data-tab="worldmap"]')?.addEventListener("click", (e) => {
+    if (barracksView && !barracksView.hidden) {
+      e.stopPropagation();
+      closeBarracks();
+    }
+  }, true);
   // 하단 빠른 액션 바
   document.getElementById("bk-action-collect")?.addEventListener("click", () => {
     showToast("📦 전체 수거 — 준비 중 (생산 시스템 도입 시 활성화)", "warn");

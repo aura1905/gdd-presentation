@@ -82,26 +82,7 @@
       <button id="btn-reset-encounters" type="button" data-tip="🧪 조우 리셋 (테스트)|현재 조우 모두 제거 후 초기 6마리 재배치.">🧪</button>
     </aside>
 
-    <!-- 월드맵 하단 네비 — 배럭 진입 + 다른 탭 placeholder. 배럭 뷰 네비와 동일 구조. -->
-    <nav class="wm-nav">
-      <button type="button" class="bk-nav-tab" data-wm-tab="village" id="wm-nav-barracks">
-        <span class="bk-nav-icon">🏘</span><span class="bk-nav-label">배럭</span>
-      </button>
-      <button type="button" class="bk-nav-tab active" data-wm-tab="worldmap">
-        <span class="bk-nav-icon">🗺</span><span class="bk-nav-label">월드맵</span>
-      </button>
-      <button type="button" class="bk-nav-tab" data-wm-tab="party">
-        <span class="bk-nav-icon">⚔</span><span class="bk-nav-label">편성</span>
-      </button>
-      <button type="button" class="bk-nav-tab" data-wm-tab="family">
-        <span class="bk-nav-icon">🏛</span><span class="bk-nav-label">가문</span>
-      </button>
-      <button type="button" class="bk-nav-tab" data-wm-tab="shop">
-        <span class="bk-nav-icon">🛒</span><span class="bk-nav-label">상점</span>
-      </button>
-    </nav>
-
-    <!-- 배럭 뷰 — 9:16 모바일 포트레이트 레이아웃 (HUD + 스테이지 + 플로어 + 네비) -->
+    <!-- 배럭 뷰 — 9:16 모바일 포트레이트 레이아웃 (HUD + 스테이지 + 플로어). 하단 탭은 #tab-dock 공통 사용. -->
     <section id="barracks-view" hidden>
       <div class="bk-frame">
       <!-- 상단 HUD -->
@@ -154,29 +135,6 @@
       <!-- SD 캐릭터 영역 (HUD~Nav 사이 전체, JS가 채움) -->
       <div class="bk-characters" id="bk-characters"></div>
 
-      <!-- 하단 네비게이션 — GDD §5-4 (4탭) -->
-      <nav class="bk-nav">
-        <button type="button" class="bk-nav-tab active" data-tab="village">
-          <span class="bk-nav-icon">🏘</span>
-          <span class="bk-nav-label">배럭</span>
-        </button>
-        <button type="button" class="bk-nav-tab" data-tab="worldmap" id="bk-nav-worldmap">
-          <span class="bk-nav-icon">🗺</span>
-          <span class="bk-nav-label">월드맵</span>
-        </button>
-        <button type="button" class="bk-nav-tab" data-tab="party">
-          <span class="bk-nav-icon">⚔</span>
-          <span class="bk-nav-label">편성</span>
-        </button>
-        <button type="button" class="bk-nav-tab" data-tab="family">
-          <span class="bk-nav-icon">🏛</span>
-          <span class="bk-nav-label">가문</span>
-        </button>
-        <button type="button" class="bk-nav-tab" data-tab="shop">
-          <span class="bk-nav-icon">🛒</span>
-          <span class="bk-nav-label">상점</span>
-        </button>
-      </nav>
       </div><!-- /.bk-frame -->
     </section>
 
@@ -227,7 +185,7 @@
 
     <!-- 하단 탭 도크 (5탭) -->
     <nav id="tab-dock">
-      <button data-tab="barracks" type="button" disabled data-tip="🏠 배럭|내 마을 뷰 (추후 구현). 주방·공방·훈련장 3시설에서 음식·장비·훈련 포인트 생산.">
+      <button data-tab="barracks" type="button" data-tip="🏠 배럭|내 마을 뷰. 주방·공방·훈련장 3시설에서 음식·장비·훈련 포인트 생산.">
         <span class="tab-icon">🏠</span><span class="tab-label">배럭</span>
       </button>
       <button data-tab="family" type="button" data-tip="👥 가문|가문 성장 투자 패널. 병종 훈련(F/S/M/W/L)·연구·축성·가문 레벨업.">
