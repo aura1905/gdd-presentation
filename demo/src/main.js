@@ -3149,13 +3149,13 @@ async function boot() {
   // 광장 cobblestone과 동일한 isometric angle 유지하면서 1.1배 확장.
   // walkable = 갈 수 있음 (광장/잔디/흙길), blocked = 못 감 (건물/성벽).
   const GRID = {
-    cols: 8,
-    rows: 8,
-    corners: {  // 1.1배 + 세로 길이 40 (isometric 압축)
-      top:    { x: 50,   y: 39 },
-      right:  { x: 89.5, y: 58 },
-      bottom: { x: 50,   y: 79 },
-      left:   { x: 10.5, y: 58 },
+    cols: 10,
+    rows: 10,
+    corners: {  // 광장 isometric angle 유지 + castle 외부(잔디 + 흙길)까지 확장
+      top:    { x: 50,  y: 31 },
+      right:  { x: 100, y: 58 },
+      bottom: { x: 50,  y: 87 },
+      left:   { x: 0,   y: 58 },
     },
     walkable: new Set(),   // walkable cells "c,r"
     blocked: new Set(),    // blocked cells "c,r"
@@ -3164,7 +3164,7 @@ async function boot() {
     visible: false,
     pickerMode: false,     // true = cell 클릭으로 walkable/blocked 토글
   };
-  const GRID_STORAGE_KEY = "barracks_grid_walkable_v2";  // v2: 8×8 다이아몬드 1.1배
+  const GRID_STORAGE_KEY = "barracks_grid_walkable_v3";  // v3: 10×10 다이아몬드 castle 외부 cover
   // localStorage 복원
   try {
     const saved = localStorage.getItem(GRID_STORAGE_KEY);
