@@ -3142,10 +3142,97 @@ async function boot() {
   const barracksTier = { kitchen: 0, smithy: 0, training: 0 };
   let bkCharLoop = null;
 
+  // ─── 그리드 시스템 (광장 occupation) ───
+  // 광장 영역을 N×M 그리드로 분할. 건물/벽이 cells 점령 → 캐릭터는 walkable cells에서만 wander.
+  // 미래 건물 추가 = addBuilding(...) 한 줄.
+  const GRID = {
+    cols: 10,
+    rows: 6,
+    bounds: { left: 5, right: 5, top: 26, bottom: 22 },  // frame % (광장 영역)
+    occupied: new Set(),    // "col,row"
+    buildings: [],          // {id, col, row, w, h}
+    visible: false,         // 디버그 시각화 토글
+  };
+  const cellW = () => (100 - GRID.bounds.left - GRID.bounds.right) / GRID.cols;
+  const cellH = () => (100 - GRID.bounds.top - GRID.bounds.bottom) / GRID.rows;
+  const cellToPos = (col, row) => ({
+    x: GRID.bounds.left + col * cellW(),
+    y: GRID.bounds.top + row * cellH(),
+  });
+  function addBuilding(id, col, row, w, h) {
+    GRID.buildings.push({ id, col, row, w, h });
+    for (let c = col; c < col + w; c++)
+      for (let r = row; r < row + h; r++) GRID.occupied.add(`${c},${r}`);
+  }
+  function addWallCells(cells) {
+    for (const [c, r] of cells) GRID.occupied.add(`${c},${r}`);
+  }
+  function getWalkableCells() {
+    const out = [];
+    for (let c = 0; c < GRID.cols; c++)
+      for (let r = 0; r < GRID.rows; r++)
+        if (!GRID.occupied.has(`${c},${r}`)) out.push([c, r]);
+    return out;
+  }
+  function applyBuildingPositionsFromGrid() {
+    for (const b of GRID.buildings) {
+      const el = document.querySelector(`#barracks-view .bk-building[data-bld="${b.id}"]`);
+      if (!el) continue;
+      const { x, y } = cellToPos(b.col, b.row);
+      el.style.left = `${x}%`;
+      el.style.top = `${y}%`;
+      el.style.width = `${b.w * cellW()}%`;
+      el.style.bottom = "auto";
+      el.style.right = "auto";
+      el.style.height = "auto";
+    }
+  }
+  function setupBarracksGrid() {
+    GRID.occupied.clear();
+    GRID.buildings.length = 0;
+    // 건물 3개 (각 2×2)
+    addBuilding("kitchen",  0, 2, 2, 2);
+    addBuilding("smithy",   4, 1, 2, 2);
+    addBuilding("training", 8, 2, 2, 2);
+    // 벽 perimeter (게이트 = col 4-5 row 5 빼고)
+    const wall = [];
+    for (let c = 0; c < GRID.cols; c++) wall.push([c, 0]);  // 위
+    for (let r = 1; r < GRID.rows; r++) wall.push([0, r]);  // 좌
+    for (let r = 1; r < GRID.rows; r++) wall.push([GRID.cols - 1, r]);  // 우
+    for (let c = 1; c < GRID.cols - 1; c++) {
+      if (c === 4 || c === 5) continue;  // 게이트 통로
+      wall.push([c, GRID.rows - 1]);
+    }
+    addWallCells(wall);
+    applyBuildingPositionsFromGrid();
+    renderGridOverlay();
+  }
+  function renderGridOverlay() {
+    const stage = document.getElementById("bk-stage");
+    if (!stage) return;
+    stage.querySelectorAll(".bk-grid-cell").forEach(el => el.remove());
+    if (!GRID.visible) return;
+    for (let c = 0; c < GRID.cols; c++) {
+      for (let r = 0; r < GRID.rows; r++) {
+        const occ = GRID.occupied.has(`${c},${r}`);
+        const div = document.createElement("div");
+        div.className = "bk-grid-cell " + (occ ? "occupied" : "walkable");
+        const { x, y } = cellToPos(c, r);
+        div.style.left = `${x}%`;
+        div.style.top = `${y}%`;
+        div.style.width = `${cellW()}%`;
+        div.style.height = `${cellH()}%`;
+        div.textContent = `${c},${r}`;
+        stage.appendChild(div);
+      }
+    }
+  }
+
   function openBarracks() {
     if (!barracksView) return;
     barracksView.hidden = false;
     updateBarracksHud();
+    setupBarracksGrid();
     spawnBarracksCharacters();
     if (!bkCharLoop) bkCharLoop = setInterval(animateBarracksCharacters, 100);
   }
@@ -3278,6 +3365,11 @@ async function boot() {
     });
   });
   document.getElementById("btn-close-barracks")?.addEventListener("click", closeBarracks);
+  document.getElementById("btn-toggle-grid")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    GRID.visible = !GRID.visible;
+    renderGridOverlay();
+  });
   // 하단 네비 — 단일 핸들러로 통합 (월드맵=닫기 / 배럭=현재 / 나머지=토스트)
   document.querySelectorAll(".bk-nav-tab").forEach(tab => {
     tab.addEventListener("click", (e) => {
