@@ -98,17 +98,17 @@
       <!-- 메인 스테이지 (배경 + 건물) — 1:1 비율 -->
       <div class="bk-stage" id="bk-stage">
         <img class="bk-bg" src="./img/barracks/bg_reboldoeux_day.png?v=bright" alt="" />
-        <!-- 건물 3개 일직선 — 광장 가운데 라인 (주방-공방-훈련장).
-             광장 좁아서 일직선이 가장 자연스러움. 캐릭터는 광장 앞 잔디로 활동 영역 분리. -->
-        <div class="bk-building" data-bld="kitchen" style="left:1%; bottom:42%; width:34%;">
+        <!-- 건물 3개 — 광장 cobblestone 영역(가로 14~86%, 세로 35~80%) 안 배치.
+             frame 1:1 기준 width %, 9:16 시점 대비 약 56% 비율로 축소. -->
+        <div class="bk-building" data-bld="kitchen" style="left:18%; bottom:38%; width:20%;">
           <img src="./img/barracks/bld_kitchen_t0.png" alt="🍳 주방" />
           <span class="bk-bld-label">🍳 주방 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
-        <div class="bk-building" data-bld="smithy" style="left:34%; bottom:48%; width:34%;">
+        <div class="bk-building" data-bld="smithy" style="left:40%; bottom:42%; width:20%;">
           <img src="./img/barracks/bld_smithy_t0.png" alt="🔨 공방" />
           <span class="bk-bld-label">🔨 공방 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
-        <div class="bk-building" data-bld="training" style="right:1%; bottom:42%; width:36%;">
+        <div class="bk-building" data-bld="training" style="right:18%; bottom:38%; width:20%;">
           <img src="./img/barracks/bld_training_t0.png" alt="⚔ 훈련장" />
           <span class="bk-bld-label">⚔ 훈련장 <span class="bk-bld-lv">Lv 1</span></span>
         </div>
