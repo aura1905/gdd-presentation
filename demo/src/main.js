@@ -3236,6 +3236,12 @@ async function boot() {
   };
   const FACILITY_LABEL = { kitchen: "🍳 주방", smithy: "🔨 공방", training: "⚔ 훈련장" };
   const FACILITY_JOB = { kitchen: "요리사", smithy: "장인", training: "교관" };
+  // 시설 해금 조건 (가문 Lv) — gdd_barracks_life_v2 §3-1 표
+  const FACILITY_UNLOCK_LV = { kitchen: 6, smithy: 12, training: 8 };
+  function isFacilityUnlocked(bld) {
+    const lv = getState()?.family?.level || 1;
+    return lv >= (FACILITY_UNLOCK_LV[bld] || 0);
+  }
   const RES_LABEL = { gold: "💰", grain: "🌾", iron: "⛏️", wood: "🌲", stone: "🪨", herbs: "🌿", vis: "✨", gem: "💎", scroll: "📜", rp: "📘", txp: "🎓" };
 
   // ─── 자원 생산 시스템 (시설 Lv 기반) ───
@@ -3451,8 +3457,10 @@ async function boot() {
     return cells;
   }
   // 건물 footprint cells 전부 blocked로 마킹 (캐릭터 못 들어감). picker 결과를 덮어씀.
+  // 잠긴(미해금) 시설은 마킹 안 함 — 캐릭터가 그 자리도 자유롭게 다닐 수 있음.
   function markBuildingsBlocked() {
     for (const id of Object.keys(BUILDING_DEF)) {
+      if (!isFacilityUnlocked(id)) continue;
       const cells = getBuildingFootprintCells(id);
       for (const [c, r] of cells) {
         const k = `${c},${r}`;
@@ -3461,6 +3469,14 @@ async function boot() {
       }
     }
     saveGridState();
+  }
+  // 시설 visibility 적용 (해금 안 된 시설은 hidden)
+  function applyFacilityVisibility() {
+    for (const id of Object.keys(BUILDING_DEF)) {
+      const el = document.querySelector(`#barracks-view .bk-building[data-bld="${id}"]`);
+      if (!el) continue;
+      el.style.display = isFacilityUnlocked(id) ? "" : "none";
+    }
   }
   // 건물 근처 N cell 반경의 walkable cells 반환 (배치 캐릭터 wander용)
   function getCellsNearBuilding(id, radius = 2) {
@@ -3615,6 +3631,8 @@ async function boot() {
     barracksView.hidden = false;
     updateBarracksHud();
     setupBarracksGrid();
+    // 해금 상태 적용 (가문 Lv 따라 시설 hidden/visible)
+    applyFacilityVisibility();
     // 저장된 시설 Tier로 라벨/이미지 동기화
     for (const id of Object.keys(FACILITY_LEVELS)) setBuildingTier(id, barracksTier[id] || 0);
     spawnBarracksCharacters();
@@ -3706,6 +3724,7 @@ async function boot() {
     pairs.sort((a, b) => b.score - a.score);
     for (const p of pairs) {
       if (assignedChars.has(p.charName)) continue;
+      if (!isFacilityUnlocked(p.bld)) continue;  // 잠긴 시설은 배치 X
       const cap = getFacilitySlotCount(p.bld);
       if (out[p.bld].length >= cap) continue;
       out[p.bld].push({ charName: p.charName, grade: p.grade });
