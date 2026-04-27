@@ -3258,8 +3258,8 @@ async function boot() {
     catch (e) { /* ignore */ }
   }
   function tickProduction() {
-    // 생산량 = 기본 prod × 등급 배율 × 시설 Lv 보정 (gdd_barracks_life_v2 §4-3)
-    // 슬롯 합산: 시설마다 배치된 캐릭터들의 등급 배율을 각각 적용 후 합.
+    // 생산량 = 기본 prod × max(1.0, 등급 배율 합) × 시설 Lv 보정 (gdd_barracks_life_v2 §4-3)
+    // 슬롯 비어도 기본 1.0 보장 (시설 자체는 굴러감), 캐릭터 배치 시 그 등급 합으로 +버프.
     const assigned = autoAssignCharacters();
     let any = false;
     for (const [bld, tier] of Object.entries(barracksTier)) {
@@ -3267,9 +3267,8 @@ async function boot() {
       const lv = FACILITY_LEVELS[bld]?.[tier]?.lv || 1;
       const lvBoost = 1.0 + (lv - 1) * 0.1;
       const slots = assigned[bld] || [];
-      if (slots.length === 0) continue;  // 배치 캐릭터 없으면 생산 0
-      let multSum = 0;
-      for (const s of slots) multSum += GRADE_MULT[s.grade] || 0;
+      const slotMult = slots.reduce((s, c) => s + (GRADE_MULT[c.grade] || 0), 0);
+      const multSum = Math.max(1.0, slotMult);  // 기본 1.0 보장
       for (const [res, amt] of Object.entries(baseProd)) {
         const final = Math.round(amt * multSum * lvBoost);
         if (final > 0) {
@@ -4013,8 +4012,9 @@ async function boot() {
             </div>
             <div class="bk-modal-sub">합산 배율 ×${(() => {
               const slots = autoAssignCharacters()[bld] || [];
-              return slots.reduce((sum, s) => sum + (GRADE_MULT[s.grade] || 0), 0).toFixed(1);
-            })()} · Lv 보정 ×${(1.0 + (cur.lv - 1) * 0.1).toFixed(1)}</div>
+              const sum = slots.reduce((s, c) => s + (GRADE_MULT[c.grade] || 0), 0);
+              return Math.max(1.0, sum).toFixed(1);
+            })()} (기본 1.0 + 캐릭터 버프) · Lv 보정 ×${(1.0 + (cur.lv - 1) * 0.1).toFixed(1)}</div>
           </div>
           <div class="bk-modal-section">
             <div class="bk-modal-label">footprint</div>
