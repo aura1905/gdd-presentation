@@ -3145,22 +3145,44 @@ async function boot() {
   const barracksTier = { kitchen: 0, smithy: 0, training: 0 };
   let bkCharLoop = null;
 
-  // ─── 그리드 시스템 (isometric 광장 occupation) ───
-  // 광장은 isometric 시점에서 다이아몬드(마름모) 모양. col/row는 마름모 격자 인덱스.
-  // PLAZA_CORNERS = 광장 4 corner (frame %). col↑ = TOP→RIGHT, row↑ = TOP→LEFT.
+  // ─── 그리드 시스템 (isometric, frame 전체 cover) ───
+  // 배경 이미지 기준 isometric 다이아몬드 그리드. cell 크기 ≈ 광장 8×8 시절과 동일.
+  // 영역: castle 안 광장 + 외곽 잔디 + 흙길 + 게이트 외부 grass meadow.
+  // walkable = 갈 수 있음 (광장/잔디/흙길), blocked = 못 감 (건물/성벽/산/하늘).
   const GRID = {
-    cols: 8,
-    rows: 8,
-    corners: {  // frame % — 광장 cobblestone 다이아몬드 4 corner (배경에 맞춤)
-      top:    { x: 50, y: 38 },
-      right:  { x: 85, y: 58 },
-      bottom: { x: 50, y: 76 },
-      left:   { x: 15, y: 58 },
+    cols: 16,
+    rows: 16,
+    corners: {  // frame % — 큰 isometric 다이아몬드 (castle 안~외곽 잔디 cover)
+      top:    { x: 50,  y: 14 },
+      right:  { x: 100, y: 58 },
+      bottom: { x: 50,  y: 100 },
+      left:   { x: 0,   y: 58 },
     },
-    occupied: new Set(),
+    walkable: new Set(),   // walkable cells "c,r"
+    blocked: new Set(),    // blocked cells "c,r"
+    occupied: new Set(),   // 호환용 alias (= blocked)
     buildings: [],
     visible: false,
+    pickerMode: false,     // true = cell 클릭으로 walkable/blocked 토글
   };
+  const GRID_STORAGE_KEY = "barracks_grid_walkable_v1";
+  // localStorage 복원
+  try {
+    const saved = localStorage.getItem(GRID_STORAGE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      if (data.walkable) for (const k of data.walkable) GRID.walkable.add(k);
+      if (data.blocked) for (const k of data.blocked) GRID.blocked.add(k);
+    }
+  } catch (e) { /* ignore */ }
+  function saveGridState() {
+    try {
+      localStorage.setItem(GRID_STORAGE_KEY, JSON.stringify({
+        walkable: [...GRID.walkable],
+        blocked: [...GRID.blocked],
+      }));
+    } catch (e) { /* ignore */ }
+  }
   // (col, row) → frame % 좌표 (cell 중심)
   function isoCellToPos(col, row) {
     const t = GRID.corners.top, r = GRID.corners.right, l = GRID.corners.left;
@@ -3222,65 +3244,108 @@ async function boot() {
     }
   }
   function setupBarracksGrid() {
+    // 건물 후순위 — 자동 점유 비활성화. picker로 사용자가 walkable/blocked 정의.
     GRID.occupied.clear();
     GRID.buildings.length = 0;
-    // iso 광장 8×8 (마름모 그리드).
-    // 건물 3개 — 광장 안쪽 (row 1~3 영역)
-    addBuilding("kitchen",  1, 4, 2, 2);
-    addBuilding("smithy",   3, 2, 2, 2);
-    addBuilding("training", 5, 4, 2, 2);
-    // 벽 perimeter — 게이트 통로 빼고 (col 3-4, row 7)
-    const wall = [];
-    for (let c = 0; c < GRID.cols; c++) wall.push([c, 0]);
-    for (let r = 1; r < GRID.rows; r++) wall.push([0, r]);
-    for (let r = 1; r < GRID.rows; r++) wall.push([GRID.cols - 1, r]);
-    for (let c = 1; c < GRID.cols - 1; c++) {
-      if (c === 3 || c === 4) continue;
-      wall.push([c, GRID.rows - 1]);
-    }
-    addWallCells(wall);
-    applyBuildingPositionsFromGrid();
     renderGridOverlay();
   }
+  // cell 상태: "walkable" | "blocked" | "unset"
+  function cellState(c, r) {
+    const k = `${c},${r}`;
+    if (GRID.walkable.has(k)) return "walkable";
+    if (GRID.blocked.has(k)) return "blocked";
+    return "unset";
+  }
+  function setCellState(c, r, state) {
+    const k = `${c},${r}`;
+    GRID.walkable.delete(k);
+    GRID.blocked.delete(k);
+    if (state === "walkable") GRID.walkable.add(k);
+    else if (state === "blocked") GRID.blocked.add(k);
+    saveGridState();
+  }
+  // picker: cell 클릭 → unset → walkable → blocked → unset 사이클
+  function cyclePickerCell(c, r) {
+    const cur = cellState(c, r);
+    const next = cur === "unset" ? "walkable" : cur === "walkable" ? "blocked" : "unset";
+    setCellState(c, r, next);
+  }
+
   function renderGridOverlay() {
     const stage = document.getElementById("bk-stage");
     if (!stage) return;
     stage.querySelectorAll(".bk-grid-svg").forEach(el => el.remove());
     if (!GRID.visible) return;
-    // SVG로 iso diamond cells 렌더
     const NS = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(NS, "svg");
     svg.setAttribute("class", "bk-grid-svg");
     svg.setAttribute("viewBox", "0 0 100 100");
     svg.setAttribute("preserveAspectRatio", "none");
-    svg.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:7";
+    const pe = GRID.pickerMode ? "auto" : "none";
+    svg.style.cssText = `position:absolute;inset:0;width:100%;height:100%;pointer-events:${pe};z-index:7`;
+
+    // 색상 팔레트
+    const FILL = {
+      walkable: "rgba(80,220,80,0.35)",
+      blocked:  "rgba(240,70,70,0.42)",
+      unset:    "rgba(180,180,180,0.10)",
+    };
+    const STROKE = "rgba(255,255,255,0.55)";
+
     for (let c = 0; c < GRID.cols; c++) {
       for (let r = 0; r < GRID.rows; r++) {
-        const occ = GRID.occupied.has(`${c},${r}`);
+        const s = cellState(c, r);
         const corners = isoCellCorners(c, r);
         const points = corners.map(p => `${p.x},${p.y}`).join(" ");
         const poly = document.createElementNS(NS, "polygon");
         poly.setAttribute("points", points);
-        poly.setAttribute("fill", occ ? "rgba(255,80,80,0.32)" : "rgba(80,255,80,0.18)");
-        poly.setAttribute("stroke", "rgba(255,255,255,0.55)");
-        poly.setAttribute("stroke-width", "0.15");
-        poly.setAttribute("stroke-dasharray", "0.5,0.3");
+        poly.setAttribute("fill", FILL[s]);
+        poly.setAttribute("stroke", STROKE);
+        poly.setAttribute("stroke-width", "0.12");
+        poly.setAttribute("stroke-dasharray", "0.4,0.25");
+        if (GRID.pickerMode) {
+          poly.style.cursor = "pointer";
+          poly.addEventListener("click", () => {
+            cyclePickerCell(c, r);
+            renderGridOverlay();
+          });
+        }
         svg.appendChild(poly);
-        // cell 좌표 라벨
-        const c0 = isoCellToPos(c, r);
-        const txt = document.createElementNS(NS, "text");
-        txt.setAttribute("x", c0.x);
-        txt.setAttribute("y", c0.y + 0.6);
-        txt.setAttribute("font-size", "1.4");
-        txt.setAttribute("text-anchor", "middle");
-        txt.setAttribute("fill", "rgba(255,255,255,0.9)");
-        txt.setAttribute("font-family", "monospace");
-        txt.textContent = `${c},${r}`;
-        svg.appendChild(txt);
+        // cell 좌표 라벨 (작게)
+        if (!GRID.pickerMode || s !== "unset") {
+          const c0 = isoCellToPos(c, r);
+          const txt = document.createElementNS(NS, "text");
+          txt.setAttribute("x", c0.x);
+          txt.setAttribute("y", c0.y + 0.4);
+          txt.setAttribute("font-size", "1.0");
+          txt.setAttribute("text-anchor", "middle");
+          txt.setAttribute("fill", "rgba(255,255,255,0.85)");
+          txt.setAttribute("font-family", "monospace");
+          txt.setAttribute("pointer-events", "none");
+          txt.textContent = `${c},${r}`;
+          svg.appendChild(txt);
+        }
       }
     }
     stage.appendChild(svg);
   }
+  // picker 모드 토글 헬퍼 (외부 노출)
+  function setGridPickerMode(on) {
+    GRID.pickerMode = on;
+    if (on && !GRID.visible) GRID.visible = true;
+    renderGridOverlay();
+  }
+  // 디버그: window에서 직접 조작
+  window.__barracks = window.__barracks || {};
+  window.__barracks.grid = {
+    show: () => { GRID.visible = true; renderGridOverlay(); },
+    hide: () => { GRID.visible = false; renderGridOverlay(); },
+    pick: () => setGridPickerMode(true),
+    unpick: () => setGridPickerMode(false),
+    clear: () => { GRID.walkable.clear(); GRID.blocked.clear(); saveGridState(); renderGridOverlay(); },
+    export: () => ({ walkable: [...GRID.walkable], blocked: [...GRID.blocked] }),
+    state: GRID,
+  };
 
   function openBarracks() {
     if (!barracksView) return;
@@ -3420,10 +3485,14 @@ async function boot() {
     openBarracks();
   });
   document.getElementById("btn-close-barracks")?.addEventListener("click", closeBarracks);
+  // # 버튼: visible + picker 함께 토글 (사용자가 cell 클릭으로 walkable/blocked 정의)
   document.getElementById("btn-toggle-grid")?.addEventListener("click", (e) => {
     e.stopPropagation();
-    GRID.visible = !GRID.visible;
+    const on = !GRID.visible;
+    GRID.visible = on;
+    GRID.pickerMode = on;
     renderGridOverlay();
+    if (on) showToast("🎯 그리드 picker — cell 클릭: 미정 → 가능 → 불가 순환", "exp");
   });
   // #tab-dock 배럭 탭 — 토글 (월드맵 ↔ 배럭). 다른 탭(가문/임무/모집)은 별도 핸들러에서 처리.
   document.querySelector('#tab-dock button[data-tab="barracks"]')?.addEventListener("click", (e) => {
