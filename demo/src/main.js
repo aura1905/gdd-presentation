@@ -3167,7 +3167,7 @@ async function boot() {
     visible: false,
     pickerMode: false,     // true = cell 클릭으로 walkable/blocked 토글
   };
-  const GRID_STORAGE_KEY = "barracks_grid_walkable_v5";  // v5: 15×15, cell 크기 광장 그대로
+  const GRID_STORAGE_KEY = "barracks_grid_walkable_v6";  // v6: default 매핑 자동 적용
   // localStorage 복원
   try {
     const saved = localStorage.getItem(GRID_STORAGE_KEY);
@@ -3245,10 +3245,31 @@ async function boot() {
       el.style.transform = "translate(-50%, -85%)";  // cell center에 발 닿게
     }
   }
+  function applyDefaultGridState() {
+    // 사용자 그림 패턴 기반 default. 다이아몬드 가운데 axis = 광장+외부 walkable.
+    // 가장자리/위쪽 castle 본체 = blocked. 사용자가 picker로 fine-tune 가능.
+    // (col+row) ~ 다이아몬드 세로축 (top=0 ~ bottom=cols+rows-2)
+    // (col-row) ~ 다이아몬드 가로축 (left=-rows+1 ~ right=cols-1)
+    for (let c = 0; c < GRID.cols; c++) {
+      for (let r = 0; r < GRID.rows; r++) {
+        const k = `${c},${r}`;
+        if (GRID.walkable.has(k) || GRID.blocked.has(k)) continue;  // 사용자 picker 결과 보존
+        const sum = c + r;
+        const diff = Math.abs(c - r);
+        // 광장 cobblestone (frame y 50~70%) ~ sum 9-22, diff <= 5
+        // castle 외부 grass (frame y 70~95%) ~ sum 22-28, diff <= 4
+        const inPlaza  = sum >= 9 && sum <= 22 && diff <= 5;
+        const inOutside = sum >= 22 && sum <= 27 && diff <= 4;
+        if (inPlaza || inOutside) GRID.walkable.add(k);
+        else GRID.blocked.add(k);
+      }
+    }
+    saveGridState();
+  }
   function setupBarracksGrid() {
-    // 건물 후순위 — 자동 점유 비활성화. picker로 사용자가 walkable/blocked 정의.
     GRID.occupied.clear();
     GRID.buildings.length = 0;
+    applyDefaultGridState();
     renderGridOverlay();
   }
   // cell 상태: "walkable" | "blocked" | "unset"
