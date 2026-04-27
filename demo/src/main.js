@@ -3275,8 +3275,8 @@ async function boot() {
     if (items.length === 0) { stack.style.display = "none"; return; }
     stack.style.display = "";
     stack.innerHTML = items.join("");
-    // 광장 cobblestone 가운데
-    const pos = isoCellToPos(7, 8);
+    // castle 정문 앞 광장 (게이트 입구 바로 앞)
+    const pos = isoCellToPos(3, 3);
     stack.style.left = `${pos.x}%`;
     stack.style.top = `${pos.y}%`;
   }
