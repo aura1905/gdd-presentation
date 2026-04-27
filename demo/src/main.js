@@ -3492,34 +3492,56 @@ async function boot() {
   ];
   const bkCharState = [];
 
+  // walkable cell 중 인접 4방향 후보 반환
+  function getNeighborWalkableCells(col, row) {
+    const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
+    const out = [];
+    for (const [dc, dr] of dirs) {
+      const nc = col + dc, nr = row + dr;
+      if (GRID.walkable.has(`${nc},${nr}`)) out.push([nc, nr]);
+    }
+    return out;
+  }
+
   async function spawnBarracksCharacters() {
     const container = document.getElementById("bk-characters");
     if (!container) return;
     container.innerHTML = "";
     bkCharState.length = 0;
+    const walkableCells = [...GRID.walkable];
     for (const c of BK_CHARS) {
       try {
         const framesData = await fetch(`./assets/sprites/${c.name}/frames.json`).then(r => r.json());
         const frames = Object.values(framesData.frames || {});
         if (frames.length === 0) continue;
-        // Aseprite meta.tags에서 idle/run 추출
         const tagMap = {};
         for (const t of (framesData.meta?.tags || [])) {
           tagMap[t.name] = { from: t.from, to: t.to };
         }
         const fw = frames[0].frame.w;
         const fh = frames[0].frame.h;
-        const SCALE = 0.33;  // 60% (0.55 → 0.33)
-        const vx = (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.4);
-        const initialFlip = vx > 0;  // sprite 기본이 좌측 보고 있음 → 우측 이동 시 flip
+        const SCALE = 0.33;
+
+        // 시작 위치: walkable cell 중 랜덤 선택 (없으면 base 좌표 fallback)
+        let startCol = -1, startRow = -1, startX = c.base.x, startY = c.base.y;
+        if (walkableCells.length > 0) {
+          const k = walkableCells[Math.floor(Math.random() * walkableCells.length)];
+          [startCol, startRow] = k.split(",").map(Number);
+          const p = isoCellToPos(startCol, startRow);
+          startX = p.x; startY = p.y;
+        }
+        const initialFlip = Math.random() < 0.5;
+
         const div = document.createElement("div");
-        div.className = "bk-char" + (initialFlip ? " flip" : "");
+        div.className = "bk-char";
         div.style.backgroundImage = `url('./assets/sprites/${c.name}/sprite.png')`;
         div.style.width = `${fw * SCALE}px`;
         div.style.height = `${fh * SCALE}px`;
         div.style.backgroundSize = `auto ${fh * SCALE}px`;
-        div.style.left = `${c.base.x}%`;
-        div.style.top = `${c.base.y}%`;
+        div.style.left = `${startX}%`;
+        div.style.top = `${startY}%`;
+        // 발 = bottom-center를 (x, y)에 안착
+        div.style.transform = `translate(-50%, -100%)${initialFlip ? " scaleX(-1)" : ""}`;
         div.title = c.name;
         container.appendChild(div);
         const idleTag = tagMap.idle || { from: 0, to: Math.min(5, frames.length - 1) };
@@ -3527,12 +3549,13 @@ async function boot() {
         bkCharState.push({
           el: div, frames, fw, scale: SCALE,
           tagMap, idleTag, runTag,
-          state: "run",
-          frameIdx: runTag.from,
-          x: c.base.x, y: c.base.y,
-          xMin: c.range[0], xMax: c.range[1],
-          vx, flip: initialFlip,
-          pauseTicks: 0,
+          state: "idle",
+          frameIdx: idleTag.from,
+          x: startX, y: startY,
+          col: startCol, row: startRow,
+          target: null,
+          flip: initialFlip,
+          pauseTicks: 5 + Math.floor(Math.random() * 15),
         });
       } catch (e) { /* sprite 없음 — 스킵 */ }
     }
@@ -3540,33 +3563,55 @@ async function boot() {
 
   function animateBarracksCharacters() {
     for (const s of bkCharState) {
-      // 상태 따라 frame range 결정
       const tag = s.state === "idle" ? s.idleTag : s.runTag;
-      // frame 순환 (from~to)
       s.frameIdx++;
       if (s.frameIdx > tag.to || s.frameIdx < tag.from) s.frameIdx = tag.from;
       s.el.style.backgroundPosition = `-${s.frameIdx * s.fw * s.scale}px 0px`;
 
-      // 상태 전환 + wander
       if (s.state === "idle") {
         s.pauseTicks--;
         if (s.pauseTicks <= 0) {
+          // 인접 walkable cell 중 랜덤 선택 → target 설정
+          if (s.col < 0 || s.row < 0) {
+            // walkable에 진입 못 함 (no grid 또는 outside) — 그냥 idle 유지
+            s.pauseTicks = 20;
+            continue;
+          }
+          const neighbors = getNeighborWalkableCells(s.col, s.row);
+          if (neighbors.length === 0) {
+            s.pauseTicks = 10;
+            continue;
+          }
+          const [tc, tr] = neighbors[Math.floor(Math.random() * neighbors.length)];
+          const tpos = isoCellToPos(tc, tr);
+          s.target = { col: tc, row: tr, x: tpos.x, y: tpos.y };
           s.state = "run";
           s.frameIdx = s.runTag.from;
+          s.flip = (tpos.x - s.x) > 0;  // 우측 이동 시 flip (sprite 기본 좌측)
+          s.el.style.transform = `translate(-50%, -100%)${s.flip ? " scaleX(-1)" : ""}`;
         }
       } else {
-        s.x += s.vx;
-        if (s.x < s.xMin || s.x > s.xMax) {
-          s.x = Math.max(s.xMin, Math.min(s.xMax, s.x));
-          s.vx *= -1;
-          s.flip = s.vx > 0;  // sprite 기본 좌측 → 우측 이동 시 flip
-          s.el.classList.toggle("flip", s.flip);
-          // 끝에 도달 → idle 잠깐 (5~10틱 = 0.5~1초)
+        // run: target으로 step 이동
+        if (!s.target) {
+          s.state = "idle"; s.pauseTicks = 5;
+          continue;
+        }
+        const dx = s.target.x - s.x, dy = s.target.y - s.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const speed = 0.5;  // % per tick
+        if (dist < speed) {
+          s.x = s.target.x; s.y = s.target.y;
+          s.col = s.target.col; s.row = s.target.row;
+          s.target = null;
           s.state = "idle";
           s.frameIdx = s.idleTag.from;
-          s.pauseTicks = 5 + Math.floor(Math.random() * 6);
+          s.pauseTicks = 3 + Math.floor(Math.random() * 12);
+        } else {
+          s.x += dx / dist * speed;
+          s.y += dy / dist * speed;
         }
         s.el.style.left = `${s.x}%`;
+        s.el.style.top = `${s.y}%`;
       }
     }
   }
