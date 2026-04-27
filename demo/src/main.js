@@ -3145,18 +3145,17 @@ async function boot() {
   const barracksTier = { kitchen: 0, smithy: 0, training: 0 };
   let bkCharLoop = null;
 
-  // ─── 그리드 시스템 (isometric, frame 전체 cover) ───
-  // 배경 이미지 기준 isometric 다이아몬드 그리드. cell 크기 ≈ 광장 8×8 시절과 동일.
-  // 영역: castle 안 광장 + 외곽 잔디 + 흙길 + 게이트 외부 grass meadow.
-  // walkable = 갈 수 있음 (광장/잔디/흙길), blocked = 못 감 (건물/성벽/산/하늘).
+  // ─── 그리드 시스템 (isometric, 광장 다이아몬드 1.1배) ───
+  // 광장 cobblestone과 동일한 isometric angle 유지하면서 1.1배 확장.
+  // walkable = 갈 수 있음 (광장/잔디/흙길), blocked = 못 감 (건물/성벽).
   const GRID = {
-    cols: 16,
-    rows: 16,
-    corners: {  // frame % — 큰 isometric 다이아몬드 (castle 안~외곽 잔디 cover)
-      top:    { x: 50,  y: 14 },
-      right:  { x: 100, y: 58 },
-      bottom: { x: 50,  y: 100 },
-      left:   { x: 0,   y: 58 },
+    cols: 8,
+    rows: 8,
+    corners: {  // 광장(50,38)(86,58)(50,80)(14,58) × 1.1배 (center 50,59 기준)
+      top:    { x: 50,   y: 36 },
+      right:  { x: 89.5, y: 58 },
+      bottom: { x: 50,   y: 82 },
+      left:   { x: 10.5, y: 58 },
     },
     walkable: new Set(),   // walkable cells "c,r"
     blocked: new Set(),    // blocked cells "c,r"
@@ -3165,7 +3164,7 @@ async function boot() {
     visible: false,
     pickerMode: false,     // true = cell 클릭으로 walkable/blocked 토글
   };
-  const GRID_STORAGE_KEY = "barracks_grid_walkable_v1";
+  const GRID_STORAGE_KEY = "barracks_grid_walkable_v2";  // v2: 8×8 다이아몬드 1.1배
   // localStorage 복원
   try {
     const saved = localStorage.getItem(GRID_STORAGE_KEY);
