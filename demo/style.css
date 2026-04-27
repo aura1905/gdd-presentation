@@ -966,18 +966,24 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
    └───────────┘
    ───────────────────────────────────────── */
 #barracks-view { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 100;
-  display: flex; align-items: stretch; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
+  /* letterbox 양옆 — 잔디/하늘 톤으로 자연스럽게 (검은색 답답 X) */
+  background: linear-gradient(180deg, #88c5e8 0%, #88c5e8 35%, #b8c878 60%, #88a858 100%);
   animation: bk-fade 0.25s ease; overflow: hidden; }
 #barracks-view[hidden] { display: none !important; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
 
-/* 배럭 frame — 데스크톱 풀 viewport (letterbox 제거). 모바일에서도 자연스럽게 채움. */
+/* 9:16 모바일 포트레이트 frame — 원본 배경 이미지 비율 보존.
+   양옆 letterbox는 #barracks-view background로 자연스럽게 이어짐. */
 .bk-frame { position: relative;
-  width: 100%;
   height: 100%;
+  aspect-ratio: 9 / 16;
+  max-width: 100%;
+  max-height: 100%;
   display: flex; flex-direction: column;
   background: linear-gradient(180deg, #88c5e8 0%, #d4a878 60%, #c89858 100%);
-  overflow: hidden; }
+  overflow: hidden;
+  box-shadow: 0 0 40px rgba(0,0,0,0.4); }
 
 /* 상단 HUD */
 .bk-hud { position: relative; z-index: 10; flex: 0 0 auto;
