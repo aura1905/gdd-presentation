@@ -82,18 +82,11 @@
       <button id="btn-reset-encounters" type="button" data-tip="🧪 조우 리셋 (테스트)|현재 조우 모두 제거 후 초기 6마리 재배치.">🧪</button>
     </aside>
 
-    <!-- 배럭 뷰 — 9:16 모바일 포트레이트 레이아웃 (HUD + 스테이지 + 플로어). 하단 탭은 #tab-dock 공통 사용. -->
+    <!-- 배럭 뷰 — 상단 HUD는 메인 #hud-top 공통 사용, 하단 탭은 #tab-dock 공통 사용. -->
     <section id="barracks-view" hidden>
       <div class="bk-frame">
-      <!-- 상단 HUD -->
-      <header class="bk-hud">
-        <span class="bk-loc">🏰 리볼도외</span>
-        <span class="bk-currency">💰 <b id="bk-gold">0</b></span>
-        <span class="bk-currency">🌾 <b id="bk-grain">0</b></span>
-        <span class="bk-currency">⛏️ <b id="bk-iron">0</b></span>
-        <button type="button" class="bk-close" id="btn-toggle-grid" title="그리드 표시">#</button>
-        <button type="button" class="bk-close" id="btn-close-barracks">⬅ 월드맵</button>
-      </header>
+      <!-- 그리드 토글 (배럭 전용) — 우상단 floating -->
+      <button type="button" class="bk-floating-btn" id="btn-toggle-grid" title="그리드 페인터">#</button>
 
       <!-- 메인 스테이지 (배경 + 건물) — 1:1 비율 -->
       <div class="bk-stage" id="bk-stage">

@@ -3463,9 +3463,8 @@ async function boot() {
     document.querySelectorAll('#tab-dock button').forEach(b => b.classList.toggle('active', b.dataset.tab === activeTab));
   }
   function updateBarracksHud() {
-    const gs = getState();
-    document.getElementById("bk-gold").textContent = gs.resources?.gold || 0;
-    document.getElementById("bk-grain").textContent = gs.resources?.grain || 0;
+    // 배럭 진입 시 메인 #hud-top 갱신 (배럭 전용 HUD 제거 → 통합)
+    updateHud();
   }
   function setBuildingTier(bld, tier) {
     barracksTier[bld] = tier;
