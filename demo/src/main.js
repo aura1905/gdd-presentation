@@ -3166,8 +3166,36 @@ async function boot() {
     buildings: [],
     visible: false,
     pickerMode: false,     // true = cell 클릭/드래그로 페인팅
-    paintBrush: "blocked", // "walkable" | "blocked" | "erase" — 드래그 paint 색
+    paintBrush: "blocked", // "walkable" | "blocked" | "erase" | "place_kitchen" | "place_smithy" | "place_training"
   };
+
+  // ─── 건물 정의 (footprint cells × cells, 그리드 단위 배치) ───
+  // pivot: 스프라이트의 bottom-center가 footprint 다이아몬드의 bottom corner cell에 안착.
+  // placement: 그리드 좌표 (col, row) = footprint top corner cell.
+  const BUILDING_DEF = {
+    kitchen:  { tierImg: id => `bld_kitchen_t${id}.png`,  footprint: { w: 2, h: 2 } },
+    smithy:   { tierImg: id => `bld_smithy_t${id}.png`,   footprint: { w: 2, h: 2 } },
+    training: { tierImg: id => `bld_training_t${id}.png`, footprint: { w: 3, h: 3 } },
+  };
+  const BUILDINGS_STORAGE_KEY = "barracks_buildings_v1";
+  // 기본 placement (사용자가 바꾸기 전 default)
+  let barracksBuildings = {
+    kitchen:  { col: 4, row: 7 },
+    smithy:   { col: 6, row: 5 },
+    training: { col: 8, row: 7 },
+  };
+  // localStorage 복원
+  try {
+    const saved = localStorage.getItem(BUILDINGS_STORAGE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      Object.assign(barracksBuildings, data);
+    }
+  } catch (e) { /* ignore */ }
+  function saveBuildings() {
+    try { localStorage.setItem(BUILDINGS_STORAGE_KEY, JSON.stringify(barracksBuildings)); }
+    catch (e) { /* ignore */ }
+  }
   const GRID_STORAGE_KEY = "barracks_grid_walkable_v6";  // v6: default 매핑 자동 적용
   // localStorage 복원
   try {
@@ -3246,9 +3274,51 @@ async function boot() {
       el.style.transform = "translate(-50%, -85%)";  // cell center에 발 닿게
     }
   }
+
+  // ─── 새 건물 배치 시스템 (BUILDING_DEF + barracksBuildings 기반) ───
+  // 그리드 좌표 (col, row) = footprint top corner cell.
+  // 스프라이트 bottom-center → footprint 다이아몬드 bottom corner cell의 bottom point.
+  function placeBuildingFromGrid(id) {
+    const def = BUILDING_DEF[id];
+    const pos = barracksBuildings[id];
+    if (!def || !pos) return;
+    const el = document.querySelector(`#barracks-view .bk-building[data-bld="${id}"]`);
+    if (!el) return;
+    const w = def.footprint.w, h = def.footprint.h;
+    // footprint 4 corner cells의 다이아몬드 corner 좌표 (frame %)
+    const topC    = isoCellCorners(pos.col,         pos.row)[0];
+    const rightC  = isoCellCorners(pos.col + w - 1, pos.row)[1];
+    const bottomC = isoCellCorners(pos.col + w - 1, pos.row + h - 1)[2];
+    const leftC   = isoCellCorners(pos.col,         pos.row + h - 1)[3];
+    // 스프라이트 가로폭 = footprint 다이아몬드 가로 = right.x - left.x
+    const widthFrame = rightC.x - leftC.x;
+    // 스프라이트 bottom-center 위치 = footprint bottom corner
+    el.style.left = `${bottomC.x}%`;
+    el.style.top = `${bottomC.y}%`;
+    el.style.width = `${widthFrame}%`;
+    el.style.bottom = "auto";
+    el.style.right = "auto";
+    el.style.height = "auto";
+    el.style.transform = "translate(-50%, -100%)";  // bottom-center anchor
+  }
+  function applyAllBuildingPlacements() {
+    for (const id of Object.keys(BUILDING_DEF)) placeBuildingFromGrid(id);
+  }
+  // 건물 footprint cells 반환 (occupied 검사용)
+  function getBuildingFootprintCells(id) {
+    const def = BUILDING_DEF[id];
+    const pos = barracksBuildings[id];
+    if (!def || !pos) return [];
+    const cells = [];
+    for (let dc = 0; dc < def.footprint.w; dc++)
+      for (let dr = 0; dr < def.footprint.h; dr++)
+        cells.push([pos.col + dc, pos.row + dr]);
+    return cells;
+  }
   function setupBarracksGrid() {
     GRID.occupied.clear();
     GRID.buildings.length = 0;
+    applyAllBuildingPlacements();
     renderGridOverlay();
   }
   // cell 상태: "walkable" | "blocked" | "unset"
@@ -3268,6 +3338,17 @@ async function boot() {
   }
   // 페인팅 (드래그 / 클릭): 현재 brush 색을 cell에 그대로 적용
   function paintCell(c, r) {
+    // 건물 배치 brush
+    if (GRID.paintBrush.startsWith("place_")) {
+      const id = GRID.paintBrush.slice(6);
+      if (BUILDING_DEF[id]) {
+        barracksBuildings[id] = { col: c, row: r };
+        saveBuildings();
+        placeBuildingFromGrid(id);
+        return true;
+      }
+      return false;
+    }
     const target = GRID.paintBrush === "erase" ? "unset" : GRID.paintBrush;
     if (cellState(c, r) === target) return false;
     setCellState(c, r, target);
@@ -3506,13 +3587,20 @@ async function boot() {
     panel.id = "grid-paint-panel";
     panel.innerHTML = `
       <div class="gpp-title">🎯 그리드 페인터</div>
+      <div class="gpp-section-label">cell 페인팅</div>
       <div class="gpp-brushes">
         <button data-brush="blocked" class="gpp-btn gpp-blocked">🟥 못감</button>
         <button data-brush="walkable" class="gpp-btn gpp-walkable">🟩 갈수있음</button>
         <button data-brush="erase" class="gpp-btn gpp-erase">⬜ 미정</button>
       </div>
+      <div class="gpp-section-label">건물 배치 (cell 클릭 = 좌상단)</div>
+      <div class="gpp-brushes">
+        <button data-brush="place_kitchen" class="gpp-btn">🍳 주방 (2×2)</button>
+        <button data-brush="place_smithy" class="gpp-btn">🔨 공방 (2×2)</button>
+        <button data-brush="place_training" class="gpp-btn">⚔ 훈련장 (3×3)</button>
+      </div>
       <div class="gpp-tools">
-        <button id="gpp-clear" class="gpp-btn-sm">전체 초기화</button>
+        <button id="gpp-clear" class="gpp-btn-sm">cell 전체 초기화</button>
         <button id="gpp-export" class="gpp-btn-sm">JSON 출력</button>
         <button id="gpp-close" class="gpp-btn-sm">닫기</button>
       </div>
@@ -3540,6 +3628,7 @@ async function boot() {
         cols: GRID.cols, rows: GRID.rows,
         walkable: [...GRID.walkable].sort(),
         blocked: [...GRID.blocked].sort(),
+        buildings: barracksBuildings,
       }, null, 2);
       out.scrollIntoView();
     });

@@ -981,7 +981,8 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   font-size: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.6);
   -webkit-user-select: none; user-select: none; }
 .gpp-title { font-weight: bold; color: #ffd452; font-size: 13px; margin-bottom: 8px; }
-.gpp-brushes { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.gpp-section-label { font-size: 10px; color: #aaa; margin: 6px 0 3px; letter-spacing: 0.3px; }
+.gpp-brushes { display: flex; flex-direction: column; gap: 4px; margin-bottom: 4px; }
 .gpp-btn { padding: 6px 10px; border: 1px solid #555; background: rgba(0,0,0,0.4);
   color: #ddd; font-size: 12px; cursor: pointer; border-radius: 4px;
   text-align: left; transition: all 0.15s; }
