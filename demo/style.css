@@ -973,20 +973,28 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 #barracks-view[hidden] { display: none !important; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
 
-/* 자원 생산 더미 — castle 정문 앞 cell에 floating */
+/* 자원 생산 더미 — 광장 가운데에 보물 아이콘 흩뿌려 floating (박스 X) */
 .bk-prod-stack { position: absolute; transform: translate(-50%, -100%);
-  background: linear-gradient(180deg, rgba(255,212,82,0.95), rgba(200,168,72,0.92));
-  border: 2px solid #ffd452; border-radius: 12px;
-  padding: 4px 10px; cursor: pointer; z-index: 7;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 0 16px rgba(255,212,82,0.4);
-  font-size: 13px; font-weight: bold; color: #1a1000;
-  display: flex; gap: 6px; align-items: center;
-  animation: prod-pulse 2s ease-in-out infinite; }
-.bk-prod-stack:hover { transform: translate(-50%, -105%); filter: brightness(1.1); }
-.bk-prod-stack .prod-item { white-space: nowrap; }
-@keyframes prod-pulse {
-  0%, 100% { box-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 0 16px rgba(255,212,82,0.4); }
-  50%      { box-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 0 24px rgba(255,212,82,0.7); }
+  display: flex; gap: 4px; align-items: end; cursor: pointer; z-index: 7;
+  pointer-events: auto; }
+.bk-prod-stack:hover { filter: brightness(1.15); }
+.prod-icon { position: relative; display: inline-flex; flex-direction: column;
+  align-items: center; animation: prod-bounce 1.6s ease-in-out infinite;
+  animation-delay: var(--delay, 0s); }
+.prod-emoji { font-size: 32px; line-height: 1;
+  filter: drop-shadow(0 0 6px rgba(255,212,82,0.95)) drop-shadow(0 2px 3px rgba(0,0,0,0.6)); }
+.prod-sparkle { position: absolute; top: -4px; right: -6px; font-size: 12px;
+  animation: sparkle-twinkle 1.2s ease-in-out infinite; pointer-events: none; }
+.prod-count { font-size: 10px; font-weight: bold; color: #fff; line-height: 1;
+  background: rgba(0,0,0,0.75); padding: 2px 5px; border-radius: 8px;
+  margin-top: -3px; border: 1px solid rgba(255,212,82,0.6); }
+@keyframes prod-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-4px); }
+}
+@keyframes sparkle-twinkle {
+  0%, 100% { opacity: 0.3; transform: scale(0.8) rotate(0deg); }
+  50%      { opacity: 1;   transform: scale(1.2) rotate(15deg); }
 }
 
 /* 시설 관리 모달 — 배럭 내 dim + 카드 */

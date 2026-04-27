@@ -3258,15 +3258,25 @@ async function boot() {
       stack.addEventListener("click", collectAllProduction);
       stage.appendChild(stack);
     }
+    const RES_EMOJI = { gold: "💰", grain: "🌾", iron: "⛏️", wood: "🌲", stone: "🪨", herbs: "🌿" };
     const items = [];
-    if (pendingProduction.grain > 0) items.push(`<span class="prod-item">🌾 ${pendingProduction.grain}</span>`);
-    if (pendingProduction.iron > 0)  items.push(`<span class="prod-item">⛏️ ${pendingProduction.iron}</span>`);
-    if (pendingProduction.gold > 0)  items.push(`<span class="prod-item">💰 ${pendingProduction.gold}</span>`);
+    let total = 0;
+    for (const [res, amt] of Object.entries(pendingProduction)) {
+      if (amt <= 0) continue;
+      total += amt;
+      items.push(`
+        <span class="prod-icon" style="--delay:${items.length * 0.2}s">
+          <span class="prod-emoji">${RES_EMOJI[res] || "📦"}</span>
+          <span class="prod-sparkle">✨</span>
+          <span class="prod-count">${amt}</span>
+        </span>
+      `);
+    }
     if (items.length === 0) { stack.style.display = "none"; return; }
     stack.style.display = "";
     stack.innerHTML = items.join("");
-    // castle 정문 앞 광장 cell (그리드 가운데 약간 위)
-    const pos = isoCellToPos(7, 6);
+    // 광장 cobblestone 가운데
+    const pos = isoCellToPos(7, 8);
     stack.style.left = `${pos.x}%`;
     stack.style.top = `${pos.y}%`;
   }
