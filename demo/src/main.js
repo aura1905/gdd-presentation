@@ -3451,10 +3451,47 @@ async function boot() {
         cells.push([pos.col + dc, pos.row + dr]);
     return cells;
   }
+  // 건물 footprint cells 전부 blocked로 마킹 (캐릭터 못 들어감). picker 결과를 덮어씀.
+  function markBuildingsBlocked() {
+    for (const id of Object.keys(BUILDING_DEF)) {
+      const cells = getBuildingFootprintCells(id);
+      for (const [c, r] of cells) {
+        const k = `${c},${r}`;
+        GRID.walkable.delete(k);
+        GRID.blocked.add(k);
+      }
+    }
+    saveGridState();
+  }
+  // 건물 근처 N cell 반경의 walkable cells 반환 (배치 캐릭터 wander용)
+  function getCellsNearBuilding(id, radius = 2) {
+    const cells = getBuildingFootprintCells(id);
+    const out = new Set();
+    for (const [c, r] of cells) {
+      for (let dc = -radius; dc <= radius; dc++) {
+        for (let dr = -radius; dr <= radius; dr++) {
+          const nc = c + dc, nr = r + dr;
+          const k = `${nc},${nr}`;
+          if (GRID.walkable.has(k)) out.add(k);
+        }
+      }
+    }
+    return out;
+  }
+  // 캐릭터 → 배치된 시설 매핑 (자동 배치 결과 평탄화)
+  function getCharFacilityMap() {
+    const assigned = autoAssignCharacters();
+    const map = {};
+    for (const [bld, slots] of Object.entries(assigned)) {
+      for (const s of slots) map[s.charName] = bld;
+    }
+    return map;
+  }
   function setupBarracksGrid() {
     GRID.occupied.clear();
     GRID.buildings.length = 0;
     applyAllBuildingPlacements();
+    markBuildingsBlocked();   // 건물 footprint = 못 가는 cell
     renderGridOverlay();
   }
   // cell 상태: "walkable" | "blocked" | "unset"
@@ -3681,13 +3718,16 @@ async function boot() {
     return BK_CHARS.find(c => c.name === charName)?.labelKr || charName;
   }
 
-  // walkable cell 중 인접 4방향 후보 반환
-  function getNeighborWalkableCells(col, row) {
+  // walkable cell 중 인접 4방향 후보 반환. restrictTo Set 지정 시 그 안에서만.
+  function getNeighborWalkableCells(col, row, restrictTo) {
     const dirs = [[1,0],[-1,0],[0,1],[0,-1]];
     const out = [];
     for (const [dc, dr] of dirs) {
       const nc = col + dc, nr = row + dr;
-      if (GRID.walkable.has(`${nc},${nr}`)) out.push([nc, nr]);
+      const k = `${nc},${nr}`;
+      if (!GRID.walkable.has(k)) continue;
+      if (restrictTo && !restrictTo.has(k)) continue;
+      out.push([nc, nr]);
     }
     return out;
   }
@@ -3698,6 +3738,7 @@ async function boot() {
     container.innerHTML = "";
     bkCharState.length = 0;
     const walkableCells = [...GRID.walkable];
+    const charFacilityMap = getCharFacilityMap();
     for (const c of BK_CHARS) {
       try {
         const framesData = await fetch(`./assets/sprites/${c.name}/frames.json`).then(r => r.json());
@@ -3711,10 +3752,16 @@ async function boot() {
         const fh = frames[0].frame.h;
         const SCALE = 0.33;
 
-        // 시작 위치: walkable cell 중 랜덤 선택 (없으면 base 좌표 fallback)
+        // 배치된 시설 → 그 시설 근처 cells로 wander 영역 제한
+        const assignedFacility = charFacilityMap[c.name] || null;
+        const restrictCells = assignedFacility ? getCellsNearBuilding(assignedFacility, 2) : null;
+        // 시작 위치: 제한 영역 (또는 walkable 전체) 중 랜덤
+        const startPool = restrictCells && restrictCells.size > 0
+          ? [...restrictCells]
+          : walkableCells;
         let startCol = -1, startRow = -1, startX = c.base.x, startY = c.base.y;
-        if (walkableCells.length > 0) {
-          const k = walkableCells[Math.floor(Math.random() * walkableCells.length)];
+        if (startPool.length > 0) {
+          const k = startPool[Math.floor(Math.random() * startPool.length)];
           [startCol, startRow] = k.split(",").map(Number);
           const p = isoCellToPos(startCol, startRow);
           startX = p.x; startY = p.y;
@@ -3745,6 +3792,8 @@ async function boot() {
           target: null,
           flip: initialFlip,
           pauseTicks: 5 + Math.floor(Math.random() * 15),
+          restrictTo: restrictCells,   // 시설 배치 시 그 영역 안에서만 wander
+          assignedFacility,
         });
       } catch (e) { /* sprite 없음 — 스킵 */ }
     }
@@ -3766,7 +3815,11 @@ async function boot() {
             s.pauseTicks = 20;
             continue;
           }
-          const neighbors = getNeighborWalkableCells(s.col, s.row);
+          let neighbors = getNeighborWalkableCells(s.col, s.row, s.restrictTo);
+          // 제한 영역 안에 인접 후보 없으면 영역 무시 (fallback) — 갇히지 않게
+          if (neighbors.length === 0 && s.restrictTo) {
+            neighbors = getNeighborWalkableCells(s.col, s.row);
+          }
           if (neighbors.length === 0) {
             s.pauseTicks = 10;
             continue;
