@@ -3142,23 +3142,46 @@ async function boot() {
   const barracksTier = { kitchen: 0, smithy: 0, training: 0 };
   let bkCharLoop = null;
 
-  // ─── 그리드 시스템 (광장 occupation) ───
-  // 광장 영역을 N×M 그리드로 분할. 건물/벽이 cells 점령 → 캐릭터는 walkable cells에서만 wander.
-  // 미래 건물 추가 = addBuilding(...) 한 줄.
+  // ─── 그리드 시스템 (isometric 광장 occupation) ───
+  // 광장은 isometric 시점에서 다이아몬드(마름모) 모양. col/row는 마름모 격자 인덱스.
+  // PLAZA_CORNERS = 광장 4 corner (frame %). col↑ = TOP→RIGHT, row↑ = TOP→LEFT.
   const GRID = {
-    cols: 10,
-    rows: 6,
-    bounds: { left: 5, right: 5, top: 26, bottom: 22 },  // frame % (광장 영역)
-    occupied: new Set(),    // "col,row"
-    buildings: [],          // {id, col, row, w, h}
-    visible: false,         // 디버그 시각화 토글
+    cols: 8,
+    rows: 8,
+    corners: {  // frame % — 광장 다이아몬드 4 corner
+      top:    { x: 50, y: 28 },
+      right:  { x: 90, y: 52 },
+      bottom: { x: 50, y: 76 },
+      left:   { x: 10, y: 52 },
+    },
+    occupied: new Set(),
+    buildings: [],
+    visible: false,
   };
-  const cellW = () => (100 - GRID.bounds.left - GRID.bounds.right) / GRID.cols;
-  const cellH = () => (100 - GRID.bounds.top - GRID.bounds.bottom) / GRID.rows;
-  const cellToPos = (col, row) => ({
-    x: GRID.bounds.left + col * cellW(),
-    y: GRID.bounds.top + row * cellH(),
-  });
+  // (col, row) → frame % 좌표 (cell 중심)
+  function isoCellToPos(col, row) {
+    const t = GRID.corners.top, r = GRID.corners.right, l = GRID.corners.left;
+    const cf = (col + 0.5) / GRID.cols;
+    const rf = (row + 0.5) / GRID.rows;
+    return {
+      x: t.x + cf * (r.x - t.x) + rf * (l.x - t.x),
+      y: t.y + cf * (r.y - t.y) + rf * (l.y - t.y),
+    };
+  }
+  // cell의 4 corner (다이아몬드 polygon용) — frame %
+  function isoCellCorners(col, row) {
+    const t = GRID.corners.top, r = GRID.corners.right, l = GRID.corners.left;
+    const lerp = (cf, rf) => ({
+      x: t.x + cf * (r.x - t.x) + rf * (l.x - t.x),
+      y: t.y + cf * (r.y - t.y) + rf * (l.y - t.y),
+    });
+    return [
+      lerp(col / GRID.cols,       row / GRID.rows),         // top
+      lerp((col + 1) / GRID.cols, row / GRID.rows),         // right
+      lerp((col + 1) / GRID.cols, (row + 1) / GRID.rows),   // bottom
+      lerp(col / GRID.cols,       (row + 1) / GRID.rows),   // left
+    ];
+  }
   function addBuilding(id, col, row, w, h) {
     GRID.buildings.push({ id, col, row, w, h });
     for (let c = col; c < col + w; c++)
@@ -3174,33 +3197,42 @@ async function boot() {
         if (!GRID.occupied.has(`${c},${r}`)) out.push([c, r]);
     return out;
   }
+  // 건물을 iso cell 위치에 배치 (cell 중심 기준, transform translate(-50%, -100%) bottom anchor)
   function applyBuildingPositionsFromGrid() {
     for (const b of GRID.buildings) {
       const el = document.querySelector(`#barracks-view .bk-building[data-bld="${b.id}"]`);
       if (!el) continue;
-      const { x, y } = cellToPos(b.col, b.row);
+      // 건물 footprint 가운데 = cell (col+w/2-0.5, row+h/2-0.5)
+      const cx = b.col + b.w / 2 - 0.5;
+      const cy = b.row + b.h / 2 - 0.5;
+      const { x, y } = isoCellToPos(cx, cy);
+      // 건물 width = w cells × cell 가로 width (frame %)
+      // iso에서 cell 가로 = (right.x - top.x) / cols
+      const cellWFrame = (GRID.corners.right.x - GRID.corners.top.x) / GRID.cols * 2;
       el.style.left = `${x}%`;
       el.style.top = `${y}%`;
-      el.style.width = `${b.w * cellW()}%`;
+      el.style.width = `${b.w * cellWFrame}%`;
       el.style.bottom = "auto";
       el.style.right = "auto";
       el.style.height = "auto";
+      el.style.transform = "translate(-50%, -85%)";  // cell center에 발 닿게
     }
   }
   function setupBarracksGrid() {
     GRID.occupied.clear();
     GRID.buildings.length = 0;
-    // 건물 3개 (각 2×2)
-    addBuilding("kitchen",  0, 2, 2, 2);
-    addBuilding("smithy",   4, 1, 2, 2);
-    addBuilding("training", 8, 2, 2, 2);
-    // 벽 perimeter (게이트 = col 4-5 row 5 빼고)
+    // iso 광장 8×8 (마름모 그리드).
+    // 건물 3개 — 광장 안쪽 (row 1~3 영역)
+    addBuilding("kitchen",  1, 4, 2, 2);
+    addBuilding("smithy",   3, 2, 2, 2);
+    addBuilding("training", 5, 4, 2, 2);
+    // 벽 perimeter — 게이트 통로 빼고 (col 3-4, row 7)
     const wall = [];
-    for (let c = 0; c < GRID.cols; c++) wall.push([c, 0]);  // 위
-    for (let r = 1; r < GRID.rows; r++) wall.push([0, r]);  // 좌
-    for (let r = 1; r < GRID.rows; r++) wall.push([GRID.cols - 1, r]);  // 우
+    for (let c = 0; c < GRID.cols; c++) wall.push([c, 0]);
+    for (let r = 1; r < GRID.rows; r++) wall.push([0, r]);
+    for (let r = 1; r < GRID.rows; r++) wall.push([GRID.cols - 1, r]);
     for (let c = 1; c < GRID.cols - 1; c++) {
-      if (c === 4 || c === 5) continue;  // 게이트 통로
+      if (c === 3 || c === 4) continue;
       wall.push([c, GRID.rows - 1]);
     }
     addWallCells(wall);
@@ -3210,22 +3242,41 @@ async function boot() {
   function renderGridOverlay() {
     const stage = document.getElementById("bk-stage");
     if (!stage) return;
-    stage.querySelectorAll(".bk-grid-cell").forEach(el => el.remove());
+    stage.querySelectorAll(".bk-grid-svg").forEach(el => el.remove());
     if (!GRID.visible) return;
+    // SVG로 iso diamond cells 렌더
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("class", "bk-grid-svg");
+    svg.setAttribute("viewBox", "0 0 100 100");
+    svg.setAttribute("preserveAspectRatio", "none");
+    svg.style.cssText = "position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:7";
     for (let c = 0; c < GRID.cols; c++) {
       for (let r = 0; r < GRID.rows; r++) {
         const occ = GRID.occupied.has(`${c},${r}`);
-        const div = document.createElement("div");
-        div.className = "bk-grid-cell " + (occ ? "occupied" : "walkable");
-        const { x, y } = cellToPos(c, r);
-        div.style.left = `${x}%`;
-        div.style.top = `${y}%`;
-        div.style.width = `${cellW()}%`;
-        div.style.height = `${cellH()}%`;
-        div.textContent = `${c},${r}`;
-        stage.appendChild(div);
+        const corners = isoCellCorners(c, r);
+        const points = corners.map(p => `${p.x},${p.y}`).join(" ");
+        const poly = document.createElementNS(NS, "polygon");
+        poly.setAttribute("points", points);
+        poly.setAttribute("fill", occ ? "rgba(255,80,80,0.32)" : "rgba(80,255,80,0.18)");
+        poly.setAttribute("stroke", "rgba(255,255,255,0.55)");
+        poly.setAttribute("stroke-width", "0.15");
+        poly.setAttribute("stroke-dasharray", "0.5,0.3");
+        svg.appendChild(poly);
+        // cell 좌표 라벨
+        const c0 = isoCellToPos(c, r);
+        const txt = document.createElementNS(NS, "text");
+        txt.setAttribute("x", c0.x);
+        txt.setAttribute("y", c0.y + 0.6);
+        txt.setAttribute("font-size", "1.4");
+        txt.setAttribute("text-anchor", "middle");
+        txt.setAttribute("fill", "rgba(255,255,255,0.9)");
+        txt.setAttribute("font-family", "monospace");
+        txt.textContent = `${c},${r}`;
+        svg.appendChild(txt);
       }
     }
+    stage.appendChild(svg);
   }
 
   function openBarracks() {
