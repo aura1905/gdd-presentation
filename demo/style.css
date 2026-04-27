@@ -965,7 +965,7 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
    │ Bottom Nav│  ← 64px (4탭)
    └───────────┘
    ───────────────────────────────────────── */
-#barracks-view { position: absolute; inset: 0; z-index: 100;
+#barracks-view { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 100;
   display: flex; align-items: center; justify-content: center;
   background: #000;  /* letterbox 양옆 */
   animation: bk-fade 0.25s ease; overflow: hidden; }

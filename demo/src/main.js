@@ -3286,11 +3286,22 @@ async function boot() {
     setupBarracksGrid();
     spawnBarracksCharacters();
     if (!bkCharLoop) bkCharLoop = setInterval(animateBarracksCharacters, 100);
+    // #tab-dock active 동기화
+    document.querySelectorAll('#tab-dock button').forEach(b => b.classList.toggle('active', b.dataset.tab === 'barracks'));
   }
   function closeBarracks() {
     if (!barracksView) return;
     barracksView.hidden = true;
     if (bkCharLoop) { clearInterval(bkCharLoop); bkCharLoop = null; }
+    // #tab-dock 월드맵으로 복원 (단, family/quest/gacha 패널 열려있으면 그쪽 우선)
+    const familyOpen = !document.getElementById('family-panel')?.hidden;
+    const questOpen = !document.getElementById('quest-panel')?.hidden;
+    const gachaOpen = !document.getElementById('gacha-panel')?.hidden;
+    let activeTab = 'worldmap';
+    if (familyOpen) activeTab = 'family';
+    else if (questOpen) activeTab = 'quest';
+    else if (gachaOpen) activeTab = 'gacha';
+    document.querySelectorAll('#tab-dock button').forEach(b => b.classList.toggle('active', b.dataset.tab === activeTab));
   }
   function updateBarracksHud() {
     const gs = getState();
