@@ -973,11 +973,11 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 #barracks-view[hidden] { display: none !important; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
 
-/* 배럭 frame — 배경 이미지 1024×1024 (정사각) 원본 비율에 맞춤.
-   데스크톱·모바일 모두 letterbox 없이 자연스럽게 fit. */
+/* 9:16 모바일 포트레이트 frame — 양옆 letterbox는 #barracks-view background로
+   자연스러운 하늘+잔디 그라디언트로 이어짐 (검은색 X). */
 .bk-frame { position: relative;
   height: 100%;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 9 / 16;
   max-width: 100%;
   max-height: 100%;
   display: flex; flex-direction: column;
