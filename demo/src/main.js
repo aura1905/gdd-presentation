@@ -3196,6 +3196,80 @@ async function boot() {
     try { localStorage.setItem(BUILDINGS_STORAGE_KEY, JSON.stringify(barracksBuildings)); }
     catch (e) { /* ignore */ }
   }
+
+  // ─── 자원 생산 시스템 (mock — 실제 GDD 생산 공식 들어오기 전 데모용) ───
+  // 5초마다 시설 Tier에 따라 자원 누적 → castle 정문 앞 더미로 시각화 → 클릭 수거.
+  const PRODUCTION_RATES = {
+    kitchen:  [{ grain: 1 }, { grain: 2 }, { grain: 4 }],   // Tier 0/1/2
+    smithy:   [{ iron: 1 },  { iron: 2 },  { iron: 4 }],
+    training: [{},           {},           {}],             // 훈련포인트는 추후
+  };
+  const PRODUCTION_TICK_MS = 5000;
+  const PRODUCTION_STORAGE_KEY = "barracks_production_v1";
+  const pendingProduction = { gold: 0, grain: 0, iron: 0 };
+  let productionTimer = null;
+  try {
+    const saved = localStorage.getItem(PRODUCTION_STORAGE_KEY);
+    if (saved) Object.assign(pendingProduction, JSON.parse(saved));
+  } catch (e) { /* ignore */ }
+  function saveProduction() {
+    try { localStorage.setItem(PRODUCTION_STORAGE_KEY, JSON.stringify(pendingProduction)); }
+    catch (e) { /* ignore */ }
+  }
+  function tickProduction() {
+    let any = false;
+    for (const [bld, tier] of Object.entries(barracksTier)) {
+      const rates = (PRODUCTION_RATES[bld] || [])[tier] || {};
+      for (const [res, amt] of Object.entries(rates)) {
+        pendingProduction[res] = (pendingProduction[res] || 0) + amt;
+        any = true;
+      }
+    }
+    if (any) { saveProduction(); renderProductionStack(); }
+  }
+  function collectAllProduction() {
+    const gs = getState();
+    const lines = [];
+    for (const [res, amt] of Object.entries(pendingProduction)) {
+      if (amt <= 0) continue;
+      gs.resources[res] = (gs.resources[res] || 0) + amt;
+      lines.push(`+${amt} ${{gold:"💰",grain:"🌾",iron:"⛏️",wood:"🌲",stone:"🪨",herbs:"🌿"}[res] || res}`);
+      pendingProduction[res] = 0;
+    }
+    if (lines.length === 0) {
+      showToast("아직 수거할 자원 없음", "warn");
+      return;
+    }
+    saveProduction();
+    renderProductionStack();
+    saveState(gs);
+    updateHud();
+    showToast(`📦 ${lines.join(" / ")}`, "exp");
+  }
+  function renderProductionStack() {
+    const stage = document.getElementById("bk-stage");
+    if (!stage) return;
+    let stack = document.getElementById("bk-prod-stack");
+    if (!stack) {
+      stack = document.createElement("div");
+      stack.id = "bk-prod-stack";
+      stack.className = "bk-prod-stack";
+      stack.title = "자원 수거";
+      stack.addEventListener("click", collectAllProduction);
+      stage.appendChild(stack);
+    }
+    const items = [];
+    if (pendingProduction.grain > 0) items.push(`<span class="prod-item">🌾 ${pendingProduction.grain}</span>`);
+    if (pendingProduction.iron > 0)  items.push(`<span class="prod-item">⛏️ ${pendingProduction.iron}</span>`);
+    if (pendingProduction.gold > 0)  items.push(`<span class="prod-item">💰 ${pendingProduction.gold}</span>`);
+    if (items.length === 0) { stack.style.display = "none"; return; }
+    stack.style.display = "";
+    stack.innerHTML = items.join("");
+    // castle 정문 앞 광장 cell (그리드 가운데 약간 위)
+    const pos = isoCellToPos(7, 6);
+    stack.style.left = `${pos.x}%`;
+    stack.style.top = `${pos.y}%`;
+  }
   const GRID_STORAGE_KEY = "barracks_grid_walkable_v6";  // v6: default 매핑 자동 적용
   // localStorage 복원
   try {
@@ -3444,7 +3518,9 @@ async function boot() {
     updateBarracksHud();
     setupBarracksGrid();
     spawnBarracksCharacters();
+    renderProductionStack();
     if (!bkCharLoop) bkCharLoop = setInterval(animateBarracksCharacters, 100);
+    if (!productionTimer) productionTimer = setInterval(tickProduction, PRODUCTION_TICK_MS);
     // #tab-dock active 동기화
     document.querySelectorAll('#tab-dock button').forEach(b => b.classList.toggle('active', b.dataset.tab === 'barracks'));
   }
@@ -3452,6 +3528,7 @@ async function boot() {
     if (!barracksView) return;
     barracksView.hidden = true;
     if (bkCharLoop) { clearInterval(bkCharLoop); bkCharLoop = null; }
+    if (productionTimer) { clearInterval(productionTimer); productionTimer = null; }
     // #tab-dock 월드맵으로 복원 (단, family/quest/gacha 패널 열려있으면 그쪽 우선)
     const familyOpen = !document.getElementById('family-panel')?.hidden;
     const questOpen = !document.getElementById('quest-panel')?.hidden;
@@ -3714,19 +3791,84 @@ async function boot() {
     }
   }, true);
   // 하단 빠른 액션 바
-  document.getElementById("bk-action-collect")?.addEventListener("click", () => {
-    showToast("📦 전체 수거 — 준비 중 (생산 시스템 도입 시 활성화)", "warn");
-  });
-  document.getElementById("bk-action-manage")?.addEventListener("click", () => {
-    showToast("⚙ 시설 관리 — 준비 중 (각 건물 클릭으로 임시 Tier 변경)", "warn");
-  });
-  document.querySelectorAll("#barracks-view .bk-building").forEach(el => {
-    el.addEventListener("click", () => {
-      const bld = el.dataset.bld;
-      const next = (barracksTier[bld] + 1) % 3;
-      setBuildingTier(bld, next);
-      showToast(`🔧 ${bld} → ${TIER_NAMES[next]}`, "exp");
+  document.getElementById("bk-action-collect")?.addEventListener("click", collectAllProduction);
+  // 시설 관리 버튼은 개별 시설 클릭으로 통합 → 숨김
+  const manageBtn = document.getElementById("bk-action-manage");
+  if (manageBtn) manageBtn.style.display = "none";
+
+  // 시설 클릭 → 관리 팝업
+  function openBuildingPanel(bld) {
+    const def = BUILDING_DEF[bld];
+    if (!def) return;
+    const tier = barracksTier[bld];
+    const TIER_LABEL = ["Lv 1", "Lv 5", "Lv 10"];
+    const NAME_KR = { kitchen: "🍳 주방", smithy: "🔨 공방", training: "⚔ 훈련장" };
+    const rates = (PRODUCTION_RATES[bld] || [])[tier] || {};
+    const ratesText = Object.entries(rates).map(([r, a]) => {
+      const e = {grain:"🌾",iron:"⛏️",gold:"💰"}[r] || r;
+      return `${e} ${a}/틱`;
+    }).join(" · ") || "(생산 없음)";
+    const nextRates = (PRODUCTION_RATES[bld] || [])[tier + 1];
+    const nextRatesText = nextRates ? Object.entries(nextRates).map(([r, a]) => {
+      const e = {grain:"🌾",iron:"⛏️",gold:"💰"}[r] || r;
+      return `${e} ${a}/틱`;
+    }).join(" · ") : null;
+
+    let modal = document.getElementById("bk-building-modal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "bk-building-modal";
+      modal.className = "bk-modal";
+      barracksView.appendChild(modal);
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.style.display = "none";
+      });
+    }
+    modal.innerHTML = `
+      <div class="bk-modal-card">
+        <header class="bk-modal-head">
+          <h3>${NAME_KR[bld]} <span class="bk-modal-tier">${TIER_LABEL[tier]}</span></h3>
+          <button class="bk-modal-close" id="bk-modal-close">✕</button>
+        </header>
+        <div class="bk-modal-body">
+          <div class="bk-modal-section">
+            <div class="bk-modal-label">생산 (현재)</div>
+            <div class="bk-modal-value">${ratesText}</div>
+          </div>
+          <div class="bk-modal-section">
+            <div class="bk-modal-label">footprint</div>
+            <div class="bk-modal-value">${def.footprint.w}×${def.footprint.h} cells (col ${barracksBuildings[bld]?.col ?? "?"}, row ${barracksBuildings[bld]?.row ?? "?"})</div>
+          </div>
+          <div class="bk-modal-section">
+            <div class="bk-modal-label">배치 캐릭터</div>
+            <div class="bk-modal-value">(추후 — 슬롯 배정 시스템 도입 예정)</div>
+          </div>
+          ${nextRatesText ? `
+            <div class="bk-modal-section">
+              <div class="bk-modal-label">다음 Tier (${TIER_LABEL[tier+1]})</div>
+              <div class="bk-modal-value">${nextRatesText}</div>
+            </div>
+            <button class="bk-modal-action" id="bk-modal-upgrade">🔧 업그레이드 (데모 — 즉시 Tier↑)</button>
+          ` : `<div class="bk-modal-section"><em>최대 Tier</em></div>`}
+        </div>
+      </div>
+    `;
+    modal.style.display = "flex";
+    document.getElementById("bk-modal-close").addEventListener("click", () => {
+      modal.style.display = "none";
     });
+    const upBtn = document.getElementById("bk-modal-upgrade");
+    if (upBtn) {
+      upBtn.addEventListener("click", () => {
+        const next = (barracksTier[bld] + 1) % 3;
+        setBuildingTier(bld, next);
+        showToast(`🔧 ${NAME_KR[bld]} → ${TIER_LABEL[next]}`, "exp");
+        openBuildingPanel(bld);  // 갱신
+      });
+    }
+  }
+  document.querySelectorAll("#barracks-view .bk-building").forEach(el => {
+    el.addEventListener("click", () => openBuildingPanel(el.dataset.bld));
   });
 
   function renderOutpostList() {

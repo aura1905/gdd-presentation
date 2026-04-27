@@ -973,6 +973,47 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 #barracks-view[hidden] { display: none !important; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
 
+/* 자원 생산 더미 — castle 정문 앞 cell에 floating */
+.bk-prod-stack { position: absolute; transform: translate(-50%, -100%);
+  background: linear-gradient(180deg, rgba(255,212,82,0.95), rgba(200,168,72,0.92));
+  border: 2px solid #ffd452; border-radius: 12px;
+  padding: 4px 10px; cursor: pointer; z-index: 7;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 0 16px rgba(255,212,82,0.4);
+  font-size: 13px; font-weight: bold; color: #1a1000;
+  display: flex; gap: 6px; align-items: center;
+  animation: prod-pulse 2s ease-in-out infinite; }
+.bk-prod-stack:hover { transform: translate(-50%, -105%); filter: brightness(1.1); }
+.bk-prod-stack .prod-item { white-space: nowrap; }
+@keyframes prod-pulse {
+  0%, 100% { box-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 0 16px rgba(255,212,82,0.4); }
+  50%      { box-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 0 24px rgba(255,212,82,0.7); }
+}
+
+/* 시설 관리 모달 — 배럭 내 dim + 카드 */
+.bk-modal { position: absolute; inset: 0; z-index: 250;
+  background: rgba(0,0,0,0.55); display: none;
+  align-items: center; justify-content: center; }
+.bk-modal-card { background: linear-gradient(180deg, #2a1f12, #1a1208);
+  border: 2px solid #c8a848; border-radius: 12px;
+  width: 320px; max-width: 90%; color: #fff;
+  box-shadow: 0 6px 24px rgba(0,0,0,0.7); }
+.bk-modal-head { display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid rgba(255,212,82,0.3); }
+.bk-modal-head h3 { margin: 0; color: #ffd452; font-size: 16px; }
+.bk-modal-tier { color: #aaa; font-size: 12px; font-weight: normal; margin-left: 6px; }
+.bk-modal-close { background: transparent; border: 0; color: #aaa; font-size: 16px;
+  cursor: pointer; padding: 4px 8px; }
+.bk-modal-close:hover { color: #fff; }
+.bk-modal-body { padding: 12px 16px; }
+.bk-modal-section { margin-bottom: 10px; }
+.bk-modal-label { font-size: 10px; color: #888; letter-spacing: 0.5px; margin-bottom: 2px; }
+.bk-modal-value { font-size: 13px; color: #ddd; }
+.bk-modal-action { width: 100%; padding: 8px; margin-top: 6px;
+  background: linear-gradient(180deg, #ffd452, #c8a848);
+  border: 1px solid #ffd452; color: #1a1000; font-weight: bold; font-size: 13px;
+  border-radius: 6px; cursor: pointer; }
+.bk-modal-action:hover { filter: brightness(1.1); }
+
 /* 배럭 우상단 floating 버튼 (그리드 토글 등). HUD 아래 위치. */
 .bk-floating-btn { position: absolute; top: 56px; right: 12px; z-index: 180;
   width: 36px; height: 36px; padding: 0;
