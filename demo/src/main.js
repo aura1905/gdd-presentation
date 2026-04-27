@@ -3327,8 +3327,8 @@ async function boot() {
     if (items.length === 0) { stack.style.display = "none"; return; }
     stack.style.display = "";
     stack.innerHTML = items.join("");
-    // castle 정문 앞 광장 (게이트 입구 바로 앞)
-    const pos = isoCellToPos(3, 3);
+    // 건물 중간 — castle 정문 위쪽 (광장 시작점 부근)
+    const pos = isoCellToPos(2, 2);
     stack.style.left = `${pos.x}%`;
     stack.style.top = `${pos.y}%`;
   }
