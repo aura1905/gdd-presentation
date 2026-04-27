@@ -3258,12 +3258,24 @@ async function boot() {
     catch (e) { /* ignore */ }
   }
   function tickProduction() {
+    // 생산량 = 기본 prod × 등급 배율 × 시설 Lv 보정 (gdd_barracks_life_v2 §4-3)
+    // 슬롯 합산: 시설마다 배치된 캐릭터들의 등급 배율을 각각 적용 후 합.
+    const assigned = autoAssignCharacters();
     let any = false;
     for (const [bld, tier] of Object.entries(barracksTier)) {
-      const rates = (PRODUCTION_RATES[bld] || [])[tier] || {};
-      for (const [res, amt] of Object.entries(rates)) {
-        pendingProduction[res] = (pendingProduction[res] || 0) + amt;
-        any = true;
+      const baseProd = (PRODUCTION_RATES[bld] || [])[tier] || {};
+      const lv = FACILITY_LEVELS[bld]?.[tier]?.lv || 1;
+      const lvBoost = 1.0 + (lv - 1) * 0.1;
+      const slots = assigned[bld] || [];
+      if (slots.length === 0) continue;  // 배치 캐릭터 없으면 생산 0
+      let multSum = 0;
+      for (const s of slots) multSum += GRADE_MULT[s.grade] || 0;
+      for (const [res, amt] of Object.entries(baseProd)) {
+        const final = Math.round(amt * multSum * lvBoost);
+        if (final > 0) {
+          pendingProduction[res] = (pendingProduction[res] || 0) + final;
+          any = true;
+        }
       }
     }
     if (any) { saveProduction(); renderProductionStack(); }
@@ -3617,13 +3629,58 @@ async function boot() {
   // y 30~50 = 주방/훈련장 아래 ~ 공방 위 사이 광장 영역. 건물 가리지 않음.
   // 캐릭터 wander = 광장 가운데 cobblestone 마당 (y 52~64, 건물 라인 바로 아래)
   const BK_CHARS = [
-    { name: "Panfilo_M",   base: { x: 22, y: 54 }, range: [12, 32] },
-    { name: "Daria_F",     base: { x: 45, y: 60 }, range: [36, 56] },
-    { name: "Emilia_F",    base: { x: 78, y: 54 }, range: [62, 88] },
-    { name: "Andre_M",     base: { x: 35, y: 64 }, range: [15, 45] },
-    { name: "Catherine_F", base: { x: 65, y: 64 }, range: [55, 88] },
+    { name: "Panfilo_M",   labelKr: "판필로",  base: { x: 22, y: 54 }, range: [12, 32] },
+    { name: "Daria_F",     labelKr: "다리아",  base: { x: 45, y: 60 }, range: [36, 56] },
+    { name: "Emilia_F",    labelKr: "에밀리아",base: { x: 78, y: 54 }, range: [62, 88] },
+    { name: "Andre_M",     labelKr: "앙드레",  base: { x: 35, y: 64 }, range: [15, 45] },
+    { name: "Catherine_F", labelKr: "캐서린",  base: { x: 65, y: 64 }, range: [55, 88] },
   ];
   const bkCharState = [];
+
+  // ─── 생활직업 시스템 (gdd_barracks_life_v2.md §4) ───
+  // 캐릭터마다 시설별 효율 등급 (S/A/B/C). C는 휴식 (배치 X).
+  // 자동 배치: 시설마다 슬롯 N개에 등급 우선 배정 (한 캐릭터는 한 시설만).
+  const BK_CHAR_JOBS = {
+    Panfilo_M:   { kitchen: "S", smithy: "B", training: "C" },  // 요리사 S
+    Daria_F:     { kitchen: "B", smithy: "C", training: "S" },  // 교관 S
+    Emilia_F:    { kitchen: "A", smithy: "B", training: "B" },  // 의무관 → 주방 A
+    Andre_M:     { kitchen: "C", smithy: "S", training: "A" },  // 장인 S
+    Catherine_F: { kitchen: "B", smithy: "A", training: "B" },  // 다재
+  };
+  const GRADE_MULT  = { S: 1.5, A: 1.2, B: 1.0, C: 0.7 };
+  const GRADE_SCORE = { S: 4,   A: 3,   B: 2,   C: 1 };
+
+  // 시설별 슬롯 수 (Lv tier index 따라 — 훈련장만 차등, 나머지는 고정)
+  function getFacilitySlotCount(bld) {
+    const tier = barracksTier[bld] || 0;
+    if (bld === "training") return [2, 3, 4, 5, 6][tier] || 2;
+    return [2, 2, 3, 3, 3][tier] || 2;  // 주방/공방
+  }
+
+  // 자동 배치: 모든 (캐릭터, 시설) 등급 점수 정렬 → 우선 배치, 한 캐릭터는 한 시설만, C는 제외
+  function autoAssignCharacters() {
+    const out = { kitchen: [], smithy: [], training: [] };
+    const assignedChars = new Set();
+    const pairs = [];
+    for (const [charName, jobs] of Object.entries(BK_CHAR_JOBS)) {
+      for (const [bld, grade] of Object.entries(jobs)) {
+        if (grade === "C") continue;  // C 등급은 휴식
+        pairs.push({ charName, bld, grade, score: GRADE_SCORE[grade] });
+      }
+    }
+    pairs.sort((a, b) => b.score - a.score);
+    for (const p of pairs) {
+      if (assignedChars.has(p.charName)) continue;
+      const cap = getFacilitySlotCount(p.bld);
+      if (out[p.bld].length >= cap) continue;
+      out[p.bld].push({ charName: p.charName, grade: p.grade });
+      assignedChars.add(p.charName);
+    }
+    return out;
+  }
+  function getCharLabel(charName) {
+    return BK_CHARS.find(c => c.name === charName)?.labelKr || charName;
+  }
 
   // walkable cell 중 인접 4방향 후보 반환
   function getNeighborWalkableCells(col, row) {
@@ -3940,8 +3997,24 @@ async function boot() {
             <div class="bk-modal-sub">생산: ${formatProd(cur.prod)} (5초마다)</div>
           </div>
           <div class="bk-modal-section">
-            <div class="bk-modal-label">자동 배치 직업</div>
-            <div class="bk-modal-value">${FACILITY_JOB[bld]} (배치 시스템 추후)</div>
+            <div class="bk-modal-label">자동 배치 — ${FACILITY_JOB[bld]} (슬롯 ${(()=>{const a=autoAssignCharacters();return a[bld].length})()}/${getFacilitySlotCount(bld)})</div>
+            <div class="bk-modal-value">
+              ${(() => {
+                const slots = autoAssignCharacters()[bld] || [];
+                if (slots.length === 0) return "<em>배치된 캐릭터 없음</em>";
+                return slots.map(s => `
+                  <div class="bk-slot-row">
+                    <span class="bk-slot-grade grade-${s.grade}">${s.grade}</span>
+                    <span class="bk-slot-name">${getCharLabel(s.charName)}</span>
+                    <span class="bk-slot-mult">×${GRADE_MULT[s.grade]}</span>
+                  </div>
+                `).join("");
+              })()}
+            </div>
+            <div class="bk-modal-sub">합산 배율 ×${(() => {
+              const slots = autoAssignCharacters()[bld] || [];
+              return slots.reduce((sum, s) => sum + (GRADE_MULT[s.grade] || 0), 0).toFixed(1);
+            })()} · Lv 보정 ×${(1.0 + (cur.lv - 1) * 0.1).toFixed(1)}</div>
           </div>
           <div class="bk-modal-section">
             <div class="bk-modal-label">footprint</div>

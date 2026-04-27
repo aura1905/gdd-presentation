@@ -1037,6 +1037,26 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   box-shadow: 0 0 8px rgba(255,212,82,0.4); }
 .bk-tier-arrow { color: #555; font-size: 14px; }
 
+/* 시설 모달 — 자동 배치 슬롯 표시 */
+.bk-slot-row { display: flex; align-items: center; gap: 8px;
+  padding: 4px 6px; margin-bottom: 2px;
+  background: rgba(255,255,255,0.04); border-radius: 4px;
+  font-size: 12px; }
+.bk-slot-grade { display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px; border-radius: 50%;
+  font-size: 11px; font-weight: bold; padding: 0 4px;
+  border: 1px solid; }
+.bk-slot-grade.grade-S { background: linear-gradient(180deg, #ff6b6b, #d04646);
+  color: #fff; border-color: #ff8a8a; }
+.bk-slot-grade.grade-A { background: linear-gradient(180deg, #ffd452, #c8a848);
+  color: #1a1000; border-color: #ffd452; }
+.bk-slot-grade.grade-B { background: linear-gradient(180deg, #5aaa5a, #4a8a4a);
+  color: #fff; border-color: #7aca7a; }
+.bk-slot-grade.grade-C { background: rgba(120,120,120,0.6);
+  color: #ddd; border-color: #888; }
+.bk-slot-name { flex: 1; color: #ddd; }
+.bk-slot-mult { color: #ffd452; font-weight: bold; font-size: 11px; }
+
 /* 배럭 우상단 floating 버튼 (그리드 토글 등). HUD 아래 위치. */
 .bk-floating-btn { position: absolute; top: 56px; right: 12px; z-index: 180;
   width: 36px; height: 36px; padding: 0;
