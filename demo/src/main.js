@@ -3509,7 +3509,7 @@ async function boot() {
         }
         const fw = frames[0].frame.w;
         const fh = frames[0].frame.h;
-        const SCALE = 0.55;  // frame 1:1 (가로 1.78배) 비율 보정
+        const SCALE = 0.33;  // 60% (0.55 → 0.33)
         const vx = (Math.random() < 0.5 ? -1 : 1) * (0.5 + Math.random() * 0.4);
         const initialFlip = vx > 0;  // sprite 기본이 좌측 보고 있음 → 우측 이동 시 flip
         const div = document.createElement("div");
