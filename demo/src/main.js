@@ -3151,10 +3151,10 @@ async function boot() {
   const GRID = {
     cols: 8,
     rows: 8,
-    corners: {  // 광장(50,38)(86,58)(50,80)(14,58) × 1.1배 (center 50,59 기준)
-      top:    { x: 50,   y: 36 },
+    corners: {  // 1.1배 + 세로 약간 압축 (isometric ratio 보정)
+      top:    { x: 50,   y: 38 },
       right:  { x: 89.5, y: 58 },
-      bottom: { x: 50,   y: 82 },
+      bottom: { x: 50,   y: 80 },
       left:   { x: 10.5, y: 58 },
     },
     walkable: new Set(),   // walkable cells "c,r"
