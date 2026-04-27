@@ -3151,11 +3151,14 @@ async function boot() {
   const GRID = {
     cols: 15,
     rows: 15,
-    corners: {  // 상단 꼭지점 아래로 (castle 본체 미침범) + 하단 frame 끝까지
-      top:    { x: 50,  y: 39 },
-      right:  { x: 100, y: 60 },
-      bottom: { x: 50,  y: 93 },
-      left:   { x: 0,   y: 60 },
+    // 광장 8×8 1.1배 cell 크기 그대로 + 다이아몬드 1.875배 (15÷8) 확장.
+    // top 고정(50, 39), 나머지 corner는 frame 밖으로 over (overflow hidden).
+    // cell axis: top→right (+4.9375, +2.375) per col / top→left (-4.9375, +2.375) per row.
+    corners: {
+      top:    { x: 50,    y: 39 },
+      right:  { x: 124.1, y: 74.6 },
+      bottom: { x: 50,    y: 110.3 },
+      left:   { x: -24.1, y: 74.6 },
     },
     walkable: new Set(),   // walkable cells "c,r"
     blocked: new Set(),    // blocked cells "c,r"
@@ -3164,7 +3167,7 @@ async function boot() {
     visible: false,
     pickerMode: false,     // true = cell 클릭으로 walkable/blocked 토글
   };
-  const GRID_STORAGE_KEY = "barracks_grid_walkable_v4";  // v4: 15×15, top 아래로
+  const GRID_STORAGE_KEY = "barracks_grid_walkable_v5";  // v5: 15×15, cell 크기 광장 그대로
   // localStorage 복원
   try {
     const saved = localStorage.getItem(GRID_STORAGE_KEY);
