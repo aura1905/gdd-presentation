@@ -1205,9 +1205,10 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   pointer-events: none; }
 
 /* 건축 패널 — 하단 슬라이드업 (쿠키런 킹덤 빌드 메뉴 참고) */
-.bk-build-panel { position: absolute; left: 0; right: 0; bottom: 0; z-index: 200;
+.bk-build-panel { position: absolute; left: 8%; right: 8%; bottom: 0; z-index: 200;
   background: linear-gradient(180deg, #2a1f12, #1a1208);
-  border-top: 2px solid rgba(255,212,82,0.5);
+  border: 1.5px solid rgba(255,212,82,0.4);
+  border-bottom: none;
   border-radius: 16px 16px 0 0;
   padding: 14px 14px 20px;
   box-shadow: 0 -8px 24px rgba(0,0,0,0.6);

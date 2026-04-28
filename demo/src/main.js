@@ -3254,13 +3254,7 @@ async function boot() {
   (() => {
     try {
       const saved = localStorage.getItem(CONSTRUCTED_KEY);
-      if (saved) { Object.assign(barracksConstructed, JSON.parse(saved)); return; }
-      // 마이그레이션: 이전 세션에 tier 저장이 있으면 건축 완료로 간주
-      const tier = localStorage.getItem(BARRACKS_TIER_KEY);
-      if (tier) {
-        for (const id of Object.keys(barracksConstructed)) barracksConstructed[id] = true;
-        localStorage.setItem(CONSTRUCTED_KEY, JSON.stringify(barracksConstructed));
-      }
+      if (saved) Object.assign(barracksConstructed, JSON.parse(saved));
     } catch (e) {}
   })();
   function saveConstructed() {
