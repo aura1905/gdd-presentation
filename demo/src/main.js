@@ -3249,7 +3249,7 @@ async function boot() {
     smithy:   { wood: 1500, iron: 800, vis: 2500 },
   };
   // 건축 완료 상태 (localStorage) — true = 지어진 상태
-  const CONSTRUCTED_KEY = "barracks_constructed_v1";
+  const CONSTRUCTED_KEY = "barracks_constructed_v2";
   let barracksConstructed = { kitchen: false, smithy: false, training: false };
   (() => {
     try {
