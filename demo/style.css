@@ -967,17 +967,18 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
    ───────────────────────────────────────── */
 #barracks-view { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 100;
   display: flex; align-items: center; justify-content: center;
-  background: #6a9a6a;
+  /* letterbox 배경 — 프레임 fade-out 끝 색상으로 자연스럽게 */
+  background: linear-gradient(180deg, #88c5e8 0%, #88c5e8 35%, #b8c878 60%, #88a858 100%);
   animation: bk-fade 0.25s ease; overflow: hidden; }
-/* letterbox 양옆 — 프레임 가장자리에서 바깥으로 반전(mirror) 확장.
-   letterbox 너비는 항상 28px (= 56px tab-dock / 2, landscape-square app 기준).
-   ::before = 좌측 28px: 이미지 좌측 끝을 좌측으로 반전.
-   ::after  = 우측 28px: 이미지 우측 끝을 우측으로 반전. */
+/* letterbox 양옆 — 프레임 가장자리에서 바깥으로 반전(mirror) + 외곽 fade-out.
+   scaleX(-1) 후 mask 방향: ::before는 to left, ::after는 to right (flip 보정). */
 #barracks-view::before { content: ''; position: absolute;
   left: 0; top: 0; bottom: 0; width: 28px;
   background: url('./img/barracks/bg_reboldoeux_day.png')
     0px center / calc(100svh - 56px) auto no-repeat;
-  transform: scaleX(-1); pointer-events: none; }
+  transform: scaleX(-1); pointer-events: none;
+  -webkit-mask-image: linear-gradient(to left, transparent 0%, black 70%);
+  mask-image: linear-gradient(to left, transparent 0%, black 70%); }
 #barracks-view::after { content: ''; position: absolute;
   right: 0; top: 0; bottom: 0; width: 28px;
   background: url('./img/barracks/bg_reboldoeux_day.png')
