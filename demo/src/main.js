@@ -4004,6 +4004,12 @@ async function boot() {
         if (cost) for (const [r, a] of Object.entries(cost)) gs.resources[r] = (gs.resources[r] || 0) + a;
       }
     }
+    // 테스트용: 전체 건축 비용 합산해서 자원 부족분 보충
+    const totalCost = {};
+    for (const cost of Object.values(FACILITY_BUILD_COST))
+      for (const [r, a] of Object.entries(cost)) totalCost[r] = (totalCost[r] || 0) + a;
+    for (const [r, needed] of Object.entries(totalCost))
+      if ((gs.resources[r] || 0) < needed) gs.resources[r] = needed;
     // 테스트용: 가문 Lv을 모든 시설 해금 가능 레벨(12)로 보장
     const maxUnlockLv = Math.max(...Object.values(FACILITY_UNLOCK_LV));
     if (!gs.family) gs.family = {};
