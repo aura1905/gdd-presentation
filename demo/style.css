@@ -976,9 +976,7 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   left: 0; top: 0; bottom: 0; width: 28px;
   background: url('./img/barracks/bg_reboldoeux_day.png')
     0px center / calc(100svh - 56px) auto no-repeat;
-  transform: scaleX(-1); pointer-events: none;
-  -webkit-mask-image: linear-gradient(to left, transparent 0%, black 70%);
-  mask-image: linear-gradient(to left, transparent 0%, black 70%); }
+  transform: scaleX(-1); pointer-events: none; }
 #barracks-view::after { content: ''; position: absolute;
   right: 0; top: 0; bottom: 0; width: 28px;
   background: url('./img/barracks/bg_reboldoeux_day.png')
