@@ -329,6 +329,104 @@
   .file-tree .file-exist { color: var(--text-dim); }
   .file-tree .comment { color: rgba(138,122,96,0.6); font-style: italic; }
 
+  /* ── Aseprite 태그 스펙 ── */
+  .tag-spec {
+    margin-top: 14px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .tag-spec-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .tag-info-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .tag-pill {
+    background: rgba(212,168,67,0.08);
+    border: 1px solid var(--gold-dim);
+    border-radius: 12px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-family: 'Consolas', monospace;
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .tag-pill .tp-label { color: var(--text-dim); font-size: 10px; font-family: sans-serif; }
+  .frame-dur-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .fdr {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+  .fdr .fdr-num {
+    font-family: 'Consolas', monospace;
+    color: var(--gold);
+    font-size: 11px;
+    width: 18px;
+    flex-shrink: 0;
+  }
+  .fdr .fdr-desc { color: var(--text-mid); flex: 1; font-size: 11px; }
+  .fdr .fdr-ms {
+    color: var(--cyan);
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .fdr.key-frame { border-color: var(--gold-dim); background: rgba(212,168,67,0.06); }
+  .fdr.pause-frame { border-color: rgba(74,204,212,0.3); background: rgba(74,204,212,0.04); }
+  .json-toggle {
+    font-size: 11px;
+    color: var(--text-dim);
+    cursor: pointer;
+    user-select: none;
+    margin-top: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: transparent;
+  }
+  .json-toggle:hover { border-color: var(--gold-dim); color: var(--text-mid); }
+  .json-block {
+    display: none;
+    margin-top: 8px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+    font-family: 'Consolas', monospace;
+    font-size: 11px;
+    line-height: 1.7;
+    color: var(--text-dim);
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .json-block.open { display: block; }
+
   /* ── 반응형 ── */
   @media (max-width: 720px) {
     .char-card { grid-template-columns: 1fr; }
@@ -491,6 +589,45 @@
           <div class="frame-box"><span>😋</span><span class="fn">f7</span></div>
         </div>
         <p style="font-size:11px;color:var(--text-dim);margin-top:8px;">▲ 골드 테두리 = 주요 액션 프레임</p>
+
+        <div class="tag-spec">
+          <div class="tag-spec-title">🎯 Aseprite 태그 설정</div>
+          <div class="tag-info-row">
+            <div class="tag-pill"><span class="tp-label">Tag</span> work</div>
+            <div class="tag-pill"><span class="tp-label">Frames</span> 0 → 7</div>
+            <div class="tag-pill"><span class="tp-label">Direction</span> Forward</div>
+            <div class="tag-pill"><span class="tp-label">Canvas</span> 216 × 208</div>
+          </div>
+          <div class="frame-dur-grid">
+            <div class="fdr"><span class="fdr-num">f0</span><span class="fdr-desc">허리 숙임</span><span class="fdr-ms">150ms</span></div>
+            <div class="fdr"><span class="fdr-num">f1</span><span class="fdr-desc">냄새 맡기</span><span class="fdr-ms">150ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f2</span><span class="fdr-desc">젓기 시작</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f3</span><span class="fdr-desc">젓기 중</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f4</span><span class="fdr-desc">젓기 중</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f5</span><span class="fdr-desc">젓기 끝</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr pause-frame"><span class="fdr-num">f6</span><span class="fdr-desc">멈춤/확인</span><span class="fdr-ms">200ms</span></div>
+            <div class="fdr pause-frame"><span class="fdr-num">f7</span><span class="fdr-desc">맛보기 ⏸</span><span class="fdr-ms">300ms</span></div>
+          </div>
+          <button class="json-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ frames.json 닫기':'▼ frames.json 보기'">▼ frames.json 보기</button>
+          <div class="json-block">{
+  "frames": {
+    "0": { "frame": { "x":    0, "y": 0, "w": 216, "h": 208 }, "duration": 150 },
+    "1": { "frame": { "x":  216, "y": 0, "w": 216, "h": 208 }, "duration": 150 },
+    "2": { "frame": { "x":  432, "y": 0, "w": 216, "h": 208 }, "duration": 100 },
+    "3": { "frame": { "x":  648, "y": 0, "w": 216, "h": 208 }, "duration": 100 },
+    "4": { "frame": { "x":  864, "y": 0, "w": 216, "h": 208 }, "duration": 100 },
+    "5": { "frame": { "x": 1080, "y": 0, "w": 216, "h": 208 }, "duration": 100 },
+    "6": { "frame": { "x": 1296, "y": 0, "w": 216, "h": 208 }, "duration": 200 },
+    "7": { "frame": { "x": 1512, "y": 0, "w": 216, "h": 208 }, "duration": 300 }
+  },
+  "meta": {
+    "size": { "w": 216, "h": 208 },
+    "frameCount": 8,
+    "tags": [ { "name": "work", "from": 0, "to": 7, "direction": "forward" } ],
+    "extracted": true
+  }
+}</div>
+        </div>
       </div>
     </div>
 
@@ -536,6 +673,41 @@
           <div class="frame-box"><span>✨</span><span class="fn">f3</span></div>
           <div class="frame-box"><span>👁</span><span class="fn">f4</span></div>
           <div class="frame-box"><span>🔄</span><span class="fn">f5</span></div>
+        </div>
+
+        <div class="tag-spec">
+          <div class="tag-spec-title">🎯 Aseprite 태그 설정</div>
+          <div class="tag-info-row">
+            <div class="tag-pill"><span class="tp-label">Tag</span> work</div>
+            <div class="tag-pill"><span class="tp-label">Frames</span> 0 → 5</div>
+            <div class="tag-pill"><span class="tp-label">Direction</span> Forward</div>
+            <div class="tag-pill"><span class="tp-label">Canvas</span> 202 × 188</div>
+          </div>
+          <div class="frame-dur-grid">
+            <div class="fdr"><span class="fdr-num">f0</span><span class="fdr-desc">망치 들어올림</span><span class="fdr-ms">120ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f1</span><span class="fdr-desc">타격 직전</span><span class="fdr-ms">60ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f2</span><span class="fdr-desc">타격 임팩트</span><span class="fdr-ms">60ms</span></div>
+            <div class="fdr"><span class="fdr-num">f3</span><span class="fdr-desc">반동/스파크</span><span class="fdr-ms">150ms</span></div>
+            <div class="fdr pause-frame"><span class="fdr-num">f4</span><span class="fdr-desc">작업물 확인 ⏸</span><span class="fdr-ms">200ms</span></div>
+            <div class="fdr"><span class="fdr-num">f5</span><span class="fdr-desc">다음 타격 준비</span><span class="fdr-ms">150ms</span></div>
+          </div>
+          <button class="json-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ frames.json 닫기':'▼ frames.json 보기'">▼ frames.json 보기</button>
+          <div class="json-block">{
+  "frames": {
+    "0": { "frame": { "x":    0, "y": 0, "w": 202, "h": 188 }, "duration": 120 },
+    "1": { "frame": { "x":  202, "y": 0, "w": 202, "h": 188 }, "duration":  60 },
+    "2": { "frame": { "x":  404, "y": 0, "w": 202, "h": 188 }, "duration":  60 },
+    "3": { "frame": { "x":  606, "y": 0, "w": 202, "h": 188 }, "duration": 150 },
+    "4": { "frame": { "x":  808, "y": 0, "w": 202, "h": 188 }, "duration": 200 },
+    "5": { "frame": { "x": 1010, "y": 0, "w": 202, "h": 188 }, "duration": 150 }
+  },
+  "meta": {
+    "size": { "w": 202, "h": 188 },
+    "frameCount": 6,
+    "tags": [ { "name": "work", "from": 0, "to": 5, "direction": "forward" } ],
+    "extracted": true
+  }
+}</div>
         </div>
       </div>
     </div>
@@ -584,6 +756,45 @@
           <div class="frame-box"><span>🫡</span><span class="fn">f6</span></div>
           <div class="frame-box"><span>🫡</span><span class="fn">f7</span></div>
         </div>
+
+        <div class="tag-spec">
+          <div class="tag-spec-title">🎯 Aseprite 태그 설정</div>
+          <div class="tag-info-row">
+            <div class="tag-pill"><span class="tp-label">Tag</span> work</div>
+            <div class="tag-pill"><span class="tp-label">Frames</span> 0 → 7</div>
+            <div class="tag-pill"><span class="tp-label">Direction</span> Forward</div>
+            <div class="tag-pill"><span class="tp-label">Canvas</span> 203 × 192</div>
+          </div>
+          <div class="frame-dur-grid">
+            <div class="fdr pause-frame"><span class="fdr-num">f0</span><span class="fdr-desc">팔짱 대기 ⏸</span><span class="fdr-ms">200ms</span></div>
+            <div class="fdr pause-frame"><span class="fdr-num">f1</span><span class="fdr-desc">팔짱 대기</span><span class="fdr-ms">200ms</span></div>
+            <div class="fdr pause-frame"><span class="fdr-num">f2</span><span class="fdr-desc">팔짱 대기</span><span class="fdr-ms">200ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f3</span><span class="fdr-desc">검 꺼내기</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f4</span><span class="fdr-desc">자세 시범</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f5</span><span class="fdr-desc">자세 유지</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr"><span class="fdr-num">f6</span><span class="fdr-desc">검 거두기</span><span class="fdr-ms">200ms</span></div>
+            <div class="fdr pause-frame"><span class="fdr-num">f7</span><span class="fdr-desc">끄덕임 ⏸</span><span class="fdr-ms">300ms</span></div>
+          </div>
+          <button class="json-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ frames.json 닫기':'▼ frames.json 보기'">▼ frames.json 보기</button>
+          <div class="json-block">{
+  "frames": {
+    "0": { "frame": { "x":    0, "y": 0, "w": 203, "h": 192 }, "duration": 200 },
+    "1": { "frame": { "x":  203, "y": 0, "w": 203, "h": 192 }, "duration": 200 },
+    "2": { "frame": { "x":  406, "y": 0, "w": 203, "h": 192 }, "duration": 200 },
+    "3": { "frame": { "x":  609, "y": 0, "w": 203, "h": 192 }, "duration": 100 },
+    "4": { "frame": { "x":  812, "y": 0, "w": 203, "h": 192 }, "duration": 100 },
+    "5": { "frame": { "x": 1015, "y": 0, "w": 203, "h": 192 }, "duration": 100 },
+    "6": { "frame": { "x": 1218, "y": 0, "w": 203, "h": 192 }, "duration": 200 },
+    "7": { "frame": { "x": 1421, "y": 0, "w": 203, "h": 192 }, "duration": 300 }
+  },
+  "meta": {
+    "size": { "w": 203, "h": 192 },
+    "frameCount": 8,
+    "tags": [ { "name": "work", "from": 0, "to": 7, "direction": "forward" } ],
+    "extracted": true
+  }
+}</div>
+        </div>
       </div>
     </div>
 
@@ -628,6 +839,41 @@
           <div class="frame-box key"><span>↙️</span><span class="fn">f3</span></div>
           <div class="frame-box key"><span>↙️</span><span class="fn">f4</span></div>
           <div class="frame-box"><span>🌅</span><span class="fn">f5</span></div>
+        </div>
+
+        <div class="tag-spec">
+          <div class="tag-spec-title">🎯 Aseprite 태그 설정</div>
+          <div class="tag-info-row">
+            <div class="tag-pill"><span class="tp-label">Tag</span> work</div>
+            <div class="tag-pill"><span class="tp-label">Frames</span> 0 → 5</div>
+            <div class="tag-pill"><span class="tp-label">Direction</span> Forward</div>
+            <div class="tag-pill"><span class="tp-label">Canvas</span> 196 × 183</div>
+          </div>
+          <div class="frame-dur-grid">
+            <div class="fdr"><span class="fdr-num">f0</span><span class="fdr-desc">약재 들기</span><span class="fdr-ms">150ms</span></div>
+            <div class="fdr pause-frame"><span class="fdr-num">f1</span><span class="fdr-desc">살펴보기 ⏸</span><span class="fdr-ms">200ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f2</span><span class="fdr-desc">분류 동작</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f3</span><span class="fdr-desc">분류 동작</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f4</span><span class="fdr-desc">내려놓기</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr pause-frame"><span class="fdr-num">f5</span><span class="fdr-desc">먼 곳 응시 ⏸</span><span class="fdr-ms">350ms</span></div>
+          </div>
+          <button class="json-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ frames.json 닫기':'▼ frames.json 보기'">▼ frames.json 보기</button>
+          <div class="json-block">{
+  "frames": {
+    "0": { "frame": { "x":   0, "y": 0, "w": 196, "h": 183 }, "duration": 150 },
+    "1": { "frame": { "x": 196, "y": 0, "w": 196, "h": 183 }, "duration": 200 },
+    "2": { "frame": { "x": 392, "y": 0, "w": 196, "h": 183 }, "duration": 100 },
+    "3": { "frame": { "x": 588, "y": 0, "w": 196, "h": 183 }, "duration": 100 },
+    "4": { "frame": { "x": 784, "y": 0, "w": 196, "h": 183 }, "duration": 100 },
+    "5": { "frame": { "x": 980, "y": 0, "w": 196, "h": 183 }, "duration": 350 }
+  },
+  "meta": {
+    "size": { "w": 196, "h": 183 },
+    "frameCount": 6,
+    "tags": [ { "name": "work", "from": 0, "to": 5, "direction": "forward" } ],
+    "extracted": true
+  }
+}</div>
         </div>
       </div>
     </div>
@@ -674,6 +920,41 @@
           <div class="frame-box key"><span>👆</span><span class="fn">f3</span></div>
           <div class="frame-box"><span>🤔</span><span class="fn">f4</span></div>
           <div class="frame-box"><span>📁</span><span class="fn">f5</span></div>
+        </div>
+
+        <div class="tag-spec">
+          <div class="tag-spec-title">🎯 Aseprite 태그 설정</div>
+          <div class="tag-info-row">
+            <div class="tag-pill"><span class="tp-label">Tag</span> work</div>
+            <div class="tag-pill"><span class="tp-label">Frames</span> 0 → 5</div>
+            <div class="tag-pill"><span class="tp-label">Direction</span> Forward</div>
+            <div class="tag-pill"><span class="tp-label">Canvas</span> 162 × 196</div>
+          </div>
+          <div class="frame-dur-grid">
+            <div class="fdr"><span class="fdr-num">f0</span><span class="fdr-desc">도면 펼침</span><span class="fdr-ms">150ms</span></div>
+            <div class="fdr pause-frame"><span class="fdr-num">f1</span><span class="fdr-desc">도면 확인 ⏸</span><span class="fdr-ms">150ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f2</span><span class="fdr-desc">손가락 짚기</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr key-frame"><span class="fdr-num">f3</span><span class="fdr-desc">손가락 짚기</span><span class="fdr-ms">100ms</span></div>
+            <div class="fdr pause-frame"><span class="fdr-num">f4</span><span class="fdr-desc">끄덕/의문 ⏸</span><span class="fdr-ms">250ms</span></div>
+            <div class="fdr"><span class="fdr-num">f5</span><span class="fdr-desc">도면 덮기</span><span class="fdr-ms">200ms</span></div>
+          </div>
+          <button class="json-toggle" onclick="this.nextElementSibling.classList.toggle('open');this.textContent=this.nextElementSibling.classList.contains('open')?'▲ frames.json 닫기':'▼ frames.json 보기'">▼ frames.json 보기</button>
+          <div class="json-block">{
+  "frames": {
+    "0": { "frame": { "x":   0, "y": 0, "w": 162, "h": 196 }, "duration": 150 },
+    "1": { "frame": { "x": 162, "y": 0, "w": 162, "h": 196 }, "duration": 150 },
+    "2": { "frame": { "x": 324, "y": 0, "w": 162, "h": 196 }, "duration": 100 },
+    "3": { "frame": { "x": 486, "y": 0, "w": 162, "h": 196 }, "duration": 100 },
+    "4": { "frame": { "x": 648, "y": 0, "w": 162, "h": 196 }, "duration": 250 },
+    "5": { "frame": { "x": 810, "y": 0, "w": 162, "h": 196 }, "duration": 200 }
+  },
+  "meta": {
+    "size": { "w": 162, "h": 196 },
+    "frameCount": 6,
+    "tags": [ { "name": "work", "from": 0, "to": 5, "direction": "forward" } ],
+    "extracted": true
+  }
+}</div>
         </div>
       </div>
     </div>
