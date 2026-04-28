@@ -3489,15 +3489,14 @@ async function boot() {
     }
     saveGridState();
   }
-  // 시설 visibility 3단계: locked(숨김) / available(고스트) / built(실물)
+  // 시설 visibility: built일 때만 표시. 고스트 없음 — 건물은 건축 후에만 등장.
   function applyFacilityVisibility() {
     for (const id of Object.keys(BUILDING_DEF)) {
       const el    = document.querySelector(`#barracks-view .bk-building[data-bld="${id}"]`);
       const ghost = document.querySelector(`#barracks-view .bk-building-ghost[data-ghost="${id}"]`);
-      const unlocked = isFacilityUnlocked(id);
-      const built    = isFacilityBuilt(id);
-      if (el)    el.hidden    = !(unlocked && built);
-      if (ghost) ghost.hidden = !(unlocked && !built);
+      const built = isFacilityBuilt(id);
+      if (el)    el.hidden = !built;
+      if (ghost) ghost.hidden = true;  // 고스트 항상 숨김
     }
   }
   // 건물 근처 N cell 반경의 walkable cells 반환 (배치 캐릭터 wander용)
