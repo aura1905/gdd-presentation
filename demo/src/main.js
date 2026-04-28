@@ -3996,11 +3996,21 @@ async function boot() {
 
   // # 버튼: visible + picker 함께 토글 + paint 패널 표시
   document.getElementById("btn-reset-construction")?.addEventListener("click", () => {
+    // 건축된 시설 비용 환불
+    const gs = getState();
+    for (const [id, built] of Object.entries(barracksConstructed)) {
+      if (built) {
+        const cost = FACILITY_BUILD_COST[id];
+        if (cost) for (const [r, a] of Object.entries(cost)) gs.resources[r] = (gs.resources[r] || 0) + a;
+      }
+    }
+    saveState(gs);
     for (const id of Object.keys(barracksConstructed)) barracksConstructed[id] = false;
     saveConstructed();
     applyFacilityVisibility();
     setupBarracksGrid();
-    showToast("🔄 건축 초기화", "warn");
+    updateHud();
+    showToast("🔄 건축 초기화 (비용 환불)", "warn");
     setTimeout(openBuildPanel, 300);
   });
 
