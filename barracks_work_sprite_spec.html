@@ -342,37 +342,38 @@
 
   <!-- ── 헤더 ── -->
   <div class="page-header">
-    <h1>🎨 배럭 캐릭터 작업 모션 에셋 명세서</h1>
-    <div class="subtitle">Barracks Character Work Animation — Art Asset Order Specification</div>
+    <h1>🎨 배럭 그래픽 에셋 명세서</h1>
+    <div class="subtitle">Barracks Art Asset Order Specification — 캐릭터 작업모션 + 성벽/관저</div>
   </div>
   <div class="meta">
-    <span>버전 <strong>v1.0</strong></span>
+    <span>버전 <strong>v1.1</strong></span>
     <span>작성일 2026.04.28</span>
     <span class="tag">그래픽 발주</span>
     <span class="tag">배럭 라이프</span>
     <span class="tag">캐릭터 스프라이트</span>
+    <span class="tag">성벽/구조물</span>
   </div>
 
   <!-- ── 개요 ── -->
   <div class="summary-grid">
     <div class="sum-card">
       <div class="num">5</div>
-      <div class="label">발주 캐릭터</div>
+      <div class="label">캐릭터 work 스프라이트</div>
     </div>
     <div class="sum-card">
-      <div class="num">5</div>
-      <div class="label">work 스프라이트 시트</div>
+      <div class="num">2</div>
+      <div class="label">성벽/관문 Tier 신규<br><span style="font-size:11px;color:var(--text-dim)">(T1·T2, T0 기존)</span></div>
     </div>
     <div class="sum-card">
-      <div class="num">6~8</div>
-      <div class="label">프레임 수 (캐릭터별)</div>
+      <div class="num">1</div>
+      <div class="label">관저/성 건물</div>
     </div>
     <div class="sum-card">
-      <div class="num">3</div>
-      <div class="label">배치 시설 종류</div>
+      <div class="num">8</div>
+      <div class="label">총 신규 에셋</div>
     </div>
     <div class="sum-card">
-      <div class="num">P1</div>
+      <div class="num">P1/P2</div>
       <div class="label">우선순위</div>
     </div>
   </div>
@@ -801,6 +802,326 @@
     태그명은 반드시 <code style="font-family:monospace;font-size:12px;">"work"</code>으로 지정해주세요.
   </div>
 
+  <!-- ══════════════════════════════════════════════════ -->
+  <!-- ── 성벽/관문 ── -->
+  <!-- ══════════════════════════════════════════════════ -->
+
+  <h2><span class="h2-num">07</span> 성벽/관문 에셋 (Tier 3단계)</h2>
+
+  <p style="font-size:14px;color:var(--text-mid);line-height:1.8;margin-bottom:14px;">
+    배럭 화면 전경(foreground)에 위치하는 성벽+관문 이미지입니다.
+    거점 방어 시스템의 <strong style="color:var(--text);">성벽 강화 레벨</strong>에 따라 외형이 변화합니다.
+    현재 <code style="font-family:monospace;font-size:12px;">fg_front_wall_gate.png</code>(927×513)가 T0으로 존재하며,
+    <strong style="color:var(--gold-bright);">T1·T2 2장 신규 발주</strong>합니다.
+  </p>
+
+  <!-- Tier 카드 3장 -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin:20px 0 28px;">
+
+    <!-- T0 -->
+    <div class="spec-box" style="border-color:#3a3020;opacity:0.7;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="background:#3a3020;color:#8a7060;font-size:12px;font-weight:700;padding:3px 10px;border-radius:10px;">T0 — 기존</div>
+        <span style="font-size:14px;font-weight:700;color:var(--text-mid);">나무 방책</span>
+      </div>
+      <canvas id="cv-gate-t0" width="240" height="133" style="width:100%;border-radius:6px;background:#0a0a0f;display:block;"></canvas>
+      <div style="font-size:11px;color:var(--text-dim);margin-top:8px;text-align:center;">현재 fg_front_wall_gate.png (참고용)</div>
+      <div class="spec-row" style="margin-top:12px;">
+        <div class="spec-key">적용 레벨</div>
+        <div class="spec-val">성벽 Lv <span class="hl">1 ~ 6</span></div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">소재 컨셉</div>
+        <div class="spec-val">통나무 방책 + 목조 관문 + 흙 보루</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">분위기</div>
+        <div class="spec-val">초기 개척지 — 거칠고 임시방편 느낌</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">파일명</div>
+        <div class="spec-val"><code>fg_front_wall_t0.png</code> <span style="color:var(--green);font-size:11px;">✓ 기존</span></div>
+      </div>
+    </div>
+
+    <!-- T1 -->
+    <div class="spec-box" style="border-color:var(--gold-dim);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="background:rgba(212,168,67,0.15);color:var(--gold);font-size:12px;font-weight:700;padding:3px 10px;border-radius:10px;border:1px solid var(--gold-dim);">T1 — 신규</div>
+        <span style="font-size:14px;font-weight:700;color:var(--text);">석조 성벽</span>
+      </div>
+      <div style="width:100%;height:133px;border-radius:6px;background:rgba(212,168,67,0.04);border:1px dashed var(--gold-dim);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
+        <span style="font-size:28px;">🧱</span>
+        <span style="font-size:12px;color:var(--text-dim);">발주 예정</span>
+      </div>
+      <div class="spec-row" style="margin-top:12px;">
+        <div class="spec-key">적용 레벨</div>
+        <div class="spec-val">성벽 Lv <span class="hl">7 ~ 13</span></div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">소재 컨셉</div>
+        <div class="spec-val">다듬은 석재 성벽 + 철제 격자 관문 + 성문 아치</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">디테일 추가</div>
+        <div class="spec-val">성벽 위 통행로 실루엣, 성문 양옆 작은 기둥, 이끼/풍화 텍스처</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">분위기</div>
+        <div class="spec-val">안정적인 거점 — 정착·번영 느낌</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">크기</div>
+        <div class="spec-val">927 × 513 px (T0와 동일)</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">파일명</div>
+        <div class="spec-val"><code>fg_front_wall_t1.png</code> <span style="color:var(--red);font-size:11px;">★ 신규</span></div>
+      </div>
+    </div>
+
+    <!-- T2 -->
+    <div class="spec-box" style="border-color:rgba(155,111,212,0.5);">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="background:rgba(155,111,212,0.15);color:#c084fc;font-size:12px;font-weight:700;padding:3px 10px;border-radius:10px;border:1px solid rgba(155,111,212,0.4);">T2 — 신규</div>
+        <span style="font-size:14px;font-weight:700;color:var(--text);">강화 요새 성곽</span>
+      </div>
+      <div style="width:100%;height:133px;border-radius:6px;background:rgba(155,111,212,0.04);border:1px dashed rgba(155,111,212,0.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;">
+        <span style="font-size:28px;">🏰</span>
+        <span style="font-size:12px;color:var(--text-dim);">발주 예정</span>
+      </div>
+      <div class="spec-row" style="margin-top:12px;">
+        <div class="spec-key">적용 레벨</div>
+        <div class="spec-val">성벽 Lv <span class="hl">14 ~ 20</span></div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">소재 컨셉</div>
+        <div class="spec-val">강화 석성 + 흉벽(총안) + 양쪽 망루 + 도개교 실루엣</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">디테일 추가</div>
+        <div class="spec-key" style="width:auto;flex:1;">깃발 2개 (좌우 망루 상단), 문장 문양, 횃불 홀더 2개 — 파티클은 코드 처리</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">분위기</div>
+        <div class="spec-val">난공불락 요새 — 위압감·장엄함</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">크기</div>
+        <div class="spec-val">927 × 513 px (T0와 동일)</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">파일명</div>
+        <div class="spec-val"><code>fg_front_wall_t2.png</code> <span style="color:var(--red);font-size:11px;">★ 신규</span></div>
+      </div>
+    </div>
+
+  </div><!-- /tier cards -->
+
+  <!-- 성벽 공통 규격 -->
+  <h3 style="color:var(--gold);margin-top:0;">공통 아트 규격</h3>
+  <div class="spec-box">
+    <div class="spec-row">
+      <div class="spec-key">이미지 크기</div>
+      <div class="spec-val"><span class="hl">927 × 513 px</span> (기존 T0 동일. 변경 금지)</div>
+    </div>
+    <div class="spec-row">
+      <div class="spec-key">시점</div>
+      <div class="spec-val">정면 가운데 게이트 기준. 원근감 최소화 (아이소메트릭 flat 느낌)</div>
+    </div>
+    <div class="spec-row">
+      <div class="spec-key">배치 역할</div>
+      <div class="spec-val">배럭 화면 최전경 오버레이 — 배경·건물·캐릭터보다 앞 레이어</div>
+    </div>
+    <div class="spec-row">
+      <div class="spec-key">투명도</div>
+      <div class="spec-val">이미지 하단 25% = 알파 0 (캐릭터 발이 성벽 앞으로 나올 수 있도록)</div>
+    </div>
+    <div class="spec-row">
+      <div class="spec-key">포맷</div>
+      <div class="spec-val">PNG, 알파채널 있음</div>
+    </div>
+    <div class="spec-row">
+      <div class="spec-key">색감 베이스</div>
+      <div class="spec-val">리볼도외 배경과 어우러지는 따뜻한 중세 톤 (석회색 / 갈색 계열)</div>
+    </div>
+    <div class="spec-row">
+      <div class="spec-key">Tier 간 연속성</div>
+      <div class="spec-val">T0→T1→T2로 갈수록 <strong>같은 위치</strong>에서 소재·규모만 업그레이드. 게이트 중앙 위치는 고정</div>
+    </div>
+  </div>
+
+  <!-- ── 관저/성 ── -->
+  <h2><span class="h2-num">08</span> 관저/성 건물 에셋 (장식용)</h2>
+
+  <p style="font-size:14px;color:var(--text-mid);line-height:1.8;margin-bottom:14px;">
+    배럭 배경 중앙 상단에 위치하는 <strong style="color:var(--text);">장식용 건물</strong>입니다.
+    기능은 없으나 탭하면 <strong style="color:var(--text);">거점 관리 팝업</strong>(방어·확장·경영)이 열립니다.
+    GDD §3-1 "관저/성 (장식용)" — 현재 미발주.
+  </p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    <div class="spec-box">
+      <h3 style="color:var(--gold-bright);margin-top:0;margin-bottom:12px;">아트 방향</h3>
+      <div class="spec-row">
+        <div class="spec-key">컨셉</div>
+        <div class="spec-val">GE 원작의 리볼도외 영주 저택 — 중세 식민지풍 석조 건물 + 종탑 or 깃대</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">크기</div>
+        <div class="spec-val">300 × 350 px (건물 중 가장 크게)</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">배치 위치</div>
+        <div class="spec-val">배럭 화면 중앙 상단 (주방·공방·훈련장 뒤 중심부)</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">Tier</div>
+        <div class="spec-val">단일 (1장). 레벨 업그레이드 없음</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">인터랙션 힌트</div>
+        <div class="spec-val">건물 위 작은 깃발 또는 휘장 (탭 가능 표시 — 코드 처리)</div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">파일명</div>
+        <div class="spec-val"><code>bld_manor.png</code> <span style="color:var(--red);font-size:11px;">★ 신규</span></div>
+      </div>
+      <div class="spec-row">
+        <div class="spec-key">납품 경로</div>
+        <div class="spec-val"><code>demo/img/barracks/bld_manor.png</code></div>
+      </div>
+    </div>
+    <div class="spec-box" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;">
+      <div style="width:120px;height:140px;border-radius:8px;background:rgba(212,168,67,0.04);border:1px dashed var(--gold-dim);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;">
+        <span style="font-size:36px;">🏛️</span>
+        <span style="font-size:11px;color:var(--text-dim);">발주 예정</span>
+      </div>
+      <p style="font-size:12px;color:var(--text-dim);text-align:center;line-height:1.6;">300 × 350 px<br>쿼터뷰 45° / PNG 투명배경</p>
+    </div>
+  </div>
+
+  <!-- ── 전체 에셋 체크리스트 ── -->
+  <h2><span class="h2-num">09</span> 전체 배럭 에셋 체크리스트</h2>
+  <table class="ref-table">
+    <thead>
+      <tr><th>카테고리</th><th>에셋명</th><th>파일</th><th>크기</th><th>상태</th><th>우선</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td rowspan="2">배경</td>
+        <td>리볼도외 배경 (낮)</td>
+        <td><code>bg_reboldoeux_day.png</code></td>
+        <td>1024×1024</td>
+        <td style="color:var(--green);">✅ 완료</td>
+        <td>P0</td>
+      </tr>
+      <tr>
+        <td>리볼도외 배경 (저녁/밤)</td>
+        <td><code>bg_reboldoeux_eve/night.png</code></td>
+        <td>1024×1024</td>
+        <td style="color:var(--text-dim);">⏸ 보류</td>
+        <td>P3</td>
+      </tr>
+      <tr>
+        <td rowspan="9">건물 시설</td>
+        <td>주방 T0 / T1 / T2</td>
+        <td><code>bld_kitchen_t0~t2.png</code></td>
+        <td>1024×1024</td>
+        <td style="color:var(--green);">✅ 완료</td>
+        <td>P0</td>
+      </tr>
+      <tr>
+        <td>공방 T0 / T1 / T2</td>
+        <td><code>bld_smithy_t0~t2.png</code></td>
+        <td>1024×1024</td>
+        <td style="color:var(--green);">✅ 완료</td>
+        <td>P0</td>
+      </tr>
+      <tr>
+        <td>훈련장 T0 / T1 / T2</td>
+        <td><code>bld_training_t0~t2.png</code></td>
+        <td>1024×1024</td>
+        <td style="color:var(--green);">✅ 완료</td>
+        <td>P0</td>
+      </tr>
+      <tr>
+        <td>관저/성 (장식용)</td>
+        <td><code>bld_manor.png</code></td>
+        <td>300×350</td>
+        <td style="color:var(--red);">❌ 미발주</td>
+        <td>P1</td>
+      </tr>
+      <tr>
+        <td colspan="5" style="height:4px;background:rgba(58,48,32,0.3);padding:0;"></td>
+      </tr>
+      <tr>
+        <td rowspan="3">성벽/관문</td>
+        <td>성벽+관문 T0 (목조)</td>
+        <td><code>fg_front_wall_t0.png</code></td>
+        <td>927×513</td>
+        <td style="color:var(--green);">✅ 완료</td>
+        <td>P0</td>
+      </tr>
+      <tr>
+        <td>성벽+관문 T1 (석조)</td>
+        <td><code>fg_front_wall_t1.png</code></td>
+        <td>927×513</td>
+        <td style="color:var(--red);">❌ 미발주</td>
+        <td>P1</td>
+      </tr>
+      <tr>
+        <td>성벽+관문 T2 (강화 요새)</td>
+        <td><code>fg_front_wall_t2.png</code></td>
+        <td>927×513</td>
+        <td style="color:var(--red);">❌ 미발주</td>
+        <td>P1</td>
+      </tr>
+      <tr>
+        <td colspan="5" style="height:4px;background:rgba(58,48,32,0.3);padding:0;"></td>
+      </tr>
+      <tr>
+        <td rowspan="5">캐릭터 work</td>
+        <td>판필로 work (요리)</td>
+        <td><code>Panfilo_M/work_sprite.png</code></td>
+        <td>1728×208</td>
+        <td style="color:var(--red);">❌ 미발주</td>
+        <td>P1</td>
+      </tr>
+      <tr>
+        <td>앙드레 work (망치질)</td>
+        <td><code>Andre_M/work_sprite.png</code></td>
+        <td>1212×188</td>
+        <td style="color:var(--red);">❌ 미발주</td>
+        <td>P1</td>
+      </tr>
+      <tr>
+        <td>다리아 work (검술 교습)</td>
+        <td><code>Daria_F/work_sprite.png</code></td>
+        <td>1624×192</td>
+        <td style="color:var(--red);">❌ 미발주</td>
+        <td>P1</td>
+      </tr>
+      <tr>
+        <td>에밀리아 work (허브 조제)</td>
+        <td><code>Emilia_F/work_sprite.png</code></td>
+        <td>1176×183</td>
+        <td style="color:var(--red);">❌ 미발주</td>
+        <td>P2</td>
+      </tr>
+      <tr>
+        <td>캐서린 work (설계 검토)</td>
+        <td><code>Catherine_F/work_sprite.png</code></td>
+        <td>972×196</td>
+        <td style="color:var(--red);">❌ 미발주</td>
+        <td>P2</td>
+      </tr>
+    </tbody>
+  </table>
+  <div style="margin-top:10px;font-size:12px;color:var(--text-dim);">
+    ✅ 완료 9장 &nbsp;|&nbsp; ❌ 미발주 <strong style="color:var(--gold);">8장</strong> (P1 6장 + P2 2장)
+  </div>
+
 </div><!-- /container -->
 
 <!-- ── 스프라이트 프리뷰 렌더링 ── -->
@@ -841,6 +1162,28 @@ function drawSprite(spec) {
 }
 
 SPRITES.forEach(drawSprite);
+
+// T0 게이트 프리뷰
+(function() {
+  const canvas = document.getElementById("cv-gate-t0");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const img = new Image();
+  img.onload = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const scale = Math.min(canvas.width / img.naturalWidth, canvas.height / img.naturalHeight);
+    const dw = img.naturalWidth * scale;
+    const dh = img.naturalHeight * scale;
+    ctx.drawImage(img, (canvas.width-dw)/2, (canvas.height-dh)/2, dw, dh);
+  };
+  img.onerror = () => {
+    ctx.fillStyle = "rgba(212,168,67,0.06)";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle="#8a7a60"; ctx.font="11px sans-serif"; ctx.textAlign="center";
+    ctx.fillText("fg_front_wall_gate.png", canvas.width/2, canvas.height/2);
+  };
+  img.src = "./demo/img/barracks/fg_front_wall_gate.png";
+})();
 </script>
 
 </body>
