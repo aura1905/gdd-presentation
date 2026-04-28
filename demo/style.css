@@ -1141,9 +1141,15 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   pointer-events: none;
   filter: drop-shadow(0 -3px 6px rgba(0,0,0,0.3)); }
 
+@keyframes bk-pop {
+  0%   { transform: translate(-50%, -100%) scale(0); opacity: 0; }
+  70%  { transform: translate(-50%, -100%) scale(1.14); opacity: 1; }
+  100% { transform: translate(-50%, -100%) scale(1); opacity: 1; }
+}
 .bk-building { position: absolute; cursor: pointer; z-index: 2;
   transition: transform 0.18s; transform-origin: 50% 100%;
   filter: drop-shadow(0 5px 8px rgba(0,0,0,0.4)); }
+.bk-building.pop { animation: bk-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 .bk-building:hover { transform: scale(1.06); z-index: 3; }
 .bk-building:active { transform: scale(1.02); }
 .bk-building img { display: block; width: 100%; height: auto;

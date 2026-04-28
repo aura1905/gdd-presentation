@@ -3687,6 +3687,9 @@ async function boot() {
     if (!productionTimer) productionTimer = setInterval(tickProduction, PRODUCTION_TICK_MS);
     // #tab-dock active 동기화
     document.querySelectorAll('#tab-dock button').forEach(b => b.classList.toggle('active', b.dataset.tab === 'barracks'));
+    // 건물이 하나도 없으면 건축 패널 자동 오픈 — 빈 배럭 진입 시 가이드
+    const hasAnyBuilt = Object.values(barracksConstructed).some(v => v);
+    if (!hasAnyBuilt) setTimeout(openBuildPanel, 400);
   }
   function closeBarracks() {
     if (!barracksView) return;
@@ -3998,6 +4001,7 @@ async function boot() {
     applyFacilityVisibility();
     setupBarracksGrid();
     showToast("🔄 건축 초기화", "warn");
+    setTimeout(openBuildPanel, 300);
   });
 
   document.getElementById("btn-toggle-grid")?.addEventListener("click", (e) => {
@@ -4229,6 +4233,14 @@ async function boot() {
     setupBarracksGrid();
     setBuildingTier(bld, barracksTier[bld] || 0);
     updateHud();
+    // 건물 등장 pop 애니메이션
+    const bldEl = barracksView.querySelector(`.bk-building[data-bld="${bld}"]`);
+    if (bldEl) {
+      bldEl.classList.remove("pop");
+      void bldEl.offsetWidth; // reflow
+      bldEl.classList.add("pop");
+      bldEl.addEventListener("animationend", () => bldEl.classList.remove("pop"), { once: true });
+    }
     showToast(`🏗 ${FACILITY_LABEL[bld]} 건축 완료!`, "exp");
     renderBuildList();
   }
