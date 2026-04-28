@@ -967,8 +967,8 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
    ───────────────────────────────────────── */
 #barracks-view { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 100;
   display: flex; align-items: center; justify-content: center;
-  /* letterbox 양옆 — 잔디/하늘 톤으로 자연스럽게 (검은색 답답 X) */
-  background: linear-gradient(180deg, #88c5e8 0%, #88c5e8 35%, #b8c878 60%, #88a858 100%);
+  /* letterbox 양옆 — 같은 배경 이미지를 cover로 깔아 seamless하게 */
+  background: url('./img/barracks/bg_reboldoeux_day.png') center/cover no-repeat;
   animation: bk-fade 0.25s ease; overflow: hidden; }
 #barracks-view[hidden] { display: none !important; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
