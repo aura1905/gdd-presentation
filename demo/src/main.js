@@ -3242,6 +3242,31 @@ async function boot() {
     const lv = getState()?.family?.level || 1;
     return lv >= (FACILITY_UNLOCK_LV[bld] || 0);
   }
+  // 건축 비용 (최초 1회) — GDD 미정의, 첫 업그레이드 비용 기준 약 50~60% 수준
+  const FACILITY_BUILD_COST = {
+    kitchen:  { wood: 800,  vis: 1500 },
+    training: { wood: 1000, vis: 2500 },
+    smithy:   { wood: 1500, iron: 800, vis: 2500 },
+  };
+  // 건축 완료 상태 (localStorage) — true = 지어진 상태
+  const CONSTRUCTED_KEY = "barracks_constructed_v1";
+  let barracksConstructed = { kitchen: false, smithy: false, training: false };
+  (() => {
+    try {
+      const saved = localStorage.getItem(CONSTRUCTED_KEY);
+      if (saved) { Object.assign(barracksConstructed, JSON.parse(saved)); return; }
+      // 마이그레이션: 이전 세션에 tier 저장이 있으면 건축 완료로 간주
+      const tier = localStorage.getItem(BARRACKS_TIER_KEY);
+      if (tier) {
+        for (const id of Object.keys(barracksConstructed)) barracksConstructed[id] = true;
+        localStorage.setItem(CONSTRUCTED_KEY, JSON.stringify(barracksConstructed));
+      }
+    } catch (e) {}
+  })();
+  function saveConstructed() {
+    try { localStorage.setItem(CONSTRUCTED_KEY, JSON.stringify(barracksConstructed)); } catch (e) {}
+  }
+  function isFacilityBuilt(bld) { return !!barracksConstructed[bld]; }
   const RES_LABEL = { gold: "💰", grain: "🌾", iron: "⛏️", wood: "🌲", stone: "🪨", herbs: "🌿", vis: "✨", gem: "💎", scroll: "📜", rp: "📘", txp: "🎓" };
 
   // ─── 자원 생산 시스템 (시설 Lv 기반) ───
@@ -3470,12 +3495,15 @@ async function boot() {
     }
     saveGridState();
   }
-  // 시설 visibility 적용 (해금 안 된 시설은 hidden)
+  // 시설 visibility 3단계: locked(숨김) / available(고스트) / built(실물)
   function applyFacilityVisibility() {
     for (const id of Object.keys(BUILDING_DEF)) {
-      const el = document.querySelector(`#barracks-view .bk-building[data-bld="${id}"]`);
-      if (!el) continue;
-      el.style.display = isFacilityUnlocked(id) ? "" : "none";
+      const el    = document.querySelector(`#barracks-view .bk-building[data-bld="${id}"]`);
+      const ghost = document.querySelector(`#barracks-view .bk-building-ghost[data-ghost="${id}"]`);
+      const unlocked = isFacilityUnlocked(id);
+      const built    = isFacilityBuilt(id);
+      if (el)    el.hidden    = !(unlocked && built);
+      if (ghost) ghost.hidden = !(unlocked && !built);
     }
   }
   // 건물 근처 N cell 반경의 walkable cells 반환 (배치 캐릭터 wander용)
@@ -4117,6 +4145,78 @@ async function boot() {
   }
   document.querySelectorAll("#barracks-view .bk-building").forEach(el => {
     el.addEventListener("click", () => openBuildingPanel(el.dataset.bld));
+  });
+
+  // ─── 건축 패널 (시설 최초 건설 UI) ───
+  function openBuildPanel() {
+    renderBuildList();
+    document.getElementById("bk-build-panel")?.classList.add("open");
+  }
+  function closeBuildPanel() {
+    document.getElementById("bk-build-panel")?.classList.remove("open");
+  }
+  function renderBuildList() {
+    const list = document.getElementById("bk-build-list");
+    if (!list) return;
+    const famLv = getState()?.family?.level || 1;
+    list.innerHTML = Object.keys(BUILDING_DEF).map(bld => {
+      const label     = FACILITY_LABEL[bld];
+      const unlockLv  = FACILITY_UNLOCK_LV[bld];
+      const built     = isFacilityBuilt(bld);
+      const unlocked  = famLv >= unlockLv;
+      const cost      = FACILITY_BUILD_COST[bld];
+      const canAfford = !cost || canAffordCost(cost);
+      let subHtml = `<div class="bk-build-card-sub">${FACILITY_JOB[bld]} · 가문 Lv.${unlockLv} 해금</div>`;
+      let costHtml = "";
+      let actionHtml = "";
+      if (built) {
+        actionHtml = `<span class="bk-build-badge done">✅ 완료</span>`;
+      } else if (!unlocked) {
+        subHtml += `<div class="bk-build-card-sub" style="color:#f90">Lv.${unlockLv} 필요 (현재 ${famLv})</div>`;
+        actionHtml = `<span class="bk-build-badge locked">🔒 잠김</span>`;
+      } else {
+        costHtml = `<div class="bk-build-card-cost ${canAfford ? "" : "short"}">${formatCost(cost)}</div>`;
+        actionHtml = `<button class="bk-build-btn" data-build="${bld}" ${canAfford ? "" : "disabled"}>
+          🏗 건축
+        </button>`;
+      }
+      return `<div class="bk-build-card ${built ? "built" : ""}">
+        <div class="bk-build-card-icon">${label.split(" ")[0]}</div>
+        <div class="bk-build-card-info">
+          <div class="bk-build-card-name">${label.split(" ").slice(1).join(" ")}</div>
+          ${subHtml}${costHtml}
+        </div>
+        <div class="bk-build-card-action">${actionHtml}</div>
+      </div>`;
+    }).join("");
+    list.querySelectorAll("[data-build]").forEach(btn => {
+      btn.addEventListener("click", () => constructBuilding(btn.dataset.build));
+    });
+  }
+  function constructBuilding(bld) {
+    const cost = FACILITY_BUILD_COST[bld];
+    if (!canAffordCost(cost)) { showToast("자원 부족", "warn"); return; }
+    spendCost(cost);
+    barracksConstructed[bld] = true;
+    saveConstructed();
+    applyFacilityVisibility();
+    setupBarracksGrid();
+    setBuildingTier(bld, barracksTier[bld] || 0);
+    updateHud();
+    showToast(`🏗 ${FACILITY_LABEL[bld]} 건축 완료!`, "exp");
+    renderBuildList();
+  }
+
+  // 고스트 클릭 → 건축 패널 열기
+  document.querySelectorAll("#barracks-view .bk-building-ghost").forEach(el => {
+    el.addEventListener("click", openBuildPanel);
+  });
+  // 버튼 와이어링
+  document.getElementById("bk-action-build")?.addEventListener("click", openBuildPanel);
+  document.getElementById("bk-build-panel-close")?.addEventListener("click", closeBuildPanel);
+  // 패널 바깥(배경) 클릭 시 닫기
+  document.getElementById("bk-build-panel")?.addEventListener("click", e => {
+    if (e.target === e.currentTarget) closeBuildPanel();
   });
 
   function renderOutpostList() {

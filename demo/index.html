@@ -93,6 +93,20 @@
         <img class="bk-bg" src="./img/barracks/bg_reboldoeux_day.png?v=bright" alt="" />
         <!-- 건물 3개 — 광장 cobblestone 영역(가로 14~86%, 세로 35~80%) 안 배치.
              frame 1:1 기준 width %, 9:16 시점 대비 약 56% 비율로 축소. -->
+        <!-- 건축 고스트 — 가문 Lv 도달했지만 아직 안 지은 시설 (JS가 hidden 제어) -->
+        <div class="bk-building-ghost" data-ghost="kitchen" style="left:18%; bottom:38%; width:20%;" hidden>
+          <img src="./img/barracks/bld_kitchen_t0.png" alt="" />
+          <span class="bk-ghost-badge">🏗 건축 가능</span>
+        </div>
+        <div class="bk-building-ghost" data-ghost="smithy" style="left:40%; bottom:42%; width:20%;" hidden>
+          <img src="./img/barracks/bld_smithy_t0.png" alt="" />
+          <span class="bk-ghost-badge">🏗 건축 가능</span>
+        </div>
+        <div class="bk-building-ghost" data-ghost="training" style="right:18%; bottom:38%; width:20%;" hidden>
+          <img src="./img/barracks/bld_training_t0.png" alt="" />
+          <span class="bk-ghost-badge">🏗 건축 가능</span>
+        </div>
+        <!-- 실제 건물 (건축 완료 시 표시) -->
         <div class="bk-building" data-bld="kitchen" style="left:18%; bottom:38%; width:20%;">
           <img src="./img/barracks/bld_kitchen_t0.png" alt="🍳 주방" />
           <span class="bk-bld-label">🍳 주방 <span class="bk-bld-lv">Lv 1</span></span>
@@ -107,12 +121,24 @@
         </div>
         <!-- 앞쪽 성벽 + 게이트 (foreground) — 가로 wide, 하단 위치 -->
         <img class="bk-frontwall" src="./img/barracks/fg_front_wall_gate.png?v=newgate" alt="" />
+        <!-- 건축 패널 — 하단 슬라이드업 -->
+        <div id="bk-build-panel" class="bk-build-panel">
+          <div class="bk-build-panel-head">
+            <span class="bk-build-panel-title">🏗 시설 건축</span>
+            <button type="button" class="bk-build-panel-close" id="bk-build-panel-close">✕</button>
+          </div>
+          <div id="bk-build-list"></div>
+        </div>
       </div>
 
       <!-- 하단 광장 연장 (캐릭터 wander 영역) -->
       <div class="bk-floor">
         <!-- 빠른 액션 바 (전체 수거 / 시설 관리) — GDD §2-3 -->
         <div class="bk-actionbar">
+          <button type="button" class="bk-action" id="bk-action-build" style="margin-right:auto">
+            <span class="bk-action-icon">🏗</span>
+            <span class="bk-action-label">건축</span>
+          </button>
           <button type="button" class="bk-action" id="bk-action-collect">
             <span class="bk-action-icon">📦</span>
             <span class="bk-action-label">전체 수거</span>

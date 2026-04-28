@@ -1192,6 +1192,61 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   /* 정확한 px 사이즈는 JS에서 frame 데이터로 설정 */ }
 .bk-char.flip { transform: scaleX(-1); }
 
+/* 건축 고스트 — 가문 Lv 도달, 아직 안 지은 시설 자리 표시 */
+.bk-building-ghost { position: absolute; z-index: 2; cursor: pointer;
+  transform-origin: 50% 100%; transition: opacity 0.2s, transform 0.18s;
+  opacity: 0.42; filter: grayscale(0.5) drop-shadow(0 0 10px rgba(255,212,82,0.5)); }
+.bk-building-ghost:hover { opacity: 0.65; transform: scale(1.04); }
+.bk-building-ghost img { display: block; width: 100%; height: auto; pointer-events: none; }
+.bk-ghost-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+  background: rgba(30,20,8,0.92); color: #ffd452;
+  border: 1px solid rgba(255,212,82,0.55); border-radius: 10px;
+  padding: 2px 8px; font-size: 10px; font-weight: bold; white-space: nowrap;
+  pointer-events: none; }
+
+/* 건축 패널 — 하단 슬라이드업 (쿠키런 킹덤 빌드 메뉴 참고) */
+.bk-build-panel { position: absolute; left: 0; right: 0; bottom: 0; z-index: 200;
+  background: linear-gradient(180deg, #2a1f12, #1a1208);
+  border-top: 2px solid rgba(255,212,82,0.5);
+  border-radius: 16px 16px 0 0;
+  padding: 14px 14px 20px;
+  box-shadow: 0 -8px 24px rgba(0,0,0,0.6);
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(0.25, 1, 0.5, 1);
+  overflow-y: auto; max-height: 72%; }
+.bk-build-panel.open { transform: translateY(0); }
+.bk-build-panel-head { display: flex; align-items: center;
+  justify-content: space-between; margin-bottom: 12px; }
+.bk-build-panel-title { color: #ffd452; font-size: 14px; font-weight: bold; }
+.bk-build-panel-close { background: transparent; border: 0; color: #999;
+  font-size: 18px; cursor: pointer; padding: 0 4px; line-height: 1; }
+.bk-build-panel-close:hover { color: #fff; }
+.bk-build-card { display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px; border-radius: 10px;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 8px; }
+.bk-build-card.built { opacity: 0.5; }
+.bk-build-card-icon { font-size: 26px; flex: 0 0 auto; line-height: 1; }
+.bk-build-card-info { flex: 1; min-width: 0; }
+.bk-build-card-name { color: #ffd452; font-size: 13px; font-weight: bold; }
+.bk-build-card-sub { color: #999; font-size: 10px; margin-top: 2px; }
+.bk-build-card-cost { font-size: 10px; color: #ccc; margin-top: 3px; }
+.bk-build-card-cost.short { color: #ff7070; }
+.bk-build-card-action { flex: 0 0 auto; }
+.bk-build-btn { padding: 6px 12px; border-radius: 14px;
+  border: 1.5px solid rgba(255,212,82,0.6);
+  background: linear-gradient(180deg, #5a3a10, #3a2208);
+  color: #ffd452; font-size: 11px; font-weight: bold;
+  cursor: pointer; white-space: nowrap;
+  transition: filter 0.12s, transform 0.12s; }
+.bk-build-btn:hover:not(:disabled) { filter: brightness(1.2); transform: translateY(-1px); }
+.bk-build-btn:active:not(:disabled) { transform: translateY(0); }
+.bk-build-btn:disabled { opacity: 0.4; cursor: not-allowed;
+  background: #333; border-color: #555; color: #888; }
+.bk-build-badge { font-size: 11px; font-weight: bold; }
+.bk-build-badge.locked { color: #666; }
+.bk-build-badge.done { color: #5aaa5a; }
+
 /* 하단 네비게이션 (4탭) — GDD §5-4 */
 .bk-nav { position: relative; z-index: 10; flex: 0 0 auto;
   height: 64px; display: flex;
