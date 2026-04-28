@@ -3996,14 +3996,18 @@ async function boot() {
 
   // # 버튼: visible + picker 함께 토글 + paint 패널 표시
   document.getElementById("btn-reset-construction")?.addEventListener("click", () => {
-    // 건축된 시설 비용 환불
     const gs = getState();
+    // 건축된 시설 비용 환불
     for (const [id, built] of Object.entries(barracksConstructed)) {
       if (built) {
         const cost = FACILITY_BUILD_COST[id];
         if (cost) for (const [r, a] of Object.entries(cost)) gs.resources[r] = (gs.resources[r] || 0) + a;
       }
     }
+    // 테스트용: 가문 Lv을 모든 시설 해금 가능 레벨(12)로 보장
+    const maxUnlockLv = Math.max(...Object.values(FACILITY_UNLOCK_LV));
+    if (!gs.family) gs.family = {};
+    if ((gs.family.level || 1) < maxUnlockLv) gs.family.level = maxUnlockLv;
     saveState(gs);
     for (const id of Object.keys(barracksConstructed)) barracksConstructed[id] = false;
     saveConstructed();
