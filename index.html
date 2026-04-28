@@ -3604,15 +3604,38 @@
           <div class="card">
             <h3>📦 에셋 제작 리스트</h3>
 
-            <h4>건물 에셋 (P0 런칭 필수)</h4>
+            <h4>건물 에셋</h4>
             <table class="tbl">
-              <tr><th>에셋명</th><th>크기</th><th>수량</th></tr>
-              <tr><td>주방 Tier 0/1/2</td><td>200×250 ×3</td><td>3장</td></tr>
-              <tr><td>공방 Tier 0/1/2</td><td>200×250 ×3</td><td>3장</td></tr>
-              <tr><td>훈련장 Tier 0/1/2</td><td>200×250 ×3</td><td>3장</td></tr>
-              <tr><td>관저/성 (장식용)</td><td>300×350</td><td>1장</td></tr>
-              <tr><td><strong>합계</strong></td><td></td><td><strong>10장</strong></td></tr>
+              <tr><th>에셋명</th><th>크기</th><th>수량</th><th>상태</th></tr>
+              <tr><td>주방 Tier 0/1/2</td><td>1024×1024 ×3</td><td>3장</td><td style="color:#5ab86c">✅ 완료</td></tr>
+              <tr><td>공방 Tier 0/1/2</td><td>1024×1024 ×3</td><td>3장</td><td style="color:#5ab86c">✅ 완료</td></tr>
+              <tr><td>훈련장 Tier 0/1/2</td><td>1024×1024 ×3</td><td>3장</td><td style="color:#5ab86c">✅ 완료</td></tr>
+              <tr><td>관저/성 (장식용)</td><td>300×350</td><td>1장</td><td style="color:#d4534a">❌ 미발주</td></tr>
+              <tr><td><strong>소계</strong></td><td></td><td><strong>10장</strong></td><td>9/10</td></tr>
             </table>
+
+            <h4 style="margin-top:16px">성벽/관문 에셋</h4>
+            <table class="tbl">
+              <tr><th>에셋명</th><th>크기</th><th>적용 레벨</th><th>상태</th></tr>
+              <tr><td>성벽+관문 T0 (목조 방책)</td><td>927×513</td><td>성벽 Lv 1~6</td><td style="color:#5ab86c">✅ 완료</td></tr>
+              <tr><td>성벽+관문 T1 (석조 성벽)</td><td>927×513</td><td>성벽 Lv 7~13</td><td style="color:#d4534a">❌ 미발주</td></tr>
+              <tr><td>성벽+관문 T2 (강화 요새)</td><td>927×513</td><td>성벽 Lv 14~20</td><td style="color:#d4534a">❌ 미발주</td></tr>
+              <tr><td><strong>소계</strong></td><td></td><td></td><td>1/3</td></tr>
+            </table>
+
+            <h4 style="margin-top:16px">캐릭터 work 스프라이트 (배럭 전용)</h4>
+            <table class="tbl">
+              <tr><th>캐릭터</th><th>동작</th><th>배치 시설</th><th>등급</th><th>상태</th></tr>
+              <tr><td>판필로 (Panfilo_M)</td><td>요리 — 냄비 젓기</td><td>🍳 주방</td><td style="color:#e85050">S</td><td style="color:#d4534a">❌ 미발주</td></tr>
+              <tr><td>앙드레 (Andre_M)</td><td>단조 — 망치질</td><td>🔨 공방</td><td style="color:#e85050">S</td><td style="color:#d4534a">❌ 미발주</td></tr>
+              <tr><td>다리아 (Daria_F)</td><td>교관 — 검술 시범</td><td>⚔ 훈련장</td><td style="color:#e85050">S</td><td style="color:#d4534a">❌ 미발주</td></tr>
+              <tr><td>에밀리아 (Emilia_F)</td><td>의무관 — 허브 조제</td><td>🍳 주방 (2번째)</td><td style="color:#d4a843">A</td><td style="color:#d4534a">❌ 미발주</td></tr>
+              <tr><td>캐서린 (Catherine_F)</td><td>다재 — 설계도 검토</td><td>🔨 공방 (2번째)</td><td style="color:#d4a843">A</td><td style="color:#d4534a">❌ 미발주</td></tr>
+              <tr><td><strong>소계</strong></td><td></td><td></td><td></td><td>0/5</td></tr>
+            </table>
+            <p style="font-size:12px;color:var(--text-dim);margin-top:6px">
+              ※ work 스프라이트 상세 규격 → <a href="./barracks_work_sprite_spec.html" target="_blank" style="color:var(--gold)">배럭 그래픽 에셋 명세서</a>
+            </p>
 
             <h4 style="margin-top:16px">UI 에셋 (P0)</h4>
             <table class="tbl">
@@ -3627,12 +3650,13 @@
 
             <h4 style="margin-top:16px">에셋 총 수량</h4>
             <table class="tbl">
-              <tr><th>카테고리</th><th>P0 (런칭)</th><th>P1</th><th>P2~3</th></tr>
-              <tr><td>배경</td><td>1장 (리볼도외 낮)</td><td>2장 (저녁/밤)</td><td>4장 (서브 거점)</td></tr>
-              <tr><td>건물</td><td>10장</td><td>—</td><td>—</td></tr>
-              <tr><td>SD</td><td>—</td><td>40장 (10캐릭×4모션)</td><td>추가</td></tr>
-              <tr><td>UI</td><td>6세트</td><td>—</td><td>—</td></tr>
-              <tr><td><strong>합계</strong></td><td><strong>~17장+6세트</strong></td><td><strong>42장</strong></td><td><strong>4장+</strong></td></tr>
+              <tr><th>카테고리</th><th>완료</th><th>미발주</th><th>P2~3</th></tr>
+              <tr><td>배경 (리볼도외 낮)</td><td>1장 ✅</td><td>—</td><td>저녁/밤 + 서브 거점 6장</td></tr>
+              <tr><td>건물 시설 (3종×T3)</td><td>9장 ✅</td><td>관저/성 1장</td><td>—</td></tr>
+              <tr><td>성벽/관문 Tier</td><td>T0 1장 ✅</td><td>T1·T2 2장</td><td>—</td></tr>
+              <tr><td>캐릭터 work 스프라이트</td><td>—</td><td>5종 (P1~P2)</td><td>—</td></tr>
+              <tr><td>UI</td><td>—</td><td>6세트 (P0)</td><td>—</td></tr>
+              <tr><td><strong>신규 발주 합계</strong></td><td></td><td><strong>8장 + 6세트</strong></td><td></td></tr>
             </table>
           </div>
 
