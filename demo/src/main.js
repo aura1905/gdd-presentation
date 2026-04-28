@@ -3651,6 +3651,26 @@ async function boot() {
     export: () => ({ walkable: [...GRID.walkable], blocked: [...GRID.blocked] }),
     state: GRID,
   };
+  // 건축 시스템 테스트용 디버그 API
+  // 콘솔에서: __barracks.build.reset() → 전부 미건축으로 / __barracks.build.set('kitchen') → 특정 건물만
+  window.__barracks.build = {
+    reset: () => {
+      for (const id of Object.keys(barracksConstructed)) barracksConstructed[id] = false;
+      saveConstructed();
+      applyFacilityVisibility();
+      setupBarracksGrid();
+      console.log('[barracks] constructed 초기화:', barracksConstructed);
+    },
+    set: (id, val = true) => {
+      barracksConstructed[id] = val;
+      saveConstructed();
+      applyFacilityVisibility();
+      setupBarracksGrid();
+      if (val) setBuildingTier(id, barracksTier[id] || 0);
+      console.log('[barracks] constructed:', barracksConstructed);
+    },
+    state: () => ({ ...barracksConstructed }),
+  };
 
   function openBarracks() {
     if (!barracksView) return;
