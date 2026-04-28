@@ -3442,24 +3442,24 @@ async function boot() {
     const def = BUILDING_DEF[id];
     const pos = barracksBuildings[id];
     if (!def || !pos) return;
-    const el = document.querySelector(`#barracks-view .bk-building[data-bld="${id}"]`);
-    if (!el) return;
     const w = def.footprint.w, h = def.footprint.h;
-    // footprint 4 corner cells의 다이아몬드 corner 좌표 (frame %)
     const topC    = isoCellCorners(pos.col,         pos.row)[0];
     const rightC  = isoCellCorners(pos.col + w - 1, pos.row)[1];
     const bottomC = isoCellCorners(pos.col + w - 1, pos.row + h - 1)[2];
     const leftC   = isoCellCorners(pos.col,         pos.row + h - 1)[3];
-    // 스프라이트 가로폭 = footprint 다이아몬드 가로 = right.x - left.x
     const widthFrame = rightC.x - leftC.x;
-    // 스프라이트 bottom-center 위치 = footprint bottom corner
-    el.style.left = `${bottomC.x}%`;
-    el.style.top = `${bottomC.y}%`;
-    el.style.width = `${widthFrame}%`;
-    el.style.bottom = "auto";
-    el.style.right = "auto";
-    el.style.height = "auto";
-    el.style.transform = "translate(-50%, -100%)";  // bottom-center anchor
+    const applyPos = el => {
+      if (!el) return;
+      el.style.left = `${bottomC.x}%`;
+      el.style.top = `${bottomC.y}%`;
+      el.style.width = `${widthFrame}%`;
+      el.style.bottom = "auto";
+      el.style.right = "auto";
+      el.style.height = "auto";
+      el.style.transform = "translate(-50%, -100%)";
+    };
+    applyPos(document.querySelector(`#barracks-view .bk-building[data-bld="${id}"]`));
+    applyPos(document.querySelector(`#barracks-view .bk-building-ghost[data-ghost="${id}"]`));
   }
   function applyAllBuildingPlacements() {
     for (const id of Object.keys(BUILDING_DEF)) placeBuildingFromGrid(id);
