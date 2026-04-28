@@ -3992,6 +3992,14 @@ async function boot() {
   }
 
   // # 버튼: visible + picker 함께 토글 + paint 패널 표시
+  document.getElementById("btn-reset-construction")?.addEventListener("click", () => {
+    for (const id of Object.keys(barracksConstructed)) barracksConstructed[id] = false;
+    saveConstructed();
+    applyFacilityVisibility();
+    setupBarracksGrid();
+    showToast("🔄 건축 초기화", "warn");
+  });
+
   document.getElementById("btn-toggle-grid")?.addEventListener("click", (e) => {
     e.stopPropagation();
     const on = !GRID.visible;
