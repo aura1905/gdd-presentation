@@ -967,9 +967,12 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
    ───────────────────────────────────────── */
 #barracks-view { position: absolute; left: 0; right: 0; top: 0; bottom: 56px; z-index: 100;
   display: flex; align-items: center; justify-content: center;
-  /* letterbox 양옆 — 같은 배경 이미지를 cover로 깔아 seamless하게 */
-  background: url('./img/barracks/bg_reboldoeux_day.png') center/cover no-repeat;
+  background: #6a9a6a;
   animation: bk-fade 0.25s ease; overflow: hidden; }
+/* letterbox 양옆 — 배경 이미지를 좌우 반전해서 깔면 프레임 경계가 자연스럽게 이어짐 */
+#barracks-view::before { content: ''; position: absolute; inset: 0;
+  background: url('./img/barracks/bg_reboldoeux_day.png') center/cover no-repeat;
+  transform: scaleX(-1); pointer-events: none; }
 #barracks-view[hidden] { display: none !important; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
 
