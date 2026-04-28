@@ -969,9 +969,19 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   display: flex; align-items: center; justify-content: center;
   background: #6a9a6a;
   animation: bk-fade 0.25s ease; overflow: hidden; }
-/* letterbox 양옆 — 배경 이미지를 좌우 반전해서 깔면 프레임 경계가 자연스럽게 이어짐 */
-#barracks-view::before { content: ''; position: absolute; inset: 0;
-  background: url('./img/barracks/bg_reboldoeux_day.png') center/cover no-repeat;
+/* letterbox 양옆 — 프레임 가장자리에서 바깥으로 반전(mirror) 확장.
+   letterbox 너비는 항상 28px (= 56px tab-dock / 2, landscape-square app 기준).
+   ::before = 좌측 28px: 이미지 좌측 끝을 좌측으로 반전.
+   ::after  = 우측 28px: 이미지 우측 끝을 우측으로 반전. */
+#barracks-view::before { content: ''; position: absolute;
+  left: 0; top: 0; bottom: 0; width: 28px;
+  background: url('./img/barracks/bg_reboldoeux_day.png')
+    0px center / calc(100svh - 56px) auto no-repeat;
+  transform: scaleX(-1); pointer-events: none; }
+#barracks-view::after { content: ''; position: absolute;
+  right: 0; top: 0; bottom: 0; width: 28px;
+  background: url('./img/barracks/bg_reboldoeux_day.png')
+    calc(84px - 100svh) center / calc(100svh - 56px) auto no-repeat;
   transform: scaleX(-1); pointer-events: none; }
 #barracks-view[hidden] { display: none !important; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
