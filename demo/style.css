@@ -970,18 +970,21 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   /* letterbox 배경 — 프레임 fade-out 끝 색상으로 자연스럽게 */
   background: linear-gradient(180deg, #88c5e8 0%, #88c5e8 35%, #b8c878 60%, #88a858 100%);
   animation: bk-fade 0.25s ease; overflow: hidden; }
-/* letterbox 양옆 — 프레임 가장자리에서 바깥으로 반전(mirror) + 외곽 fade-out.
-   scaleX(-1) 후 mask 방향: ::before는 to left, ::after는 to right (flip 보정). */
-#barracks-view::before { content: ''; position: absolute;
-  left: 0; top: 0; bottom: 0; width: 28px;
-  background: url('./img/barracks/bg_reboldoeux_day.png')
-    0px center / calc(100svh - 56px) auto no-repeat;
-  transform: scaleX(-1); pointer-events: none; }
-#barracks-view::after { content: ''; position: absolute;
-  right: 0; top: 0; bottom: 0; width: 28px;
-  background: url('./img/barracks/bg_reboldoeux_day.png')
-    calc(84px - 100svh) center / calc(100svh - 56px) auto no-repeat;
-  transform: scaleX(-1); pointer-events: none; }
+/* letterbox 양옆 — landscape(가로>세로)일 때만 표시. portrait에선 frame이 전체 width를
+   채우므로 숨김. ::after는 DOM 순서상 .bk-frame 위에 렌더링되므로 z-index 명시. */
+#barracks-view::before, #barracks-view::after { display: none; }
+@media (orientation: landscape) {
+  #barracks-view::before { content: ''; display: block; position: absolute;
+    left: 0; top: 0; bottom: 0; width: 28px; z-index: 0;
+    background: url('./img/barracks/bg_reboldoeux_day.png')
+      0px center / calc(100svh - 56px) auto no-repeat;
+    transform: scaleX(-1); pointer-events: none; }
+  #barracks-view::after { content: ''; display: block; position: absolute;
+    right: 0; top: 0; bottom: 0; width: 28px; z-index: 0;
+    background: url('./img/barracks/bg_reboldoeux_day.png')
+      calc(84px - 100svh) center / calc(100svh - 56px) auto no-repeat;
+    transform: scaleX(-1); pointer-events: none; }
+}
 #barracks-view[hidden] { display: none !important; }
 @keyframes bk-fade { from { opacity: 0; } to { opacity: 1; } }
 
@@ -1105,7 +1108,7 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 
 /* 배럭 frame — 항상 height 기준 1:1 고정. 좁은 화면에선 양옆이 잘림(overflow:hidden).
    max-width 제거 + flex-shrink:0 → width-constrained 축소 방지. */
-.bk-frame { position: relative;
+.bk-frame { position: relative; z-index: 1;
   aspect-ratio: 1 / 1;
   max-height: 100%;
   height: 100%;
