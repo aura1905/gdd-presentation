@@ -1149,10 +1149,13 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .bk-grid-cell.occupied { background: rgba(255,80,80,0.28); }
 .bk-bg { position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; object-position: center top; pointer-events: none; }
-/* 앞쪽 성벽 + 게이트 — foreground 레이어 (건물보다 z 높음 → 자연스러운 가림).
-   가로 wide sprite (~3:1), 하단에 안착. frame 1:1 기준 65% 너비 (9:16 시절 116% × 9/16). */
-.bk-frontwall { position: absolute; left: 4%; bottom: 6%;
-  width: 92%; max-width: none; height: auto;
+/* 앞쪽 성벽 + 게이트 — foreground 레이어.
+   height 28% 고정 + object-fit:cover → 이미지 비율 무관하게 항상 프레임 하단 28% 차지.
+   object-position: center 12% → 성벽 상단(배틀먼트/뾰족한 끝)을 보이고 지반 기단부 클립. */
+.bk-frontwall { position: absolute; left: 4%; bottom: 3%;
+  width: 92%; max-width: none;
+  height: 28%;
+  object-fit: cover; object-position: center 12%;
   z-index: 5;
   pointer-events: none;
   filter: drop-shadow(0 -3px 6px rgba(0,0,0,0.3)); }
