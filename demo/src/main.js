@@ -3672,6 +3672,14 @@ async function boot() {
     state: () => ({ ...barracksConstructed }),
   };
 
+  function updateFrontWallTier() {
+    const wallLv = getGrowthLevel("fortification", "wall");
+    const tier = wallLv >= 8 ? 2 : wallLv >= 4 ? 1 : 0;
+    const WALL_IMGS = ["fg_front_wall_t0.png", "fg_front_wall_t1.png", "fg_front_wall_gate.png"];
+    const img = barracksView?.querySelector(".bk-frontwall");
+    if (img) img.src = `./img/barracks/${WALL_IMGS[tier]}`;
+  }
+
   function openBarracks() {
     if (!barracksView) return;
     barracksView.hidden = false;
@@ -3681,6 +3689,8 @@ async function boot() {
     applyFacilityVisibility();
     // 저장된 시설 Tier로 라벨/이미지 동기화
     for (const id of Object.keys(FACILITY_LEVELS)) setBuildingTier(id, barracksTier[id] || 0);
+    // 성벽 tier (fortification.wall Lv 기반)
+    updateFrontWallTier();
     spawnBarracksCharacters();
     renderProductionStack();
     if (!bkCharLoop) bkCharLoop = setInterval(animateBarracksCharacters, 100);
@@ -4377,6 +4387,12 @@ async function boot() {
   // 거점 목록 자동 갱신 (열려있을 때만)
   on("state:changed", () => {
     if (outpostPanel && !outpostPanel.hidden) renderOutpostList();
+  });
+
+  // 성벽 강화 투자 시 배럭 앞벽 tier 즉시 갱신
+  on("state:changed", ({ path, type } = {}) => {
+    if (path === "fortification" && type === "wall" && barracksView && !barracksView.hidden)
+      updateFrontWallTier();
   });
 
   // Animation loop
