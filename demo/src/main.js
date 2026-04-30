@@ -3236,6 +3236,7 @@ async function boot() {
   };
   const FACILITY_LABEL = { kitchen: "🍳 주방", smithy: "🔨 공방", training: "⚔ 훈련장" };
   const FACILITY_JOB = { kitchen: "요리사", smithy: "장인", training: "교관" };
+  const INTERIOR_IMG  = { kitchen: "interior_kitchen.png", smithy: "interior_smithy.png", training: "interior_training.png" };
   // 시설 해금 조건 (가문 Lv) — gdd_barracks_life_v2 §3-1 표
   const FACILITY_UNLOCK_LV = { kitchen: 6, smithy: 12, training: 8 };
   function isFacilityUnlocked(bld) {
@@ -4119,14 +4120,14 @@ async function boot() {
     return Object.entries(prod).map(([r, a]) => `${RES_LABEL[r] || r} ${a}`).join(" · ");
   }
 
-  // 시설 클릭 → 관리 팝업
+  // 시설 클릭 → 내부 바텀 시트
   function openBuildingPanel(bld) {
     const def = BUILDING_DEF[bld];
     const levels = FACILITY_LEVELS[bld];
     if (!def || !levels) return;
-    const tier = barracksTier[bld];          // 0~4 (Lv 1/3/5/7/10)
-    const cur = levels[tier];
-    const next = levels[tier + 1];           // null = 최대치
+    const tier = barracksTier[bld];
+    const cur  = levels[tier];
+    const next = levels[tier + 1] || null;
 
     let modal = document.getElementById("bk-building-modal");
     if (!modal) {
@@ -4139,91 +4140,123 @@ async function boot() {
       });
     }
 
-    // 마일스톤 진행률 표시 (5단계 dot)
+    // 마일스톤 dots (tier track)
     const dotsHtml = levels.map((lv, i) =>
-      `<span class="bk-tier-dot ${i <= tier ? 'on' : ''}" title="Lv.${lv.lv}">${lv.lv}</span>`
+      `<span class="bk-tier-dot ${i <= tier ? 'on' : ''}">${lv.lv}</span>`
     ).join("<span class='bk-tier-arrow'>›</span>");
 
-    let upgradeHtml = "";
+    // 생산 현황 탭
+    const slots = autoAssignCharacters()[bld] || [];
+    const charMult = slots.reduce((s, c) => s + (GRADE_MULT[c.grade] || 0), 0);
+    const lvMult   = 1.0 + (cur.lv - 1) * 0.1;
+    const totalMult = Math.max(1.0, charMult) * lvMult;
+    const prodTabHtml = `
+      <div class="bk-prod-grid">
+        <div class="bk-prod-item">
+          <div class="bk-prod-label">생산 (5초)</div>
+          <div class="bk-prod-val">${formatProd(cur.prod)}</div>
+        </div>
+        <div class="bk-prod-item">
+          <div class="bk-prod-label">Lv 보정</div>
+          <div class="bk-prod-val">×${lvMult.toFixed(1)}</div>
+        </div>
+        <div class="bk-prod-item">
+          <div class="bk-prod-label">캐릭터 버프</div>
+          <div class="bk-prod-val">×${Math.max(1.0, charMult).toFixed(1)}</div>
+        </div>
+        <div class="bk-prod-item">
+          <div class="bk-prod-label">슬롯</div>
+          <div class="bk-prod-val">${slots.length} / ${getFacilitySlotCount(bld)}</div>
+        </div>
+      </div>
+      <div class="bk-prod-item-full">
+        <span class="bk-prod-label" style="margin:0">최종 배율</span>
+        <span class="bk-prod-val highlight">×${totalMult.toFixed(2)}</span>
+      </div>`;
+
+    // 캐릭터 배치 탭
+    const charTabHtml = slots.length === 0
+      ? `<div class="bk-char-empty">배치된 캐릭터 없음<br><span style="font-size:10px;color:#555">${FACILITY_JOB[bld]} 직업 캐릭터가 자동 배치됩니다</span></div>`
+      : `<div class="bk-char-grid">${slots.map(s => `
+          <div class="bk-char-card">
+            <span class="bk-slot-grade grade-${s.grade}">${s.grade}</span>
+            <div class="bk-char-info">
+              <div class="bk-char-name">${getCharLabel(s.charName)}</div>
+              <div class="bk-char-job">${FACILITY_JOB[bld]}</div>
+            </div>
+            <div class="bk-char-mult">×${GRADE_MULT[s.grade]}</div>
+          </div>`).join("")}
+        </div>`;
+
+    // 업그레이드 탭
+    let upgradeTabHtml = `
+      <div class="bk-tier-track" style="margin-bottom:12px">${dotsHtml}</div>
+      <div class="bk-upgrade-current">
+        <div class="bk-prod-label">현재 효과 · Lv.${cur.lv}</div>
+        <div class="bk-upgrade-effect">${cur.effect}</div>
+        <div class="bk-upgrade-cost">생산: ${formatProd(cur.prod)} / 5초</div>
+      </div>`;
     if (next) {
       const afford = canAffordCost(next.cost);
-      upgradeHtml = `
-        <div class="bk-modal-section">
-          <div class="bk-modal-label">다음 마일스톤 — Lv.${next.lv}</div>
-          <div class="bk-modal-value">${next.effect}</div>
-          <div class="bk-modal-sub">생산: ${formatProd(next.prod)}</div>
-        </div>
-        <div class="bk-modal-section">
-          <div class="bk-modal-label">업그레이드 비용</div>
-          <div class="bk-modal-value ${afford ? '' : 'cost-short'}">${formatCost(next.cost)}</div>
+      upgradeTabHtml += `
+        <div class="bk-upgrade-next">
+          <div class="bk-prod-label">다음 마일스톤 — Lv.${next.lv}</div>
+          <div class="bk-upgrade-effect">${next.effect}</div>
+          <div class="bk-upgrade-cost ${afford ? '' : 'short'}">${formatCost(next.cost)}</div>
         </div>
         <button class="bk-modal-action" id="bk-modal-upgrade" ${afford ? "" : "disabled"}>
           🔧 ${afford ? `Lv.${next.lv}로 업그레이드` : "자원 부족"}
-        </button>
-      `;
+        </button>`;
     } else {
-      upgradeHtml = `<div class="bk-modal-section"><em>✨ 최대 레벨 — Lv.${cur.lv}</em></div>`;
+      upgradeTabHtml += `<div class="bk-upgrade-max">✨ 최대 레벨 달성</div>`;
     }
 
+    const interiorSrc = `./img/barracks/${INTERIOR_IMG[bld] || ""}`;
     modal.innerHTML = `
-      <div class="bk-modal-card">
-        <header class="bk-modal-head">
-          <h3>${FACILITY_LABEL[bld]} <span class="bk-modal-tier">Lv.${cur.lv}</span></h3>
-          <button class="bk-modal-close" id="bk-modal-close">✕</button>
-        </header>
-        <div class="bk-modal-body">
-          <div class="bk-tier-track">${dotsHtml}</div>
-          <div class="bk-modal-section">
-            <div class="bk-modal-label">현재 효과</div>
-            <div class="bk-modal-value">${cur.effect}</div>
-            <div class="bk-modal-sub">생산: ${formatProd(cur.prod)} (5초마다)</div>
+      <div class="bk-interior-card">
+        <div class="bk-interior-banner" style="background-image:url('${interiorSrc}')">
+          <button class="bk-interior-close" id="bk-interior-close">✕</button>
+          <div class="bk-interior-title-bar">
+            <h3>${FACILITY_LABEL[bld]} <span class="bk-interior-lv">Lv.${cur.lv}</span></h3>
           </div>
-          <div class="bk-modal-section">
-            <div class="bk-modal-label">자동 배치 — ${FACILITY_JOB[bld]} (슬롯 ${(()=>{const a=autoAssignCharacters();return a[bld].length})()}/${getFacilitySlotCount(bld)})</div>
-            <div class="bk-modal-value">
-              ${(() => {
-                const slots = autoAssignCharacters()[bld] || [];
-                if (slots.length === 0) return "<em>배치된 캐릭터 없음</em>";
-                return slots.map(s => `
-                  <div class="bk-slot-row">
-                    <span class="bk-slot-grade grade-${s.grade}">${s.grade}</span>
-                    <span class="bk-slot-name">${getCharLabel(s.charName)}</span>
-                    <span class="bk-slot-mult">×${GRADE_MULT[s.grade]}</span>
-                  </div>
-                `).join("");
-              })()}
-            </div>
-            <div class="bk-modal-sub">합산 배율 ×${(() => {
-              const slots = autoAssignCharacters()[bld] || [];
-              const sum = slots.reduce((s, c) => s + (GRADE_MULT[c.grade] || 0), 0);
-              return Math.max(1.0, sum).toFixed(1);
-            })()} (기본 1.0 + 캐릭터 버프) · Lv 보정 ×${(1.0 + (cur.lv - 1) * 0.1).toFixed(1)}</div>
-          </div>
-          <div class="bk-modal-section">
-            <div class="bk-modal-label">footprint</div>
-            <div class="bk-modal-value">${def.footprint.w}×${def.footprint.h} cells (col ${barracksBuildings[bld]?.col ?? "?"}, row ${barracksBuildings[bld]?.row ?? "?"})</div>
-          </div>
-          ${upgradeHtml}
         </div>
-      </div>
-    `;
+        <div class="bk-interior-tabs">
+          <button class="bk-itab active" data-tab="prod">생산 현황</button>
+          <button class="bk-itab" data-tab="chars">캐릭터 배치</button>
+          <button class="bk-itab" data-tab="upgrade">업그레이드</button>
+        </div>
+        <div class="bk-interior-body">
+          <div class="bk-itab-pane active" id="bk-itab-prod">${prodTabHtml}</div>
+          <div class="bk-itab-pane" id="bk-itab-chars">${charTabHtml}</div>
+          <div class="bk-itab-pane" id="bk-itab-upgrade">${upgradeTabHtml}</div>
+        </div>
+      </div>`;
+
     modal.style.display = "flex";
-    document.getElementById("bk-modal-close").addEventListener("click", () => {
+
+    document.getElementById("bk-interior-close").addEventListener("click", () => {
       modal.style.display = "none";
     });
+
+    // 탭 전환
+    modal.querySelectorAll(".bk-itab").forEach(btn => {
+      btn.addEventListener("click", () => {
+        modal.querySelectorAll(".bk-itab").forEach(b => b.classList.remove("active"));
+        modal.querySelectorAll(".bk-itab-pane").forEach(p => p.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById(`bk-itab-${btn.dataset.tab}`)?.classList.add("active");
+      });
+    });
+
     const upBtn = document.getElementById("bk-modal-upgrade");
     if (upBtn && next) {
       upBtn.addEventListener("click", () => {
-        if (!canAffordCost(next.cost)) {
-          showToast("자원 부족", "warn");
-          return;
-        }
+        if (!canAffordCost(next.cost)) { showToast("자원 부족", "warn"); return; }
         spendCost(next.cost);
-        const newTier = barracksTier[bld] + 1;
-        setBuildingTier(bld, newTier);
+        setBuildingTier(bld, barracksTier[bld] + 1);
         updateHud();
         showToast(`🔧 ${FACILITY_LABEL[bld]} → Lv.${next.lv}`, "exp");
-        openBuildingPanel(bld);  // 갱신
+        openBuildingPanel(bld);
       });
     }
   }
