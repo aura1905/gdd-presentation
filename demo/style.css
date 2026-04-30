@@ -1150,8 +1150,8 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .bk-bg { position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; object-position: center top; pointer-events: none; }
 /* 앞쪽 성벽 + 게이트 — foreground 레이어. height: auto — 이미지 비율 그대로 사용. */
-.bk-frontwall { position: absolute; left: 2%; bottom: 6%;
-  width: 96%; max-width: none; height: auto;
+.bk-frontwall { position: absolute; left: -3%; bottom: 6%;
+  width: 106%; max-width: none; height: auto;
   z-index: 5;
   pointer-events: none;
   filter: drop-shadow(0 -3px 6px rgba(0,0,0,0.3)); }
