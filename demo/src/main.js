@@ -3687,8 +3687,8 @@ async function boot() {
   function updateFrontWallTier() {
     const img = barracksView?.querySelector(".bk-frontwall");
     if (!img) return;
-    if (barracksWallTier < 0) { img.style.display = "none"; return; }
-    img.style.display = "";
+    if (barracksWallTier < 0) { img.classList.add("bk-frontwall--hidden"); return; }
+    img.classList.remove("bk-frontwall--hidden");
     img.src = `./img/barracks/${WALL_TIER_IMGS[barracksWallTier]}`;
   }
 
@@ -4039,6 +4039,9 @@ async function boot() {
     saveState(gs);
     for (const id of Object.keys(barracksConstructed)) barracksConstructed[id] = false;
     saveConstructed();
+    barracksWallTier = 0;
+    saveWallTier();
+    updateFrontWallTier();
     applyFacilityVisibility();
     setupBarracksGrid();
     updateHud();
