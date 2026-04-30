@@ -4034,6 +4034,11 @@ async function boot() {
     const totalCost = {};
     for (const cost of Object.values(FACILITY_BUILD_COST))
       for (const [r, a] of Object.entries(cost)) totalCost[r] = (totalCost[r] || 0) + a;
+    // 성벽 업그레이드 비용도 포함
+    for (const cost of WALL_UPGRADE_COST)
+      for (const [r, a] of Object.entries(cost)) totalCost[r] = (totalCost[r] || 0) + a;
+    totalCost.stone = Math.max(totalCost.stone || 0, 5000);
+    totalCost.iron  = Math.max(totalCost.iron  || 0, 2500);
     for (const [r, needed] of Object.entries(totalCost))
       if ((gs.resources[r] || 0) < needed) gs.resources[r] = needed;
     // 테스트용: 가문 Lv을 모든 시설 해금 가능 레벨(12)로 보장
