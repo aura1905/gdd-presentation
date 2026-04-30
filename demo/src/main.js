@@ -3255,6 +3255,7 @@ async function boot() {
   })();
   function saveWallTier() { try { localStorage.setItem(WALL_TIER_KEY, String(barracksWallTier)); } catch (e) {} }
   const WALL_TIER_IMGS = ["fg_front_wall_t0.png", "fg_front_wall_t1.png", "fg_front_wall_t2.png"];
+  const WALL_BG_IMGS   = ["bg_reboldoeux_t0.png", "bg_reboldoeux_day.png", "bg_reboldoeux_t2.png"];
   const WALL_TIER_LABEL = ["목책 (Tier 0)", "석성 (Tier 1)", "강화 석성 (Tier 2)"];
   const WALL_BUILD_COST  = { wood: 1200, stone: 500 };
   const WALL_UPGRADE_COST = [{ stone: 1500, iron: 600 }, { stone: 3000, iron: 1500 }];
@@ -3686,10 +3687,13 @@ async function boot() {
 
   function updateFrontWallTier() {
     const img = barracksView?.querySelector(".bk-frontwall");
-    if (!img) return;
-    if (barracksWallTier < 0) { img.classList.add("bk-frontwall--hidden"); return; }
-    img.classList.remove("bk-frontwall--hidden");
-    img.src = `./img/barracks/${WALL_TIER_IMGS[barracksWallTier]}`;
+    const bg  = barracksView?.querySelector(".bk-bg");
+    const tier = Math.max(0, barracksWallTier);
+    if (img) {
+      if (barracksWallTier < 0) { img.classList.add("bk-frontwall--hidden"); }
+      else { img.classList.remove("bk-frontwall--hidden"); img.src = `./img/barracks/${WALL_TIER_IMGS[tier]}`; }
+    }
+    if (bg) bg.src = `./img/barracks/${WALL_BG_IMGS[tier]}`;
   }
 
   function openBarracks() {
