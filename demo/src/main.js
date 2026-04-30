@@ -4140,75 +4140,101 @@ async function boot() {
       });
     }
 
-    // 마일스톤 dots (tier track)
-    const dotsHtml = levels.map((lv, i) =>
-      `<span class="bk-tier-dot ${i <= tier ? 'on' : ''}">${lv.lv}</span>`
-    ).join("<span class='bk-tier-arrow'>›</span>");
-
     // 생산 현황 탭
     const slots = autoAssignCharacters()[bld] || [];
     const charMult = slots.reduce((s, c) => s + (GRADE_MULT[c.grade] || 0), 0);
     const lvMult   = 1.0 + (cur.lv - 1) * 0.1;
     const totalMult = Math.max(1.0, charMult) * lvMult;
+    // 생산 자원 아이콘 추출
+    const prodEntries = Object.entries(cur.prod || {});
+    const prodIcon = prodEntries.length > 0 ? (RES_LABEL[prodEntries[0][0]] || "📦") : "📦";
+    const prodAmt  = prodEntries.length > 0 ? prodEntries[0][1] : 0;
     const prodTabHtml = `
-      <div class="bk-prod-grid">
-        <div class="bk-prod-item">
-          <div class="bk-prod-label">생산 (5초)</div>
-          <div class="bk-prod-val">${formatProd(cur.prod)}</div>
+      <div class="bk-prod-main">
+        <div class="bk-prod-main-icon">${prodIcon}</div>
+        <div>
+          <div class="bk-prod-main-val">${prodAmt}</div>
+          <div class="bk-prod-main-sub">5초마다 · ${Object.keys(cur.prod || {})[0] || ""}</div>
         </div>
-        <div class="bk-prod-item">
-          <div class="bk-prod-label">Lv 보정</div>
-          <div class="bk-prod-val">×${lvMult.toFixed(1)}</div>
-        </div>
-        <div class="bk-prod-item">
-          <div class="bk-prod-label">캐릭터 버프</div>
-          <div class="bk-prod-val">×${Math.max(1.0, charMult).toFixed(1)}</div>
-        </div>
-        <div class="bk-prod-item">
-          <div class="bk-prod-label">슬롯</div>
-          <div class="bk-prod-val">${slots.length} / ${getFacilitySlotCount(bld)}</div>
+        <div style="margin-left:auto;text-align:right">
+          <div style="font-size:10px;color:#666;margin-bottom:3px">슬롯</div>
+          <div style="font-size:15px;color:#ccc;font-weight:bold">${slots.length}<span style="font-size:11px;color:#555"> / ${getFacilitySlotCount(bld)}</span></div>
         </div>
       </div>
-      <div class="bk-prod-item-full">
-        <span class="bk-prod-label" style="margin:0">최종 배율</span>
-        <span class="bk-prod-val highlight">×${totalMult.toFixed(2)}</span>
+      <div class="bk-prod-divider"></div>
+      <div class="bk-prod-mults">
+        <div class="bk-prod-mult-item">
+          <div class="bk-prod-mult-label">Lv 보정</div>
+          <div class="bk-prod-mult-val">×${lvMult.toFixed(1)}</div>
+        </div>
+        <div class="bk-prod-mult-item">
+          <div class="bk-prod-mult-label">캐릭터 버프</div>
+          <div class="bk-prod-mult-val">×${Math.max(1.0, charMult).toFixed(1)}</div>
+        </div>
+      </div>
+      <div class="bk-prod-total">
+        <span class="bk-prod-total-label">최종 배율</span>
+        <span class="bk-prod-total-val">×${totalMult.toFixed(2)}</span>
       </div>`;
 
     // 캐릭터 배치 탭
-    const charTabHtml = slots.length === 0
-      ? `<div class="bk-char-empty">배치된 캐릭터 없음<br><span style="font-size:10px;color:#555">${FACILITY_JOB[bld]} 직업 캐릭터가 자동 배치됩니다</span></div>`
-      : `<div class="bk-char-grid">${slots.map(s => `
-          <div class="bk-char-card">
-            <span class="bk-slot-grade grade-${s.grade}">${s.grade}</span>
-            <div class="bk-char-info">
-              <div class="bk-char-name">${getCharLabel(s.charName)}</div>
-              <div class="bk-char-job">${FACILITY_JOB[bld]}</div>
-            </div>
-            <div class="bk-char-mult">×${GRADE_MULT[s.grade]}</div>
-          </div>`).join("")}
-        </div>`;
+    const charTabHtml = `
+      <div class="bk-char-header">${FACILITY_JOB[bld]} · ${slots.length}/${getFacilitySlotCount(bld)} 슬롯 배치됨</div>
+      ${slots.length === 0
+        ? `<div class="bk-char-empty">⚠ 배치된 캐릭터 없음<br><span>${FACILITY_JOB[bld]} 직업 캐릭터가 있으면 자동 배치됩니다</span></div>`
+        : `<div class="bk-char-grid">${slots.map(s => `
+            <div class="bk-char-card grade-${s.grade}-card">
+              <span class="bk-slot-grade grade-${s.grade}">${s.grade}</span>
+              <div class="bk-char-info">
+                <div class="bk-char-name">${getCharLabel(s.charName)}</div>
+                <div class="bk-char-job">${FACILITY_JOB[bld]}</div>
+              </div>
+              <div class="bk-char-mult">×${GRADE_MULT[s.grade]}</div>
+            </div>`).join("")}
+          </div>`
+      }`;
 
-    // 업그레이드 탭
+    // 업그레이드 탭 — 개선된 진행 트랙
+    const trackHtml = levels.map((lv, i) => {
+      const isDone = i <= tier;
+      const isCur  = i === tier;
+      const dot = `<div class="bk-utrack-step">
+        <div class="bk-utrack-dot ${isDone ? (isCur ? 'current' : 'done') : ''}">${lv.lv}</div>
+        <div class="bk-utrack-lv ${isDone ? 'done' : ''}">Lv${lv.lv}</div>
+      </div>`;
+      const line = i < levels.length - 1
+        ? `<div class="bk-utrack-line ${i < tier ? 'done' : ''}"></div>` : "";
+      return dot + line;
+    }).join("");
+
     let upgradeTabHtml = `
-      <div class="bk-tier-track" style="margin-bottom:12px">${dotsHtml}</div>
-      <div class="bk-upgrade-current">
-        <div class="bk-prod-label">현재 효과 · Lv.${cur.lv}</div>
-        <div class="bk-upgrade-effect">${cur.effect}</div>
-        <div class="bk-upgrade-cost">생산: ${formatProd(cur.prod)} / 5초</div>
+      <div class="bk-upgrade-track">${trackHtml}</div>
+      <div class="bk-upgrade-section">
+        <div class="bk-upgrade-section-head">현재 효과</div>
+        <div class="bk-upgrade-effect-text">${cur.effect}</div>
+        <div class="bk-upgrade-prod-text">생산: ${formatProd(cur.prod)} / 5초</div>
       </div>`;
     if (next) {
       const afford = canAffordCost(next.cost);
+      const costChips = next.cost
+        ? Object.entries(next.cost).map(([r,a]) => `<span class="bk-cost-chip ${afford ? '' : 'cant'}">${RES_LABEL[r]||r} ${a.toLocaleString()}</span>`).join("")
+        : "";
       upgradeTabHtml += `
-        <div class="bk-upgrade-next">
-          <div class="bk-prod-label">다음 마일스톤 — Lv.${next.lv}</div>
-          <div class="bk-upgrade-effect">${next.effect}</div>
-          <div class="bk-upgrade-cost ${afford ? '' : 'short'}">${formatCost(next.cost)}</div>
+        <div class="bk-upgrade-section">
+          <div class="bk-upgrade-section-head next">▲ 다음 단계 — Lv.${next.lv}</div>
+          <div class="bk-upgrade-effect-text">${next.effect}</div>
+          <div class="bk-upgrade-prod-text">생산: ${formatProd(next.prod)} / 5초</div>
+          <div class="bk-upgrade-cost-row">${costChips}</div>
         </div>
-        <button class="bk-modal-action" id="bk-modal-upgrade" ${afford ? "" : "disabled"}>
-          🔧 ${afford ? `Lv.${next.lv}로 업그레이드` : "자원 부족"}
+        <button class="bk-upgrade-btn" id="bk-modal-upgrade" ${afford ? "" : "disabled"}>
+          ${afford ? `🔧 Lv.${next.lv}로 업그레이드` : "⚠ 자원 부족"}
         </button>`;
     } else {
-      upgradeTabHtml += `<div class="bk-upgrade-max">✨ 최대 레벨 달성</div>`;
+      upgradeTabHtml += `
+        <div class="bk-upgrade-max-box">
+          <span class="star">✨</span>
+          <span>최대 레벨 달성</span>
+        </div>`;
     }
 
     const interiorSrc = `./img/barracks/${INTERIOR_IMG[bld] || ""}`;
@@ -4217,7 +4243,10 @@ async function boot() {
         <div class="bk-interior-banner" style="background-image:url('${interiorSrc}')">
           <button class="bk-interior-close" id="bk-interior-close">✕</button>
           <div class="bk-interior-title-bar">
-            <h3>${FACILITY_LABEL[bld]} <span class="bk-interior-lv">Lv.${cur.lv}</span></h3>
+            <div>
+              <div class="bk-interior-name">${FACILITY_LABEL[bld]}</div>
+            </div>
+            <div class="bk-interior-lv-badge">Lv. ${cur.lv}</div>
           </div>
         </div>
         <div class="bk-interior-tabs">
