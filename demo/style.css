@@ -1012,10 +1012,10 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
   50%      { opacity: 1;   transform: scale(1.2) rotate(15deg); }
 }
 
-/* 시설 관리 모달 — 배럭 내 dim + 하단 시트 */
+/* 시설 관리 모달 — 배럭 내 dim + 중앙 팝업 */
 .bk-modal { position: absolute; inset: 0; z-index: 250;
   background: rgba(0,0,0,0.65); display: none;
-  align-items: flex-end; justify-content: center; }
+  align-items: center; justify-content: center; }
 .bk-modal-card { background: linear-gradient(180deg, #2a1f12, #1a1208);
   border: 2px solid #c8a848; border-radius: 12px;
   width: 320px; max-width: 90%; color: #fff;
@@ -1073,13 +1073,14 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .bk-slot-mult { color: #ffd452; font-weight: bold; font-size: 11px; }
 
 /* 시설 내부 바텀 시트 */
-.bk-interior-card { width: 100%; background: #120e06;
-  border-top: 2px solid #c8a848; border-radius: 14px 14px 0 0;
-  overflow: hidden; max-height: 80%; display: flex; flex-direction: column;
-  animation: bk-slide-up 0.22s ease-out; }
-@keyframes bk-slide-up {
-  from { transform: translateY(100%); opacity: 0; }
-  to   { transform: translateY(0);    opacity: 1; } }
+.bk-interior-card { width: 88%; max-width: 340px; background: #120e06;
+  border: 2px solid #c8a848; border-radius: 14px;
+  overflow: hidden; max-height: 88%; display: flex; flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+  animation: bk-popup-in 0.2s ease-out; }
+@keyframes bk-popup-in {
+  from { transform: scale(0.92); opacity: 0; }
+  to   { transform: scale(1);    opacity: 1; } }
 .bk-interior-banner { position: relative; height: 160px;
   background-size: cover; background-position: center 30%; flex-shrink: 0; }
 .bk-interior-banner::after { content: ''; position: absolute; inset: 0;
