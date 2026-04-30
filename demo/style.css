@@ -1149,13 +1149,9 @@ html, body { height: 100%; overflow: hidden; background: #050507; color: #e8e8e8
 .bk-grid-cell.occupied { background: rgba(255,80,80,0.28); }
 .bk-bg { position: absolute; inset: 0; width: 100%; height: 100%;
   object-fit: cover; object-position: center top; pointer-events: none; }
-/* 앞쪽 성벽 + 게이트 — foreground 레이어.
-   height 28% 고정 + object-fit:cover → 이미지 비율 무관하게 항상 프레임 하단 28% 차지.
-   object-position: center 12% → 성벽 상단(배틀먼트/뾰족한 끝)을 보이고 지반 기단부 클립. */
-.bk-frontwall { position: absolute; left: 4%; bottom: 10%;
-  width: 92%; max-width: none;
-  height: 28%;
-  object-fit: cover; object-position: center 12%;
+/* 앞쪽 성벽 + 게이트 — foreground 레이어. height: auto — 이미지 비율 그대로 사용. */
+.bk-frontwall { position: absolute; left: 4%; bottom: 4%;
+  width: 92%; max-width: none; height: auto;
   z-index: 5;
   pointer-events: none;
   filter: drop-shadow(0 -3px 6px rgba(0,0,0,0.3)); }
