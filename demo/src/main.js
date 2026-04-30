@@ -3251,7 +3251,7 @@ async function boot() {
   // 성벽 티어 (0=목책, 1=석성, 2=강화석성) — -1=미건축
   const WALL_TIER_KEY = "barracks_wall_tier_v1";
   let barracksWallTier = (() => {
-    try { const v = localStorage.getItem(WALL_TIER_KEY); return v !== null ? parseInt(v) : -1; } catch { return -1; }
+    try { const v = localStorage.getItem(WALL_TIER_KEY); return v !== null ? parseInt(v) : 0; } catch { return 0; }
   })();
   function saveWallTier() { try { localStorage.setItem(WALL_TIER_KEY, String(barracksWallTier)); } catch (e) {} }
   const WALL_TIER_IMGS = ["fg_front_wall_t0.png", "fg_front_wall_t1.png", "fg_front_wall_t2.png"];
