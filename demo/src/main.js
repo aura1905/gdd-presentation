@@ -3248,6 +3248,18 @@ async function boot() {
     training: { wood: 1000, vis: 2500 },
     smithy:   { wood: 1500, iron: 800, vis: 2500 },
   };
+  // 성벽 티어 (0=목책, 1=석성, 2=강화석성) — -1=미건축
+  const WALL_TIER_KEY = "barracks_wall_tier_v1";
+  let barracksWallTier = (() => {
+    try { const v = localStorage.getItem(WALL_TIER_KEY); return v !== null ? parseInt(v) : -1; } catch { return -1; }
+  })();
+  function saveWallTier() { try { localStorage.setItem(WALL_TIER_KEY, String(barracksWallTier)); } catch (e) {} }
+  const WALL_TIER_IMGS = ["fg_front_wall_t0.png", "fg_front_wall_t1.png", "fg_front_wall_t2.png"];
+  const WALL_TIER_LABEL = ["목책 (Tier 0)", "석성 (Tier 1)", "강화 석성 (Tier 2)"];
+  const WALL_BUILD_COST  = { wood: 1200, stone: 500 };
+  const WALL_UPGRADE_COST = [{ stone: 1500, iron: 600 }, { stone: 3000, iron: 1500 }];
+  const WALL_UNLOCK_LV = 5;
+
   // 건축 완료 상태 (localStorage) — true = 지어진 상태
   const CONSTRUCTED_KEY = "barracks_constructed_v2";
   let barracksConstructed = { kitchen: false, smithy: false, training: false };
@@ -3673,11 +3685,11 @@ async function boot() {
   };
 
   function updateFrontWallTier() {
-    const wallLv = getGrowthLevel("fortification", "wall");
-    const tier = 1; // TODO: restore — const tier = wallLv >= 8 ? 2 : wallLv >= 4 ? 1 : 0;
-    const WALL_IMGS = ["fg_front_wall_t0.png", "fg_front_wall_t1.png", "fg_front_wall_gate.png"];
     const img = barracksView?.querySelector(".bk-frontwall");
-    if (img) img.src = `./img/barracks/${WALL_IMGS[tier]}`;
+    if (!img) return;
+    if (barracksWallTier < 0) { img.style.display = "none"; return; }
+    img.style.display = "";
+    img.src = `./img/barracks/${WALL_TIER_IMGS[barracksWallTier]}`;
   }
 
   function openBarracks() {
@@ -4219,7 +4231,7 @@ async function boot() {
     const list = document.getElementById("bk-build-list");
     if (!list) return;
     const famLv = getState()?.family?.level || 1;
-    list.innerHTML = Object.keys(BUILDING_DEF).map(bld => {
+    list.innerHTML = renderWallCard() + Object.keys(BUILDING_DEF).map(bld => {
       const label     = FACILITY_LABEL[bld];
       const unlockLv  = FACILITY_UNLOCK_LV[bld];
       const built     = isFacilityBuilt(bld);
@@ -4252,6 +4264,76 @@ async function boot() {
     list.querySelectorAll("[data-build]").forEach(btn => {
       btn.addEventListener("click", () => constructBuilding(btn.dataset.build));
     });
+    // 성벽 카드 이벤트
+    list.querySelector("[data-wall-build]")?.addEventListener("click", () => constructWall());
+    list.querySelector("[data-wall-upgrade]")?.addEventListener("click", () => upgradeWall());
+  }
+  function renderWallCard() {
+    const famLv = getState()?.family?.level || 1;
+    const unlocked = famLv >= WALL_UNLOCK_LV;
+    if (barracksWallTier < 0) {
+      const cost = WALL_BUILD_COST;
+      const canAfford = canAffordCost(cost);
+      const costHtml = unlocked ? `<div class="bk-build-card-cost ${canAfford ? "" : "short"}">${formatCost(cost)}</div>` : "";
+      const actionHtml = !unlocked
+        ? `<span class="bk-build-badge locked">🔒 Lv.${WALL_UNLOCK_LV} 필요</span>`
+        : `<button class="bk-build-btn" data-wall-build="1" ${canAfford ? "" : "disabled"}>🏗 건축</button>`;
+      return `<div class="bk-build-card">
+        <div class="bk-build-card-icon">🏰</div>
+        <div class="bk-build-card-info">
+          <div class="bk-build-card-name">성벽</div>
+          <div class="bk-build-card-sub">방어 · 가문 Lv.${WALL_UNLOCK_LV} 해금</div>
+          ${costHtml}
+        </div>
+        <div class="bk-build-card-action">${actionHtml}</div>
+      </div>`;
+    }
+    if (barracksWallTier >= 2) {
+      return `<div class="bk-build-card built">
+        <div class="bk-build-card-icon">🏰</div>
+        <div class="bk-build-card-info">
+          <div class="bk-build-card-name">성벽</div>
+          <div class="bk-build-card-sub">${WALL_TIER_LABEL[2]}</div>
+        </div>
+        <div class="bk-build-card-action"><span class="bk-build-badge done">✅ 최고 단계</span></div>
+      </div>`;
+    }
+    const nextTier = barracksWallTier + 1;
+    const cost = WALL_UPGRADE_COST[barracksWallTier];
+    const canAfford = canAffordCost(cost);
+    return `<div class="bk-build-card">
+      <div class="bk-build-card-icon">🏰</div>
+      <div class="bk-build-card-info">
+        <div class="bk-build-card-name">성벽</div>
+        <div class="bk-build-card-sub">현재: ${WALL_TIER_LABEL[barracksWallTier]} → ${WALL_TIER_LABEL[nextTier]}</div>
+        <div class="bk-build-card-cost ${canAfford ? "" : "short"}">${formatCost(cost)}</div>
+      </div>
+      <div class="bk-build-card-action">
+        <button class="bk-build-btn" data-wall-upgrade="1" ${canAfford ? "" : "disabled"}>⬆ 업그레이드</button>
+      </div>
+    </div>`;
+  }
+  function constructWall() {
+    if (!canAffordCost(WALL_BUILD_COST)) { showToast("자원 부족", "warn"); return; }
+    spendCost(WALL_BUILD_COST);
+    barracksWallTier = 0;
+    saveWallTier();
+    updateFrontWallTier();
+    updateHud();
+    showToast("🏰 성벽 건축 완료!", "exp");
+    renderBuildList();
+  }
+  function upgradeWall() {
+    if (barracksWallTier >= 2) return;
+    const cost = WALL_UPGRADE_COST[barracksWallTier];
+    if (!canAffordCost(cost)) { showToast("자원 부족", "warn"); return; }
+    spendCost(cost);
+    barracksWallTier++;
+    saveWallTier();
+    updateFrontWallTier();
+    updateHud();
+    showToast(`🏰 성벽 ${WALL_TIER_LABEL[barracksWallTier]} 업그레이드 완료!`, "exp");
+    renderBuildList();
   }
   function constructBuilding(bld) {
     const cost = FACILITY_BUILD_COST[bld];
