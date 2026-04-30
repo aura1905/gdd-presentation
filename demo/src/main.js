@@ -3674,7 +3674,7 @@ async function boot() {
 
   function updateFrontWallTier() {
     const wallLv = getGrowthLevel("fortification", "wall");
-    const tier = wallLv >= 8 ? 2 : wallLv >= 4 ? 1 : 0;
+    const tier = 1; // TODO: restore — const tier = wallLv >= 8 ? 2 : wallLv >= 4 ? 1 : 0;
     const WALL_IMGS = ["fg_front_wall_t0.png", "fg_front_wall_t1.png", "fg_front_wall_gate.png"];
     const img = barracksView?.querySelector(".bk-frontwall");
     if (img) img.src = `./img/barracks/${WALL_IMGS[tier]}`;
