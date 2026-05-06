@@ -10,6 +10,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
     import { getAuth, signInWithPopup, signOut, onAuthStateChanged, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCx9Et77K4bWe8Gt2EaFFs4x1-qgYXn4d4",
@@ -23,6 +24,8 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const provider = new GoogleAuthProvider();
+    const db = getFirestore(app);
+    const PAGE_ID = "implementation-plan/2026-05";
 
     const ALLOWED_DOMAINS = ["imc.co.kr"];
     const ALLOWED_EMAILS = ["hanaura@gmail.com"];
@@ -55,6 +58,7 @@
         if (userInfo) {
           userInfo.innerHTML = `<img src="${user.photoURL}" style="width:24px;height:24px;border-radius:50%;vertical-align:middle;margin-right:6px"><span>${user.displayName}</span><button onclick="fbSignOut()" style="margin-left:10px;background:#d94a5c;color:#fff;border:none;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:12px">로그아웃</button>`;
         }
+        startComments();
       } else {
         overlay.style.display = 'flex';
         mainContent.style.display = 'none';
@@ -64,6 +68,111 @@
         }
       }
     });
+
+    // ───── 코멘트 시스템 ─────
+    let commentsUnsubscribe = null;
+    let commentsStarted = false;
+
+    function escapeHtml(s) {
+      return String(s ?? '').replace(/[&<>"']/g, (c) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[c]));
+    }
+
+    function relativeTime(date) {
+      if (!date) return '';
+      const now = new Date();
+      const diff = (now - date) / 1000;
+      if (diff < 60) return '방금 전';
+      if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+      if (diff < 86400 * 7) return `${Math.floor(diff / 86400)}일 전`;
+      return date.toLocaleDateString('ko-KR');
+    }
+
+    function startComments() {
+      if (commentsStarted) return;
+      commentsStarted = true;
+      const q = query(
+        collection(db, 'comments'),
+        where('pageId', '==', PAGE_ID),
+        orderBy('createdAt', 'desc')
+      );
+      commentsUnsubscribe = onSnapshot(q, (snap) => {
+        const list = document.getElementById('comments-list');
+        if (!list) return;
+        if (snap.empty) {
+          list.innerHTML = '<div class="comment-empty">아직 코멘트가 없습니다. 첫 코멘트를 남겨보세요.</div>';
+          return;
+        }
+        const me = auth.currentUser;
+        const items = [];
+        snap.forEach((d) => {
+          const c = d.data();
+          const t = c.createdAt?.toDate ? c.createdAt.toDate() : null;
+          const isMine = me && c.userId === me.uid;
+          const photo = c.userPhoto ? `<img class="comment-avatar" src="${escapeHtml(c.userPhoto)}" alt="">` : `<div class="comment-avatar comment-avatar-fallback">${escapeHtml((c.userName || '?').charAt(0))}</div>`;
+          items.push(`
+            <div class="comment-item">
+              ${photo}
+              <div class="comment-body">
+                <div class="comment-meta">
+                  <strong>${escapeHtml(c.userName || c.userEmail || '익명')}</strong>
+                  <span class="comment-time" title="${t ? t.toLocaleString('ko-KR') : ''}">${relativeTime(t)}</span>
+                  ${isMine ? `<button class="comment-delete-btn" data-id="${escapeHtml(d.id)}">삭제</button>` : ''}
+                </div>
+                <div class="comment-text">${escapeHtml(c.text)}</div>
+              </div>
+            </div>
+          `);
+        });
+        list.innerHTML = items.join('');
+        list.querySelectorAll('.comment-delete-btn').forEach((btn) => {
+          btn.addEventListener('click', () => deleteComment(btn.dataset.id));
+        });
+      }, (err) => {
+        console.error('comments listen error:', err);
+        const list = document.getElementById('comments-list');
+        if (list) list.innerHTML = `<div class="comment-empty">코멘트 로드 실패: ${escapeHtml(err.message)}<br><small>Firestore가 활성화되어 있는지 확인이 필요합니다.</small></div>`;
+      });
+    }
+
+    window.submitComment = async function() {
+      const ta = document.getElementById('comment-text');
+      const text = (ta?.value || '').trim();
+      if (!text) return;
+      const user = auth.currentUser;
+      if (!user) { alert('로그인이 필요합니다'); return; }
+      const btn = document.getElementById('comment-submit-btn');
+      if (btn) btn.disabled = true;
+      try {
+        await addDoc(collection(db, 'comments'), {
+          pageId: PAGE_ID,
+          userId: user.uid,
+          userName: user.displayName || user.email,
+          userPhoto: user.photoURL || '',
+          userEmail: user.email,
+          text,
+          createdAt: serverTimestamp()
+        });
+        ta.value = '';
+      } catch (err) {
+        console.error('comment submit error:', err);
+        alert('코멘트 등록 실패: ' + err.message);
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    };
+
+    async function deleteComment(id) {
+      if (!confirm('이 코멘트를 삭제할까요?')) return;
+      try {
+        await deleteDoc(doc(db, 'comments', id));
+      } catch (err) {
+        console.error('comment delete error:', err);
+        alert('삭제 실패: ' + err.message);
+      }
+    }
   </script>
 
   <style>
@@ -235,12 +344,149 @@
     .highlight-box ol, .highlight-box ul { margin: 8px 0 8px 24px; }
     .highlight-box li { font-size: 14px; margin-bottom: 4px; }
 
+    /* ───── 코멘트 ───── */
+    .comments-section {
+      max-width: 1100px;
+      margin: 40px auto 60px;
+      padding: 0 24px;
+    }
+    .comments-section h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-bright);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .comments-section h3 .count {
+      color: var(--text-dim);
+      font-size: 14px;
+      font-weight: 500;
+      margin-left: 8px;
+    }
+    #comments-list {
+      margin-bottom: 24px;
+    }
+    .comment-empty {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 14px;
+      background: rgba(255,255,255,0.02);
+      border: 1px dashed var(--border);
+      border-radius: 10px;
+    }
+    .comment-item {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 10px;
+    }
+    .comment-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      object-fit: cover;
+    }
+    .comment-avatar-fallback {
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg-dark);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .comment-body { flex: 1; min-width: 0; }
+    .comment-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    .comment-meta strong { color: var(--text-bright); font-weight: 700; }
+    .comment-time { color: var(--text-dim); font-size: 12px; }
+    .comment-delete-btn {
+      margin-left: auto;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .comment-delete-btn:hover {
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+    .comment-text {
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .comment-input-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+    }
+    .comment-input-box textarea {
+      width: 100%;
+      min-height: 70px;
+      background: rgba(0,0,0,0.3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 14px;
+      padding: 10px 12px;
+      resize: vertical;
+    }
+    .comment-input-box textarea:focus {
+      outline: none;
+      border-color: var(--gold-dim);
+    }
+    .comment-input-box .actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+    .comment-input-box button {
+      background: linear-gradient(135deg, var(--gold-dim), var(--gold));
+      color: var(--bg-dark);
+      border: none;
+      padding: 8px 22px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .comment-input-box button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .comment-input-box button:hover:not(:disabled) {
+      opacity: 0.9;
+    }
+
     @media (max-width: 768px) {
       .hero { padding: 30px 20px; }
       .hero h1 { font-size: 24px; }
       .container { padding: 24px 16px; }
       .tbl { font-size: 11px; }
       .tbl th, .tbl td { padding: 8px 8px; }
+      .comments-section { padding: 0 16px; }
     }
   </style>
 </head>
@@ -548,6 +794,35 @@ Assets/ClientCore/Resources/Datatables/
 
       </div>
     </div>
+
+    <!-- ───── 코멘트 섹션 ───── -->
+    <div class="comments-section">
+      <h3>💬 팀 코멘트</h3>
+      <div id="comments-list">
+        <div class="comment-empty">코멘트 로드 중...</div>
+      </div>
+      <div class="comment-input-box">
+        <textarea id="comment-text" placeholder="코멘트를 남겨주세요... (Ctrl/Cmd + Enter 로 등록)"></textarea>
+        <div class="actions">
+          <button id="comment-submit-btn" type="button" onclick="submitComment()">등록</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Ctrl/Cmd + Enter 로 등록
+      document.addEventListener('DOMContentLoaded', () => {
+        const ta = document.getElementById('comment-text');
+        if (ta) {
+          ta.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+              e.preventDefault();
+              if (typeof window.submitComment === 'function') window.submitComment();
+            }
+          });
+        }
+      });
+    </script>
 
   </div>
 </body>

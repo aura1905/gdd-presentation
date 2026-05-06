@@ -1,0 +1,33 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 코멘트: 인증된 사용자 + 허용 도메인만
+    match /comments/{commentId} {
+      function isAllowed() {
+        return request.auth != null
+          && (
+            request.auth.token.email.matches('.*@imc[.]co[.]kr$')
+            || request.auth.token.email == 'hanaura@gmail.com'
+          );
+      }
+
+      allow read: if isAllowed();
+
+      allow create: if isAllowed()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.text is string
+        && request.resource.data.text.size() > 0
+        && request.resource.data.text.size() < 5000
+        && request.resource.data.pageId is string;
+
+      // 본인 글만 삭제
+      allow delete: if isAllowed()
+        && resource.data.userId == request.auth.uid;
+
+      // 수정 비허용 (단순화)
+      allow update: if false;
+    }
+  }
+}
