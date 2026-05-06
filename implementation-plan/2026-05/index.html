@@ -529,12 +529,13 @@
         </div>
 
         <div class="highlight-box">
-          <p><strong>🎯 목표:</strong> 신규 유저가 게임 진입 → 첫 원정 (출진 → 3 웨이포인트 전투 → 전리품 수집 → 거점 복귀 → 캐릭 시설 배치)까지 <strong>완결된 첫 1세션</strong> 동작.</p>
+          <p><strong>🎯 목표:</strong> 신규 유저가 게임 진입 → 가문 셋업 → 첫 원정 → 점진 진행 → <strong>알쿠에트 모레자 던전 클리어</strong>까지 <strong>완결된 신규 유저 여정</strong> 동작. (다음주 금요일 5/15 마감)</p>
           <p style="margin-top:12px;"><strong>📋 2026-05-06 회의 반영 (대폭 변경):</strong></p>
           <ul style="margin-left:20px;">
             <li>① <strong>베럭(가문 탭) 표시</strong>: 배치된 캐릭만 (전투 파티 + 거점 시설 배치)</li>
             <li>② <strong>집사 NPC</strong>: UI-only 안내 → 씬 등장 + 안내자 + AI 채팅</li>
             <li>③ <strong>전투 시스템</strong>: 헥스 점령 폐기 → 웨이포인트 원정·수집 전면 변경 ⚠️</li>
+            <li>④ <strong>구현 도달 목표</strong>: <strong>알쿠에트 모레자 던전 클리어</strong>까지 (5/15 금)</li>
           </ul>
           <p style="margin-top:12px;"><strong>👥 대상:</strong> WebDemo 팀 (1차) → Unity 클라이언트 팀 (2차)</p>
           <p style="margin-top:12px; font-size:0.85em; color:#aaa;"><strong>📄 정본 GDD:</strong> <code>Planning/gdd_play_redirect_202605.md</code></p>
@@ -650,10 +651,45 @@
           <p style="margin-top:12px; font-size:0.9em; color:#aaa;">→ 효과 수치는 별도 밸런스 작업. 기존 거점 4축 업그레이드와 통합 검토.</p>
         </div>
 
+        <!-- §6-A. 알쿠에트 모레자 던전 (5월 도달 목표) -->
+        <div class="card" style="border-color:rgba(217,138,74,0.4);">
+          <h3>6-A. 🏰 알쿠에트 모레자 던전 — 5월 마감 도달 목표</h3>
+          <p>GE 원작의 알쿠에트 모레자(Al Quelt Moreza) 던전을 5/15 마감의 <strong>최종 콘텐츠 도달점</strong>으로 한다. 신규 유저가 진입 후 이 던전을 클리어할 수 있어야 5월 구현 완료.</p>
+
+          <h4 style="margin-top:16px;">6-A-1. 컨셉</h4>
+          <ul>
+            <li>일반 원정의 확장형 — 더 긴 웨이포인트 시퀀스 + <strong>마지막 보스 웨이포인트</strong></li>
+            <li>리볼도외에서 출진 → 알쿠에트 모레자 도달 → 보스 처치 → 클리어 보상 + 챕터 진행</li>
+            <li>가문 성장 / 캐릭 성장이 어느 정도 진행되어야 클리어 가능한 난이도</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">6-A-2. 데이터 (신규)</h4>
+          <table class="tbl">
+            <tr><th>항목</th><th>내용</th></tr>
+            <tr><td>ExpeditionTable 신규 행</td><td><code>al_quelt_moreza_dungeon</code> — 5~10 웨이포인트 + 보스</td></tr>
+            <tr><td>WaypointTable</td><td>해당 던전 웨이포인트 (전투 N개 + 보스 1)</td></tr>
+            <tr><td>보스 데이터</td><td>FieldObjectTable 또는 신규 BossTable</td></tr>
+            <tr><td>클리어 보상</td><td>LootTable 신규 풀 (희귀 장비 / 가문 EXP / 챕터 해금)</td></tr>
+          </table>
+
+          <h4 style="margin-top:16px;">6-A-3. 진입 흐름</h4>
+          <div class="flow-box">9단계 온보딩 완료 (Step 9)
+  ↓
+가문 성장 + 캐릭 레벨업 + 장비 정비 (자유 진행)
+  ↓
+집사 NPC 안내 → "알쿠에트 모레자 원정 가능"
+  ↓
+원정 출진 → 5~10 웨이포인트 → 보스 전투 → 승리
+  ↓
+던전 클리어 보상 + 챕터 진행 + 가문 EXP</div>
+
+          <p style="margin-top:12px; font-size:0.9em; color:#aaa;">→ 5/15 마감 시 신규 계정 생성 후 위 전체 흐름이 끝까지 동작해야 함.</p>
+        </div>
+
         <!-- §7. Phase 계획 (재구성) -->
         <div class="card">
           <h3>7. Phase 계획 (재구성, MVP 라이트)</h3>
-          <p style="margin-bottom:12px;"><strong>목표 마감: 2026-05-17 (일)</strong> — 다음주 말까지 핵심 흐름이 끝까지 동작하는 것을 사수.</p>
+          <p style="margin-bottom:12px;"><strong>목표 마감: 2026-05-15 (금)</strong> — 다음주 금요일까지 핵심 흐름이 끝까지 동작하는 것을 사수.</p>
           <table class="tbl">
             <tr>
               <th style="width:80px;">Phase</th>
@@ -663,32 +699,32 @@
             <tr>
               <td><strong>Phase 0</strong></td>
               <td>리팩 (베럭→거점) + <strong>점령 시스템 deprecate</strong> (헥스 frontier/점령/영토 제거)</td>
-              <td>5/7~5/8</td>
+              <td>5/7~5/8 (목·금)</td>
             </tr>
             <tr>
               <td><strong>Phase 1</strong></td>
               <td>가문 탭 셸 + 집사 NPC 등장/idle/안내 + 배치 슬롯 표시</td>
-              <td>5/8~5/11</td>
+              <td>5/9~5/11 (토·일·월)</td>
             </tr>
             <tr>
               <td><strong>Phase 2</strong></td>
-              <td>⭐ 원정 시스템 코어 (웨이포인트 시퀀스 + 전리품 인벤 + 거점 복귀 + 창고)</td>
-              <td>5/12~5/15</td>
+              <td>⭐ 원정 시스템 코어 (웨이포인트 + 전리품 + 거점 복귀 + 창고) + <strong>알쿠에트 모레자 던전 데이터</strong></td>
+              <td>5/12~5/14 (화·수·목)</td>
             </tr>
             <tr>
               <td><strong>Phase 3</strong></td>
               <td>9단계 온보딩 (다이얼로그 시스템 + 집사 안내 큐 + Step 트리거)</td>
-              <td>5/14~5/17</td>
+              <td>5/13~5/15 (수·목·금, P2 병렬)</td>
             </tr>
             <tr>
-              <td><strong>검증</strong></td>
-              <td>통합 검증 + 버퍼</td>
-              <td>5/17</td>
+              <td><strong>통합 검증</strong></td>
+              <td>전체 흐름 테스트 + 마감</td>
+              <td>5/15 (금)</td>
             </tr>
             <tr style="opacity:0.55;">
               <td><strong>Phase 4</strong></td>
               <td>(후순위 / 6월) 50% 드롭+잔존 / AI 채팅 / 시설 효과 밸런스 / 거점 다양화</td>
-              <td>5/18~ (선택)</td>
+              <td>5/16~ (선택)</td>
             </tr>
           </table>
         </div>
@@ -732,14 +768,14 @@
 
         <!-- §10. 즉시 착수 가능 -->
         <div class="highlight-box">
-          <h3 style="margin-top:0;">✅ 다음주 (5/7~5/17) 우선 착수 항목</h3>
+          <h3 style="margin-top:0;">✅ 다음주 (5/7~5/15) 우선 착수 항목</h3>
           <ol>
-            <li><strong>Phase 0</strong>: 리팩 + 점령 시스템 deprecate (5/7~8)</li>
-            <li><strong>Phase 1</strong>: 가문 탭 셸 + 집사 NPC 등장 + 배치 슬롯 (5/8~11)</li>
-            <li><strong>Phase 2</strong>: ⭐ 원정 시스템 코어 — 핵심 신규 작업 (5/12~15)</li>
-            <li><strong>Phase 3</strong>: 9단계 온보딩 + 통합 검증 (5/14~17)</li>
+            <li><strong>Phase 0</strong>: 리팩 + 점령 시스템 deprecate (5/7~8 목·금)</li>
+            <li><strong>Phase 1</strong>: 가문 탭 셸 + 집사 NPC 등장 + 배치 슬롯 (5/9~11 토·일·월)</li>
+            <li><strong>Phase 2</strong>: ⭐ 원정 시스템 코어 + 알쿠에트 모레자 던전 — 핵심 신규 작업 (5/12~14 화·수·목)</li>
+            <li><strong>Phase 3</strong>: 9단계 온보딩 + 통합 검증 (5/13~15 수·목·금, P2 병렬)</li>
           </ol>
-          <p style="margin-bottom:0;"><strong>5/17 (일) 마감</strong> — 핵심 흐름(원정 1회 끝까지)이 동작하는 것 우선. 50% 드롭 / AI 채팅 / 시설 밸런스는 Phase 4(6월)로 이연.</p>
+          <p style="margin-bottom:0;"><strong>5/15 (금) 마감</strong> — 신규 유저 입장 → 알쿠에트 모레자 던전 클리어까지 끝까지 동작 우선. 50% 드롭 / AI 채팅 / 시설 밸런스는 Phase 4(6월)로 이연.</p>
         </div>
 
         <div style="margin-top:24px; padding:16px; background:rgba(212,168,67,0.08); border-left:3px solid #d4a843; border-radius:4px;">
