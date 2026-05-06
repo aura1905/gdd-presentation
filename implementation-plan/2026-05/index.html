@@ -418,44 +418,58 @@
         <!-- §5. Phase 계획 -->
         <div class="card">
           <h3>5. Phase 계획 (구현 순서 / 일정)</h3>
+          <p style="margin-bottom:12px;"><strong>목표 완료일: 2026-05-17 (일)</strong> — 검증/버퍼 포함. 핵심 구현 5/15 (금) 완료.</p>
           <table class="tbl">
             <tr>
               <th style="width:80px;">Phase</th>
               <th>내용</th>
-              <th style="width:100px;">기간</th>
+              <th style="width:80px;">기간</th>
+              <th style="width:120px;">목표일</th>
             </tr>
             <tr>
               <td><strong>Phase 0</strong></td>
               <td>리팩터링 — 기존 베럭 코드를 거점 탭(리볼도외 전용)으로 분리</td>
-              <td>3~5일</td>
+              <td>1~2일</td>
+              <td>5/7~5/8</td>
             </tr>
             <tr>
               <td><strong>Phase 1-A</strong></td>
               <td>가문 탭 셸 + 페이지네이션 + 본가 인테리어 배경 적용</td>
-              <td>3~4일</td>
+              <td>1~2일</td>
+              <td>5/8~5/11</td>
             </tr>
             <tr>
               <td><strong>Phase 1-B</strong></td>
               <td>캐릭 idle 배치 + stationed/파티 상태 시각화</td>
-              <td>2~3일</td>
+              <td>1일</td>
+              <td>5/11</td>
             </tr>
             <tr>
               <td><strong>Phase 1-C</strong></td>
               <td>4개 필수 팝업 (가문정보/가챠/파티/캐릭디테일)</td>
-              <td>5~7일</td>
+              <td>2~3일</td>
+              <td>5/12~5/14</td>
             </tr>
             <tr>
               <td><strong>Phase 2</strong></td>
-              <td>거점 탭 일반화 (<code>OutpostTable.xml</code>, 거점 선택 UX) — 인프라 우선, 자산 점진</td>
-              <td>점진</td>
+              <td>거점 탭 일반화 인프라 (<code>OutpostTable.xml</code>, 거점 선택 UX) — 자산 점진</td>
+              <td>1일 (병렬)</td>
+              <td>5/13</td>
             </tr>
             <tr>
               <td><strong>Phase 3</strong></td>
               <td>9단계 튜토리얼 (다이얼로그/매니저/하이라이트/포트레이트)</td>
-              <td>12~18일</td>
+              <td>2~3일</td>
+              <td>5/14~5/15</td>
+            </tr>
+            <tr>
+              <td><strong>검증</strong></td>
+              <td>버퍼 + 미결사항 반영 + 최종 통합 검증</td>
+              <td>1~2일</td>
+              <td>5/16~5/17</td>
             </tr>
           </table>
-          <p style="margin-top:12px;"><strong>합계 추정:</strong> Phase 0 + Phase 1 = 약 13~19일 / Phase 3 = 12~18일 / Phase 2는 자산 발주에 따라 점진</p>
+          <p style="margin-top:12px;"><strong>합계 추정:</strong> 핵심 구현 9~12일 + 검증 1~2일 = <strong>약 11일</strong> (5/7 ~ 5/17, 주말 일부 포함)</p>
         </div>
 
         <!-- §6. 신규 작업물 -->
