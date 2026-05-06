@@ -1988,6 +1988,7 @@
   <!-- NAV TABS -->
   <div class="nav-bar">
     <a class="nav-item active" data-tab="overview">📋 개요</a>
+    <a class="nav-item" data-tab="may2026" style="background:rgba(255,140,0,0.18); border-left:3px solid #ff8c00;">🚧 5월 구현목표</a>
     <a class="nav-item" data-tab="field">🗺️ 필드탐색</a>
     <a class="nav-item" data-tab="combat">⚔️ 전투</a>
     <a class="nav-item" data-tab="characters">👤 캐릭터</a>
@@ -2123,6 +2124,271 @@
               <td><span class="badge badge-gold">완전 블루오션</span></td>
             </tr>
           </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════ -->
+  <!-- TAB: 5월 구현목표 -->
+  <!-- ══════════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-may2026">
+    <div class="container">
+      <div class="section">
+        <div class="section-header">
+          <div class="section-icon" style="background:rgba(255,140,0,0.12)">🚧</div>
+          <h2>2026년 5월 구현목표 — 탭 재편 + 가문 탭 + 9단계 온보딩</h2>
+          <span class="tag">SPRINT 2026-05</span>
+        </div>
+
+        <div class="highlight-box">
+          <p><strong>목표:</strong> 신규 유저가 게임에 진입하여 첫 점령까지 가이드 받아 진행하는 <strong>완결된 첫 1세션 경험</strong>을 데모에서 동작시킨다.</p>
+          <p><strong>핵심 변경:</strong> 게임의 메인 화면 구조를 <strong>3탭 체계(가문/거점/월드)</strong>로 재편하고, 가문 관리 전용 화면(=새 의미의 "베럭")을 신규 구현. 기존 데모의 isometric 베럭은 <strong>리볼도외 거점</strong>으로 재배치.</p>
+          <p><strong>대상:</strong> WebDemo 팀 (1차) → Unity 클라이언트 팀 (2차)</p>
+        </div>
+
+        <!-- §1. 구조 변경 -->
+        <div class="card">
+          <h3>1. 탭 구조 재편 — Before / After</h3>
+          <p style="margin-bottom:12px;">기존 "베럭"이 가문 관리(캐릭/파티/가챠)와 거점 시각화(시설/생활직업/성벽)를 한 화면에 섞고 있던 것을 분리한다.</p>
+          <table class="tbl">
+            <tr>
+              <th>기능</th>
+              <th>Before</th>
+              <th>After</th>
+            </tr>
+            <tr>
+              <td>가문 관리 (캐릭/파티/가챠 등)</td>
+              <td>배럭 화면에 혼재</td>
+              <td><strong>가문 탭 (신규)</strong> — 메인 허브</td>
+            </tr>
+            <tr>
+              <td>거점 시각화 (시설/배치/성벽)</td>
+              <td>배럭 화면</td>
+              <td><strong>거점 탭</strong> — 거점별 외형</td>
+            </tr>
+            <tr>
+              <td>월드맵</td>
+              <td>월드 탭</td>
+              <td>월드 탭 (변경 없음)</td>
+            </tr>
+          </table>
+        </div>
+
+        <!-- §2. 9단계 온보딩 -->
+        <div class="card">
+          <h3>2. 9단계 온보딩 흐름 (유저 관점)</h3>
+          <p style="margin-bottom:12px;">신규 유저가 게임에 처음 진입한 후 따라가는 가이드 시퀀스.</p>
+          <table class="tbl">
+            <tr>
+              <th style="width:50px;">Step</th>
+              <th>행동</th>
+              <th>위치</th>
+            </tr>
+            <tr><td>1</td><td>가문 탭(베럭)에 자동 입장</td><td>가문 탭</td></tr>
+            <tr><td>2</td><td>가문 관리인 NPC 인사 → 가문명 입력</td><td>가문 탭</td></tr>
+            <tr><td>3</td><td>"새로운 용병을 영입하라" 가챠 유도</td><td>가문 탭</td></tr>
+            <tr><td>4</td><td>첫 가챠 → 캐릭터 영입 (리세마라 가능)</td><td>가문 탭</td></tr>
+            <tr><td>5</td><td>"가문 확장을 위해 영토를 넓혀라" 안내</td><td>가문 탭</td></tr>
+            <tr><td>6</td><td>파티(MCC) 5슬롯 중 1파티 구성 유도</td><td>가문 탭</td></tr>
+            <tr><td>7</td><td>월드 탭으로 이동</td><td>월드 탭</td></tr>
+            <tr><td>8</td><td>첫 필드 점령 → 가문 탭 복귀</td><td>월드 → 가문 탭</td></tr>
+            <tr><td>9</td><td>미배정 캐릭을 거점(리볼도외)에 배치</td><td>거점 탭 (첫 진입)</td></tr>
+          </table>
+          <p style="margin-top:12px;"><strong>튜토리얼 종료:</strong> Step 9 완료 후 자유 플레이 모드 전환.</p>
+        </div>
+
+        <!-- §3. 가문 탭 명세 -->
+        <div class="card">
+          <h3>3. 가문 탭(베럭) 신규 명세</h3>
+
+          <p><strong>화면 형태:</strong> GE 원작 본가 인테리어 감성. 실내 배경 + 보유 캐릭 idle 동작 + 모든 디테일 기능은 팝업.</p>
+
+          <h4 style="margin-top:16px;">3-1. 페이지 시스템 (베럭1, 베럭2, ...)</h4>
+          <ul>
+            <li>한 페이지 정원: <strong>캐릭 10명</strong></li>
+            <li>보유 캐릭 N명 → <code>Math.ceil(N / 10)</code>개 페이지</li>
+            <li>신규 영입 시 마지막 페이지 자동 배치, 가득 차면 다음 페이지 자동 생성</li>
+            <li>페이지 탭 UI: <code>[베럭1] [베럭2] [베럭3] ...</code></li>
+          </ul>
+
+          <h4 style="margin-top:16px;">3-2. 한 페이지 구성</h4>
+          <ul>
+            <li><strong>배경:</strong> 본가 실내 일러스트 1장 (모든 페이지 공통)</li>
+            <li><strong>캐릭 배치:</strong> 10슬롯 정해진 위치에 idle 애니메이션</li>
+            <li><strong>NPC 관리인:</strong> 페이지 1번에 상주</li>
+            <li><strong>빈 슬롯:</strong> "영입 가능" 흐릿한 placeholder</li>
+          </ul>
+
+          <h4 style="margin-top:16px;">3-3. 캐릭 표시 정책</h4>
+          <table class="tbl">
+            <tr><th>상태</th><th>표시</th></tr>
+            <tr><td>미배정 (놀고 있음)</td><td>정상 idle</td></tr>
+            <tr><td>파티 등록</td><td>머리 위 파티 배지 (P1/P2/P3/P4/P5)</td></tr>
+            <tr><td>거점 stationed</td><td>(미결) 반투명 + 위치 라벨 / 또는 숨김</td></tr>
+          </table>
+
+          <h4 style="margin-top:16px;">3-4. 인터랙션 (전부 팝업)</h4>
+          <table class="tbl">
+            <tr><th>트리거</th><th>팝업</th></tr>
+            <tr><td>캐릭 클릭</td><td>캐릭 디테일 팝업 (스탯/장비/스킬/위치/친밀도)</td></tr>
+            <tr><td>NPC 관리인 클릭</td><td>가문 정보 팝업 (이름/문장/레벨, 가문명 변경)</td></tr>
+            <tr><td>메뉴 (가챠)</td><td>가챠 영입 팝업</td></tr>
+            <tr><td>메뉴 (파티)</td><td>파티 편성 팝업 — 5파티 슬롯</td></tr>
+            <tr><td>메뉴 (성장)</td><td>가문 성장 팝업 (Training/Research/Fortification/FamilyLevel)</td></tr>
+            <tr><td>메뉴 (우편/장비/비전/친밀도)</td><td>각각 팝업</td></tr>
+          </table>
+
+          <h4 style="margin-top:16px;">3-5. 5파티 시스템</h4>
+          <table class="tbl">
+            <tr><th>항목</th><th>값</th></tr>
+            <tr><td>파티 슬롯 수</td><td>5</td></tr>
+            <tr><td>파티당 캐릭 수</td><td>3 (리더 1 + 팔로워 2, MCC)</td></tr>
+            <tr><td>동시 활동 최대</td><td>15 (5×3)</td></tr>
+            <tr><td>5파티 해금</td><td><span class="badge badge-gold">기존 데모에 이미 구현</span> — 재사용</td></tr>
+          </table>
+        </div>
+
+        <!-- §4. 거점 탭 일반화 -->
+        <div class="card">
+          <h3>4. 거점 탭 일반화 명세</h3>
+          <p>거점은 지속 추가됨 — 리볼도외 → 코임브라 → 오슈 → 그 외 지역별 거점.</p>
+
+          <h4 style="margin-top:16px;">4-1. <code>OutpostTable.xml</code> 신규 (스키마 초안)</h4>
+          <table class="tbl">
+            <tr><th>컬럼</th><th>타입</th><th>설명</th></tr>
+            <tr><td>OutpostID</td><td>string</td><td>PK (예: <code>reboldoeux</code>, <code>coimbra</code>)</td></tr>
+            <tr><td>DisplayName</td><td>string</td><td>UI 표시명</td></tr>
+            <tr><td>RegionID</td><td>int</td><td>소속 리전</td></tr>
+            <tr><td>BackgroundAsset</td><td>string</td><td>배경 이미지 경로</td></tr>
+            <tr><td>FacilitySet</td><td>string</td><td>시설 구성 키 (공통/요새형/생산형)</td></tr>
+            <tr><td>WallTierEnabled</td><td>bool</td><td>성벽 시스템 사용 여부</td></tr>
+            <tr><td>StationedSlotMax</td><td>int</td><td>stationed 캐릭 슬롯 수</td></tr>
+          </table>
+
+          <h4 style="margin-top:16px;">4-2. 진입 흐름</h4>
+          <ul>
+            <li>가문 탭 → 거점 탭 전환 시 <strong>거점 선택 화면</strong> (점령한 거점 리스트)</li>
+            <li>또는 월드 탭에서 자기 점령 거점 헥스 클릭 → 직접 거점 탭 진입</li>
+            <li><code>state.currentOutpostId</code>로 현재 보고 있는 거점 ID 추적</li>
+          </ul>
+        </div>
+
+        <!-- §5. Phase 계획 -->
+        <div class="card">
+          <h3>5. Phase 계획 (구현 순서 / 일정)</h3>
+          <table class="tbl">
+            <tr>
+              <th style="width:80px;">Phase</th>
+              <th>내용</th>
+              <th style="width:100px;">기간</th>
+            </tr>
+            <tr>
+              <td><strong>Phase 0</strong></td>
+              <td>리팩터링 — 기존 베럭 코드를 거점 탭(리볼도외 전용)으로 분리</td>
+              <td>3~5일</td>
+            </tr>
+            <tr>
+              <td><strong>Phase 1-A</strong></td>
+              <td>가문 탭 셸 + 페이지네이션 + 본가 인테리어 배경 적용</td>
+              <td>3~4일</td>
+            </tr>
+            <tr>
+              <td><strong>Phase 1-B</strong></td>
+              <td>캐릭 idle 배치 + stationed/파티 상태 시각화</td>
+              <td>2~3일</td>
+            </tr>
+            <tr>
+              <td><strong>Phase 1-C</strong></td>
+              <td>4개 필수 팝업 (가문정보/가챠/파티/캐릭디테일)</td>
+              <td>5~7일</td>
+            </tr>
+            <tr>
+              <td><strong>Phase 2</strong></td>
+              <td>거점 탭 일반화 (<code>OutpostTable.xml</code>, 거점 선택 UX) — 인프라 우선, 자산 점진</td>
+              <td>점진</td>
+            </tr>
+            <tr>
+              <td><strong>Phase 3</strong></td>
+              <td>9단계 튜토리얼 (다이얼로그/매니저/하이라이트/포트레이트)</td>
+              <td>12~18일</td>
+            </tr>
+          </table>
+          <p style="margin-top:12px;"><strong>합계 추정:</strong> Phase 0 + Phase 1 = 약 13~19일 / Phase 3 = 12~18일 / Phase 2는 자산 발주에 따라 점진</p>
+        </div>
+
+        <!-- §6. 신규 작업물 -->
+        <div class="card">
+          <h3>6. 신규 작업물</h3>
+
+          <h4>6-1. 신규 자산 발주</h4>
+          <table class="tbl">
+            <tr><th>자산</th><th>우선순위</th><th>비고</th></tr>
+            <tr><td>본가 인테리어 배경 (가문 탭)</td><td><span class="badge badge-gold">필수</span></td><td>Nano Banana 파이프라인. 톤/구도 미결</td></tr>
+            <tr><td>NPC 가문 관리인 스프라이트 + idle</td><td>필수</td><td>Phase 1</td></tr>
+            <tr><td>캐릭 포트레이트 (4성 가챠 풀)</td><td>Phase 3 필수</td><td>다이얼로그 오버레이용</td></tr>
+            <tr><td>코임브라/오슈 거점 배경</td><td>Phase 2</td><td>자산 점진 발주</td></tr>
+          </table>
+
+          <h4 style="margin-top:16px;">6-2. 신규 코드 모듈</h4>
+          <div class="flow-box">demo/src/
+  ui/
+    familyView.js        — 가문 탭 셸, 페이지네이션, 캐릭 배치
+    dialog.js            — 다이얼로그 오버레이 (Phase 3)
+    popups/
+      familyInfoPopup.js
+      gachaPopup.js      (기존 가챠 UI 이주)
+      partyPopup.js      (5파티)
+      characterDetailPopup.js
+      growthPopup.js / mailPopup.js / ...
+  engine/
+    tutorial.js          — 튜토리얼 상태 머신 (Phase 3)
+  render/
+    highlight.js         — UI/헥스 강조 펄스 (Phase 3)
+
+Assets/ClientCore/Resources/Datatables/
+  OutpostTable.xml       — 거점 메타데이터 (Phase 2)</div>
+
+          <h4 style="margin-top:16px;">6-3. 기존 코드 리팩터링 (Phase 0)</h4>
+          <ul>
+            <li><code>barracksView</code> → <code>outpostView</code> / <code>bk-*</code> CSS → <code>op-*</code></li>
+            <li><code>openBarracks()</code> → <code>openOutpost(outpostId)</code></li>
+            <li>localStorage <code>barracks_*_v1</code> → <code>outpost_reboldoeux_*_v1</code> (마이그레이션 코드 포함)</li>
+            <li>신규 state: <code>currentOutpostId = "reboldoeux"</code></li>
+            <li>하단 탭바에 <strong>「베럭(가문)」</strong> 탭 추가</li>
+          </ul>
+        </div>
+
+        <!-- §7. 미결 사항 -->
+        <div class="card">
+          <h3>7. 미결 사항 (결정 대기)</h3>
+          <p style="margin-bottom:12px;">아래는 결정 후 추가 지시. <strong>본 핸드오프는 확정 가능한 부분만 작업 시작 가능.</strong></p>
+          <table class="tbl">
+            <tr><th style="width:30px;">#</th><th>항목</th><th>보류 사유</th></tr>
+            <tr><td>1</td><td>본가 인테리어 자산 톤/구도</td><td>발주 직전 결정</td></tr>
+            <tr><td>2</td><td>첫 스프린트 범위 (Phase 0 + 1-A/B/C 어디까지?)</td><td>일정 협의</td></tr>
+            <tr><td>3</td><td>거점 다양성 정도 (배경만/배경+시설/완전 다름)</td><td>자산 발주 규모 협의</td></tr>
+            <tr><td>4</td><td>페이지 간 캐릭 수동 이동 허용 여부</td><td>UX 결정</td></tr>
+            <tr><td>5</td><td>stationed 캐릭의 가문 탭 표시 (반투명/숨김)</td><td>UX 결정</td></tr>
+            <tr><td>6</td><td>첫 가챠 4성 확정 정책</td><td>리세마라 정책</td></tr>
+            <tr><td>7</td><td>튜토리얼 강제도 (스킵 허용 여부)</td><td>UX 결정</td></tr>
+          </table>
+        </div>
+
+        <!-- §8. 즉시 착수 가능 -->
+        <div class="highlight-box">
+          <h3 style="margin-top:0;">✅ 즉시 착수 가능 항목 (미결 사항과 무관)</h3>
+          <ol>
+            <li><strong>Phase 0 리팩터링 전체</strong> — 기능 변경 없음, 식별자/키 변경만</li>
+            <li><strong>Phase 1-A 셸 + 페이지네이션의 코드 부분</strong> — 배경 자산은 placeholder로 임시 처리</li>
+            <li><strong><code>OutpostTable.xml</code> 스키마 정의 + 리볼도외 1행 작성</strong></li>
+          </ol>
+          <p style="margin-bottom:0;">이 3개를 병렬/순차로 진행하면서 미결 사항 결정을 받아 Phase 1-B/C로 진입.</p>
+        </div>
+
+        <div style="margin-top:24px; padding:16px; background:rgba(212,168,67,0.08); border-left:3px solid #d4a843; border-radius:4px;">
+          <p style="margin:0; font-size:0.9em; color:#aaa;"><strong>관련 문서:</strong> <code>Planning/handoff_tab_restructure_and_family.md</code> (정본 핸드오프)</p>
+          <p style="margin:8px 0 0 0; font-size:0.9em; color:#aaa;"><strong>변경 이력:</strong> v1.0 (2026-05-06) 초안 작성</p>
         </div>
       </div>
     </div>
